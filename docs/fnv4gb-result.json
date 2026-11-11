@@ -1,0 +1,11 @@
+{
+  "patcher": "FNV4GB for Proton 1.5 (Nexus 62552)",
+  "before_sha256": "3a87f92f011e5dc9179ddf733cf08be2b39ea6e5b7a8a9e3a9a72dafcc1b104d",
+  "after_sha256": "518c87f58a6c4d9826e9ef8fbb7f4213882fa70822675610d45aea2464502a57",
+  "patcher_sha256": "7bc03fede058539adaca26063ebbbb0ca9eed3b7e1ea268ce9823114f009b906",
+  "size_before": 16549704,
+  "size_after": 16549704,
+  "differing_bytes": 188,
+  "large_address_aware": true,
+  "deployed": false
+}
