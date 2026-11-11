@@ -58,6 +58,14 @@ and connect the headset first. MO2 and the prerequisites must be configured
 before this wrapper can launch the modded game. The wrapper has opened MO2
 through Steam successfully; a game launch from MO2 remains unverified.
 
+For Steam's container command, the wrapper gives the selected OpenXR manifest
+to pressure-vessel's importer, then clears the host override before Proton so
+the loader uses the imported manifest. Launcher checks can be run with:
+
+```sh
+python3 -m unittest discover -s tests -v
+```
+
 With Proton 11, `--wow64` enables the optional 64-bit host-side Wine/VR path
 for the 32-bit game. This is a compatibility experiment, not yet verified in
 game. For Monado simulation, supply its manifest through `--xr-runtime` and set

@@ -57,8 +57,12 @@ The first wrapper launch opened MO2 2.5.2 and loaded `game_ttw.dll`. MO2 rejecte
 the generated display name as its internal game identifier; `gameName=TTW` is
 the correction. Separately, Proton's VR startup probe loaded xrizer but reported
 that `/usr/share/openxr/1/openxr_wivrn.json` was unavailable inside the container.
-The runtime manifest path/import still needs correction and verification before
-the VR test. This probe occurred before any TTWVR plugin was launched.
+The wrapper now supplies the host selection to pressure-vessel, then removes
+`XR_RUNTIME_JSON` immediately before the nested Proton command. This allows the
+OpenXR loader to use pressure-vessel's imported manifest with rewritten library
+paths via `XDG_CONFIG_DIRS`. Direct Proton commands retain the original variable.
+This correction has a controlled subprocess check; it still needs live runtime
+verification. The failing probe occurred before any TTWVR plugin was launched.
 
 1. Complete TTW conversion and the official dependencies; verify TTW in flat mode.
 2. Add the supplied TTWVR as the final asset override in a dedicated MO2 profile.
@@ -108,6 +112,8 @@ necessary.
 - [WiVRn Steam/OpenVR notes](https://github.com/WiVRn/WiVRn/blob/master/docs/steamvr.md)
 - [xrizer runtime selection](https://github.com/Supreeeme/xrizer#download--usage)
 - [Proton's OpenVR setup](https://github.com/ValveSoftware/Proton/blob/experimental_11.0/proton)
+- [Steam runtime OpenXR manifest discovery](https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/steam-runtime-tools/graphics-drivers-openxr-1.c)
+- [Steam container runtime imports](https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/pressure-vessel/runtime.c)
 
 The wrapper follows WiVRn's documented `PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES=1`
 approach and xrizer's `VR_OVERRIDE`. The locally installed Proton script also

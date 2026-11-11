@@ -24,6 +24,24 @@ def container_path(path):
     return "/run/host" + value if value == "/usr" or value.startswith("/usr/") else value
 
 
+def use_imported_openxr(command):
+    """Let pressure-vessel import the host selection, then use its rewritten JSON."""
+    entries = [i for i, arg in enumerate(command)
+               if Path(arg).name == "_v2-entry-point"]
+    protons = [i for i, arg in enumerate(command) if Path(arg).name == "proton"]
+    if not entries:
+        return command  # Direct Proton launch uses the host manifest as supplied.
+    if len(entries) != 1 or len(protons) != 1:
+        raise ValueError("cannot identify one Proton command inside the Steam runtime")
+    index = protons[0]
+    if index <= entries[0] or command[index - 1] != "--":
+        raise ValueError("unexpected Steam runtime command structure")
+    # The importer reads XR_RUNTIME_JSON outside the container and creates a
+    # manifest with container library paths in XDG_CONFIG_DIRS. The host value
+    # must stop overriding that manifest once inside the container.
+    return command[:index] + ["/usr/bin/env", "-u", "XR_RUNTIME_JSON"] + command[index:]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mo2", type=Path, required=True)
@@ -55,7 +73,7 @@ def main():
         runtime_manifest = json.loads(runtime.read_text())
         if not runtime_manifest["runtime"]["library_path"]:
             raise ValueError("missing runtime library")
-        command = replace_game(command, mo2)
+        command = use_imported_openxr(replace_game(command, mo2))
     except (KeyError, ValueError) as exc:
         parser.error(str(exc))
 

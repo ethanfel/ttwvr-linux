@@ -40,6 +40,11 @@ Completed:
   MO2 rejected the display title. The installed `game_ttw.dll` loaded correctly;
   this was a configuration error, not a missing plugin. Backed up the local INI
   and corrected the profile generator to prevent recurrence.
+- On retry, MO2 recognized the TTW game plugin. It generated the two missing
+  optional GECK editor INIs; the gameplay INIs were already present.
+- Fixed host `XR_RUNTIME_JSON` leaking into Steam's container and overriding
+  its imported runtime manifest. The wrapper clears the variable only after
+  the container entry point, before Proton. Live OpenXR validation is pending.
 - Added optional Proton 11 WoW64 selection to the launch wrapper; this remains
   an unverified VR compatibility candidate.
 - Located the user's existing simulated Monado runtime. Recorded the restricted
