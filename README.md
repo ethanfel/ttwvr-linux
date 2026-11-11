@@ -81,6 +81,11 @@ Vulkan-loader experiments, and a standalone reproducer for Proton's separate
 cross-process GPU-fence crash. The experimental TTWVR DLL changes are not
 enabled by the normal launcher; they have not made DLSS usable.
 
+A [full-resolution DXVK memory-pool patch](docs/dxvk-pools.md) reduces repeated
+eye-buffer allocations. The matching simulated control showed 18.8 FPS versus
+44.1 FPS with the patch, at the same resolution. It is configured locally for
+VR; physical-headset and sustained-session validation remain pending.
+
 For Steam's container command, the wrapper gives the selected OpenXR manifest
 to pressure-vessel's importer, then clears the host override before Proton so
 the loader uses the imported manifest. Launcher checks can be run with:

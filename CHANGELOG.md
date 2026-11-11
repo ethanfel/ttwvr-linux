@@ -1,5 +1,20 @@
 # Change log
 
+## 2026-11-11 — Full-resolution DXVK allocation fix
+
+- Restored original 2944x2208 eye targets and the original 150% menu setting.
+- Profiled repeated 26 MB eye mappings. DXVK's 32-bit mapped pool was capped
+  at 16 MiB, smaller than an eye buffer. Built the exact bundled source revision
+  with a 32 MiB limit and a matching unmodified control.
+- Control: 18.8 FPS snapshot / 599 main-thread mappings in six seconds.
+  Patched: 44.1 FPS / 2 mappings. DLSS remains inactive and image detail unchanged.
+- Added an optional VR-only renderer overlay using a separate writable syswow64
+  copy, with original/candidate hash checks and real-prefix alias rejection.
+  Enabled locally; the integrated launch rendered correctly. Fourteen checks pass.
+- Original Proton, prefix renderer DLLs, mod DLL and all eight saves are preserved.
+  Physical WiVRn testing and further copy/pacing investigation remain.
+- [Source patch, build, scope, results and rollback](docs/dxvk-pools.md).
+
 ## 2026-11-11 — Performance diagnostics and DLSS investigation
 
 - Tested the modern VR resolution percentage at 100%; the fallback renderer

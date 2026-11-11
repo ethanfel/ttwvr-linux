@@ -11,6 +11,7 @@ import shlex
 from patch_openxr_bridge import SOURCE_SHA256, PATCHED_SHA256
 from patch_fallback_resolution import SOURCE_SHA256 as TTWVR_SOURCE_SHA256
 from patch_fallback_resolution import PATCHED_SHA256 as TTWVR_FALLBACK_SHA256
+from dxvk_overlay import private_dxvk_renderer
 
 
 def replace_game(command, mo2):
@@ -150,6 +151,13 @@ def main():
             if path and not path.is_absolute():
                 path = mo2.parent / path
             fallback_paths.append(path.resolve() if path else None)
+        dxvk_paths = []
+        for key in ("dxvk_renderer", "dxvk_syswow64"):
+            value = compatibility.get("VR", key, fallback="")
+            path = Path(value).expanduser() if value else None
+            if path and not path.is_absolute():
+                path = mo2.parent / path
+            dxvk_paths.append(path.resolve() if path else None)
     except (ValueError, configparser.Error) as exc:
         parser.error(str(exc))
     for path in ((mo2, runtime) if vr else (mo2,)):
@@ -172,6 +180,11 @@ def main():
             if not all(fallback_paths):
                 raise ValueError("set both fallback_resolution_source and fallback_resolution_patch")
             command = private_fallback_resolution(command, *fallback_paths)
+        if vr and any(dxvk_paths):
+            if not all(dxvk_paths):
+                raise ValueError("set both dxvk_renderer and dxvk_syswow64")
+            command = private_dxvk_renderer(command, *dxvk_paths,
+                                            os.environ.get("STEAM_COMPAT_DATA_PATH"))
     except (KeyError, OSError, ValueError) as exc:
         parser.error(str(exc))
 
@@ -195,6 +208,9 @@ def main():
     if vr and (args.native_d3dcompiler47 or vr_compiler):
         changes["WINEDLLOVERRIDES"] = native_compiler_override(
             os.environ.get("WINEDLLOVERRIDES", ""))
+    if vr and all(dxvk_paths):
+        changes["DXVK_CONFIG"] = "; ".join(filter(None, [
+            os.environ.get("DXVK_CONFIG", ""), "d3d11.disableDirectImageMapping = True"]))
     registry = {"version": 1, "runtime": [container_path(xrizer)] if vr else []}
     if args.dry_run:
         print(json.dumps({"mode": "vr" if vr else "flat", "environment": changes, "openvr_registry": registry,

@@ -150,6 +150,16 @@ os.execvpe(command[0], command, os.environ)
         self.assertIn('set both fallback_resolution', result.stderr)
         self.assertFalse(self.state.exists())
 
+    def test_incomplete_dxvk_configuration_is_rejected_and_flat_ignores_it(self):
+        (self.mo2.parent / 'ttwvr-linux.ini').write_text(
+            '[VR]\ndxvk_renderer=private-renderer\n')
+        result = self.launch([self.proton, 'waitforexitandrun', self.game], '--mode', 'vr')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('set both dxvk_renderer and dxvk_syswow64', result.stderr)
+        self.assertFalse(self.state.exists())
+        result = self.launch([self.proton, 'waitforexitandrun', self.game], '--mode', 'flat')
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_bridge_rejects_changed_proton_and_flat_ignores_bridge(self):
         original = self.root / 'files/lib/wine/x86_64-unix/wineopenxr.so'
         original.parent.mkdir(parents=True)

@@ -1,0 +1,14 @@
+diff --git a/src/dxvk/dxvk_memory.cpp b/src/dxvk/dxvk_memory.cpp
+index 1ee9d589..8a7c6f10 100644
+--- a/src/dxvk/dxvk_memory.cpp
++++ b/src/dxvk/dxvk_memory.cpp
+@@ -2028,7 +2028,8 @@ namespace dxvk {
+     // reduce the amount of address space required. We compensate for
+     // the smaller size by allowing more unused memory on these heaps.
+     if (mappable)
+-      size /= env::is32BitHostPlatform() ? 16u : 4u;
++      // TTWVR diagnostic: keep full-resolution eye uploads inside the pool.
++      size /= env::is32BitHostPlatform() ? 8u : 4u;
+ 
+     // Ensure that we can at least do 7  allocations to fill
+     // the heap. Might be useful on systems with small BAR.
