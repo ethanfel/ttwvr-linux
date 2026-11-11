@@ -1,0 +1,33 @@
+; SPDX-License-Identifier: GPL-3.0-only
+begin Function {int choice}
+ if choice == 0
+  ModUIFloat "HUDMainMenu/TTWVRNRState/_preset" 1
+  if GetUIFloat "HUDMainMenu/TTWVRNRState/_preset" > 2
+   SetUIFloat "HUDMainMenu/TTWVRNRState/_preset" 1
+  endif
+ elseif choice == 1
+  ModUIFloat "HUDMainMenu/TTWVRNRState/_resolution" 25
+  if GetUIFloat "HUDMainMenu/TTWVRNRState/_resolution" > 100
+   SetUIFloat "HUDMainMenu/TTWVRNRState/_resolution" 25
+  endif
+ elseif choice == 2
+  ModUIFloat "HUDMainMenu/TTWVRNRState/_strength" 10
+  if GetUIFloat "HUDMainMenu/TTWVRNRState/_strength" > 100
+   SetUIFloat "HUDMainMenu/TTWVRNRState/_strength" 0
+  endif
+ elseif choice == 3
+  ModUIFloat "HUDMainMenu/TTWVRNRState/_tone" 10
+  if GetUIFloat "HUDMainMenu/TTWVRNRState/_tone" > 100
+   SetUIFloat "HUDMainMenu/TTWVRNRState/_tone" 0
+  endif
+ elseif choice == 4
+  ModUIFloat "HUDMainMenu/TTWVRNRState/_detail" 10
+  if GetUIFloat "HUDMainMenu/TTWVRNRState/_detail" > 100
+   SetUIFloat "HUDMainMenu/TTWVRNRState/_detail" 0
+  endif
+ else
+  SetUIFloat "HUDMainMenu/TTWVRNRState/_dialog" 1
+  return
+ endif
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_dialog" 2
+end

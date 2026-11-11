@@ -1,0 +1,15 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<rect name="TTWVRNRState"><visible>0</visible>
+ <_poll>0</_poll><_input>0</_input><_page>0</_page>
+ <_owned>0</_owned>
+ <_dialog>0</_dialog><_pending>0</_pending><_down>0</_down>
+ <_session>0</_session>
+ <_revision>0</_revision>
+ <_neural>0</_neural>
+ <_dlaa>0</_dlaa>
+ <_preset>0</_preset>
+ <_resolution>0</_resolution>
+ <_strength>0</_strength>
+ <_tone>0</_tone>
+ <_detail>0</_detail>
+</rect>

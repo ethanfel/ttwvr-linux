@@ -1,0 +1,19 @@
+; SPDX-License-Identifier: GPL-3.0-only
+begin Function {int choice}
+ if choice == 0
+  SetUIFloat "HUDMainMenu/TTWVRNRState/_neural" (1 - (GetUIFloat "HUDMainMenu/TTWVRNRState/_neural"))
+ elseif choice == 1
+  SetUIFloat "HUDMainMenu/TTWVRNRState/_dlaa" (1 - (GetUIFloat "HUDMainMenu/TTWVRNRState/_dlaa"))
+ elseif choice == 2
+  SetUIFloat "HUDMainMenu/TTWVRNRState/_dialog" 2
+  return
+ elseif choice == 3
+  Call (CompileScript "TTWVRNR/Apply.txt")
+  SetUIFloat "HUDMainMenu/TTWVRNRState/_owned" 0
+  return
+ else
+  SetUIFloat "HUDMainMenu/TTWVRNRState/_owned" 0
+  return
+ endif
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_dialog" 1
+end

@@ -112,8 +112,8 @@ OpenXR implicit-layer registry view**. Do not apply that manifest to the native
 Linux OpenXR loader. The existing private Wine OpenXR bridge is still required.
 See the repository's [simulated runtime notes](../docs/simulated-vr.md).
 
-Defaults leave both effects off. Configure the **private** INI and restart when
-changing the feature combination:
+Defaults leave both effects off. Configure the **private** INI or use the
+in-game menu. Feature combinations and tuning apply live:
 
 | Mode | `[neural_rendering] enabled` | `experimental_spatial` | `experimental_temporal` | `[dlaa] enabled` |
 |---|---:|---:|---:|---:|
@@ -126,9 +126,11 @@ changing the feature combination:
 Use `transport_identity=1` first to exercise GPU transport; real evaluation
 requires `transport_identity=0`. Identity mode is not evidence of an NGX effect.
 The diagnostic `jitter_probe` should stay zero. Turning both `enabled` settings
-to zero is polled every 30 submitted frames and restores bypass. Feature selection
-is fixed when the helper starts; use a restart to change from one active
-combination to another.
+to zero restores bypass. Settings are polled every 250 ms at a stereo frame
+boundary. A change stops the old helper, waits for its exit, then starts one
+helper with an immutable settings snapshot. The game keeps rendering without
+effects during this rebuild. Jitter resumes only at a later frame boundary,
+when both eyes can use the same initialized configuration.
 
 NR tuning mirrors the Titanfall reference: `model=A` or `B`,
 `resolution_percent=25/50/75/100`, `intensity_percent`, `tone_percent` and
@@ -141,7 +143,44 @@ depth-only scale control. The original full-size depth transport and object-moti
 rendering cost remain. These are NR presets, separate from DLAA's fixed preset K;
 no untested preset is labelled faster or better.
 
-Use an explicit private INI path for terminal controls (no in-game menu port yet):
+### In-game controls
+
+Install the contents of [`menu/`](menu/) as an enabled MO2 mod in the isolated
+profile. It uses the existing xNVSE (6.3.3+), JIP LN and UIO plugins; no ESP,
+MCM download, game UI replacement or changes to saves are required.
+
+Open the pause menu and press **X**, or use **F10** with the desktop game focused.
+The native selection dialog provides separate NR/DLAA toggles, **NR tuning**,
+**Apply** and **Cancel**. Use the stick/D-pad and A; B returns from tuning or
+cancels the main dialog. Arrows and Enter use Fallout's existing handling; the bridge adds Escape.
+NR tuning cycles model A/B, processing scale 25/50/75/100%, and strength/tone/detail
+in 10% steps. Game and DLAA resolution remain unchanged. Reopen the menu to see
+the current renderer status. Changing a row only edits a draft; Apply saves it.
+
+The menu draft lives in a persistent HUD node, because showing a native dialog
+can close `StartMenu`. Requests include a session token and base revision, and
+are committed by writing the sequence last. Stale edits are rejected instead
+of overwriting newer CLI settings. The renderer atomically saves accepted edits
+and publishes separate requested/initializing/active/error status; **Active**
+requires output applied to both eyes. Apply also explicitly retries a failure.
+
+TTWVR bypasses some script-level keyboard/gamepad events. A passive reader
+verifies the installed JIP controller wrapper signature and derives the address
+of the game's final cached input state. It reads X/B edges without modifying
+input, patching a call, or polling another controller. Unknown wrappers leave
+this shortcut disabled. F10/Escape are polled only while the game owns the
+foreground window; arrows/Enter are left to Fallout to avoid double navigation.
+A small INI mailbox carries these menu commands to the script. Back is handled
+only for this addon's own dialog or the vanilla pause menu. OpenXR action/image
+ownership is unchanged.
+
+Installing a new DLL or script version still requires a game restart. Changing
+NR/DLAA settings afterward does not. First-time feature creation can take longer
+than a warm change; bypass continues during initialization.
+
+### Terminal controls
+
+Use an explicit private INI path:
 
 ```sh
 python neural/tools/control.py --config /private/layer/TTWVRNeuralRendering.ini status
@@ -152,8 +191,8 @@ python neural/tools/control.py --config /private/layer/TTWVRNeuralRendering.ini 
 python neural/tools/control.py --config /private/layer/TTWVRNeuralRendering.ini all-off
 ```
 
-Restart after tuning changes. Configured values are not proof of successful
-processing; check the feature-creation sizes/preset and both eyes' evaluation logs.
+The CLI saves atomically and creates `neural.request` to Apply/retry live.
+Configured values are not proof of successful processing; check the feature-creation sizes/preset and both eyes' evaluation logs.
 Optional `[diagnostics] gpu_timing=1` records sampled `neural_gpu_timing` entries.
 These use D3D12 GPU timestamps immediately around each NGX evaluation, collected
 after the helper's existing completion wait, with no extra wait or image readback.
@@ -166,8 +205,8 @@ and [our measurements](docs/EVIDENCE.md). Leave this diagnostic off for normal u
 
 Initialization runs asynchronously with a bounded 120-second limit, keeping the
 game on bypass while the driver builds features. A first DLAA initialization took
-35 seconds. Initialization/evaluation failures disable processing for that
-process; the original HDR is not overwritten before a successful helper response.
+35 seconds. Initialization/evaluation failures bypass the failed generation
+until another explicit Apply or configuration change; the original HDR is not overwritten before a successful helper response.
 Jitter stops when processing is disabled or fails, and requires consecutive
 verified camera data. Diagnostic motion recording only stays active during bypass
 if explicitly requested with `native_motion_probe=1`.
@@ -176,7 +215,10 @@ Never replace a DLL/executable while it is loaded.
 
 The scene adapter is deliberately restricted to the verified TTWVR 1.1.0 binary,
 shader hash, formats and dimensions. Unknown layouts fail closed. Prototype GPU
-resources are retained for process lifetime; restart between test configurations.
+D3D9 transport resources are retained for process lifetime; each reload releases
+the helper's NGX features and starts fresh per-eye histories. A helper that fails
+to exit within 130 seconds leaves processing disabled; no replacement starts
+while it remains alive.
 Failure after one eye has completed can produce one mixed pair before bypass;
 the current frame may already contain subpixel jitter. This requires further
 hardening before normal headset use. DLAA preserves alpha and HDR highlights,

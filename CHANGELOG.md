@@ -2,6 +2,13 @@
 
 ## 2026-11-11
 
+- **Added native in-game neural controls and live Apply:** separate NR/DLAA
+  switches, model/scale/strength/tone/detail, controller navigation and keyboard
+  fallback. Feature changes rebuild the helper on bypass between stereo frames,
+  reset both histories, and preserve the original game/DLAA resolution. Failed
+  generations can be retried; stale menu edits are rejected. No frame generation.
+  [Controls and implementation](neural/README.md#in-game-controls)
+
 - **Added experimental temporal NR and independent DLAA:** verified camera and
   object motion, per-eye history and native-resolution jitter; captured both eyes
   on consecutive gameplay frames with each effect and both combined. Added NR

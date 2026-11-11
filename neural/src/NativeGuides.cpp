@@ -106,12 +106,8 @@ bool __cdecl HookPrepare(IDirect3DDevice9 *d, const unsigned *eyes,
 } // namespace
 bool InstallNativeGuides(HMODULE module) {
   const auto ini = Directory() + L"\\TTWVRNeuralRendering.ini";
-  if (!GetPrivateProfileIntW(L"capture", L"native_motion_probe", 0,
-                             ini.c_str()) &&
-      !GetPrivateProfileIntW(L"dlaa", L"enabled", 0, ini.c_str()) &&
-      !GetPrivateProfileIntW(L"neural_rendering", L"experimental_temporal", 0,
-                             ini.c_str()))
-    return false;
+  // Install on the verified TTWVR binary even when initially off. Hook work
+  // stays gated by NativeGuidesEnabled; off -> on no longer needs a restart.
   profile =
       GetPrivateProfileIntW(L"diagnostics", L"gpu_timing", 0, ini.c_str()) != 0;
   captureProbe = GetPrivateProfileIntW(L"capture", L"native_motion_probe", 0,

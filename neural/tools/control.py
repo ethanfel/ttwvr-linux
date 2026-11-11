@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Configure an explicitly selected TTWVR neural test INI; restart to apply."""
+"""Configure an explicitly selected TTWVR neural test INI; apply live between stereo frames."""
 import argparse
 import configparser
 from pathlib import Path
@@ -63,7 +63,8 @@ if args.action != 'status':
     finally:
         if temp and temp.exists():
             temp.unlink()
-    print('Settings saved. Restart the test game to apply changes.')
+    (args.config.parent / 'neural.request').touch()
+    print('Settings saved. The running renderer will apply them on bypass.')
 print(f'Config: {args.config}')
 print(f'NR configured: {nr.get("enabled", "0")} | model {nr.get("model", "B")} | '
       f'{nr.get("resolution_percent", "100")}% per dimension | '

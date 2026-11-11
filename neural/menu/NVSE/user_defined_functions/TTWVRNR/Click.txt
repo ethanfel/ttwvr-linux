@@ -1,0 +1,6 @@
+; SPDX-License-Identifier: GPL-3.0-only
+begin Function {int menuId, int tileId, string_var tileName}
+ if tileId == 29100 && MenuMode 1001 == 0
+  Call (CompileScript "TTWVRNR/Load.txt")
+ endif
+end

@@ -1,0 +1,4 @@
+; SPDX-License-Identifier: GPL-3.0-only
+SetOnMenuClickEventHandler (CompileScript "TTWVRNR/Click.txt") 1 "StartMenu/TTWVRNR"
+SetGameMainLoopCallback (CompileScript "TTWVRNR/Tick.txt") 1 1 3
+PrintC "TTWVR Neural Rendering controller menu registered"

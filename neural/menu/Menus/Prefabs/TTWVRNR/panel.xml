@@ -1,0 +1,13 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<rect name="TTWVRNR">
+ <locus>1</locus><depth>100</depth>
+ <hotrect name="Open"><id>29100</id><target>1</target><locus>1</locus>
+  <visible><copy src="StartMenu/NOGLOW_BRANCH/main_container" trait="_enabled"/></visible>
+  <x><copy src="screen()" trait="width"/><sub>600</sub></x>
+  <y><copy src="screen()" trait="height"/><sub>70</sub></y>
+  <width>550</width><height>45</height><clicksound>UIMenuOK</clicksound>
+  <text name="Label"><font>3</font><string>Neural Rendering [X / F10]</string>
+   <red>255</red><green>190</green><blue>80</blue>
+  </text>
+ </hotrect>
+</rect>

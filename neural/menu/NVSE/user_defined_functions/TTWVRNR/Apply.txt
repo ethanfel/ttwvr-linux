@@ -1,0 +1,22 @@
+; SPDX-License-Identifier: GPL-3.0-only
+begin Function {}
+  int sequence
+  if GetUIFloat "HUDMainMenu/TTWVRNRState/_session" == 0
+    return
+  endif
+  let sequence := (GetINIFloat "request:sequence" "TTWVRNR_request.ini") + 1
+  SetINIFloat "request:sequence" 0 "TTWVRNR_request.ini"
+  SetINIFloat "request:session" (GetUIFloat "HUDMainMenu/TTWVRNRState/_session") "TTWVRNR_request.ini"
+  SetINIFloat "request:revision" (GetUIFloat "HUDMainMenu/TTWVRNRState/_revision") "TTWVRNR_request.ini"
+  SetINIFloat "request:neural" (GetUIFloat "HUDMainMenu/TTWVRNRState/_neural") "TTWVRNR_request.ini"
+  SetINIFloat "request:dlaa" (GetUIFloat "HUDMainMenu/TTWVRNRState/_dlaa") "TTWVRNR_request.ini"
+  SetINIFloat "request:preset" (GetUIFloat "HUDMainMenu/TTWVRNRState/_preset") "TTWVRNR_request.ini"
+  SetINIFloat "request:resolution" (GetUIFloat "HUDMainMenu/TTWVRNRState/_resolution") "TTWVRNR_request.ini"
+  SetINIFloat "request:strength" (GetUIFloat "HUDMainMenu/TTWVRNRState/_strength") "TTWVRNR_request.ini"
+  SetINIFloat "request:tone" (GetUIFloat "HUDMainMenu/TTWVRNRState/_tone") "TTWVRNR_request.ini"
+  SetINIFloat "request:detail" (GetUIFloat "HUDMainMenu/TTWVRNRState/_detail") "TTWVRNR_request.ini"
+  SetINIFloat "request:sequence" sequence "TTWVRNR_request.ini"
+  SetUIFloat "HUDMainMenu/TTWVRNRState/_pending" sequence
+
+  PrintC "TTWVR menu Apply sequence=%.0f" sequence
+end

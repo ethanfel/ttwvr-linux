@@ -2,6 +2,8 @@
 #include "SpatialNR.h"
 #include "DepthTransfer.h"
 #include "HostProtocol.h"
+#include "MenuControl.h"
+#include "MenuInput.h"
 #include "NativeGuides.h"
 #include "SceneCapture.h"
 #include "Support.h"
@@ -28,15 +30,24 @@ struct Texture {
     Check(texture->GetSurfaceLevel(0, &surface));
   }
 };
+ReloadState reload;
 struct Client {
   ComPtr<IDirect3DDevice9> device;
   Texture color, depth, bloom, motion;
   HANDLE mapping = nullptr, request = nullptr, reply = nullptr,
          process = nullptr;
   HostProtocol *p = nullptr;
-  bool ready = false, profile = false;
+  bool profile = false, stopSent = false;
+  std::wstring name;
   uint64_t started = 0, leftAppliedFrame = ~uint64_t(0),
            rightAppliedFrame = ~uint64_t(0);
+  ~Client() {
+    if (p)
+      UnmapViewOfFile(p);
+    for (HANDLE h : {mapping, request, reply, process})
+      if (h)
+        CloseHandle(h);
+  }
   void Init(IDirect3DDevice9 *d, const D3DSURFACE_DESC &hdr,
             const D3DSURFACE_DESC &b) {
     device = d;
@@ -44,9 +55,8 @@ struct Client {
     depth.Init(d, hdr.Width, hdr.Height, D3DFMT_A8B8G8R8);
     bloom.Init(d, b.Width, b.Height, D3DFMT_A16B16G16R16F);
     motion.Init(d, hdr.Width, hdr.Height, D3DFMT_A16B16G16R16F);
-    const auto name = L"Local\\TTWVRNR-" +
-                      std::to_wstring(GetCurrentProcessId()) + L"-" +
-                      std::to_wstring(GetTickCount64());
+    name = L"Local\\TTWVRNR-" + std::to_wstring(GetCurrentProcessId()) + L"-" +
+           std::to_wstring(GetTickCount64());
     mapping = CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE,
                                  0, sizeof(HostProtocol), name.c_str());
     if (!mapping || GetLastError() == ERROR_ALREADY_EXISTS)
@@ -63,23 +73,31 @@ struct Client {
     p->bloomHandle = reinterpret_cast<uintptr_t>(bloom.handle);
     p->parentPid = GetCurrentProcessId();
     p->motionHandle = reinterpret_cast<uintptr_t>(motion.handle);
-    const auto ini = Directory() + L"\\TTWVRNeuralRendering.ini";
-    profile = GetPrivateProfileIntW(L"diagnostics", L"gpu_timing", 0,
-                                    ini.c_str()) != 0;
-    p->neural = GetPrivateProfileIntW(L"neural_rendering", L"enabled", 0,
-                                      ini.c_str()) != 0;
-    p->dlaa = GetPrivateProfileIntW(L"dlaa", L"enabled", 0, ini.c_str()) != 0;
-    p->temporal = p->dlaa || GetPrivateProfileIntW(L"neural_rendering",
-                                                   L"experimental_temporal", 0,
-                                                   ini.c_str());
-    p->identity =
-        GetPrivateProfileIntW(
-            L"neural_rendering", L"transport_identity", 1,
-            (Directory() + L"\\TTWVRNeuralRendering.ini").c_str()) != 0;
     request = CreateEventW(nullptr, FALSE, FALSE, (name + L"-request").c_str());
     reply = CreateEventW(nullptr, FALSE, FALSE, (name + L"-reply").c_str());
     if (!request || !reply)
       throw std::runtime_error("NR events");
+  }
+  void Start() {
+    const auto &s = reload.requested;
+    ResetEvent(request);
+    ResetEvent(reply);
+    p->neural = s.neural;
+    p->dlaa = s.dlaa;
+    p->temporal = s.temporal;
+    p->identity = s.identity;
+    p->profile = s.profile;
+    p->revision = reload.revision;
+    p->resolution = s.resolution;
+    p->preset = s.preset;
+    p->strength = s.strength;
+    p->tone = s.tone;
+    p->detail = s.detail;
+    p->command = p->result = 0;
+    p->reset = 1;
+    profile = s.profile;
+    stopSent = false;
+    leftAppliedFrame = rightAppliedFrame = ~uint64_t(0);
     const auto host = Directory() + L"\\neural_host.exe";
     auto command = L"\"" + host + L"\" \"" + name + L"\"";
     STARTUPINFOW si{};
@@ -92,24 +110,51 @@ struct Client {
     process = pi.hProcess;
     CloseHandle(pi.hThread);
     started = GetTickCount64();
-    Log("spatial_host_start native=%ux%u identity=%u", hdr.Width, hdr.Height,
-        p->identity);
+    reload.Started();
+    Log("spatial_host_start revision=%u native=%ux%u nr=%u dlaa=%u model=%u "
+        "scale=%u identity=%u",
+        p->revision, p->width, p->height, p->neural, p->dlaa, p->preset,
+        p->resolution, p->identity);
   }
-  bool Poll() {
-    if (ready)
-      return true;
-    if (WaitForSingleObject(reply, 0) == WAIT_OBJECT_0) {
-      if (p->result != 1)
-        throw std::runtime_error("NR helper initialization");
-      ready = true;
-    } else if (GetTickCount64() - started > 120000 ||
-               WaitForSingleObject(process, 0) == WAIT_OBJECT_0)
-      throw std::runtime_error("NR helper startup timeout/exit");
-    return ready;
+  // This method runs before either eye. Never enable DLAA halfway through a
+  // stereo frame: the same ready snapshot must govern jitter and evaluation.
+  void Advance() {
+    if (process && WaitForSingleObject(process, 0) == WAIT_OBJECT_0) {
+      CloseHandle(process);
+      process = nullptr;
+      reload.Exited();
+      Log("spatial_host_exit revision=%u expected=%u", p->revision,
+          !reload.fault);
+    }
+    if (reload.NeedStop() && !stopSent) {
+      // No normal evaluation is in flight here. Following a timeout the host
+      // owns only private images; retain them until its process exits.
+      p->command = 2;
+      if (!SetEvent(request))
+        throw std::runtime_error("NR helper stop signal");
+      stopSent = true;
+      started = GetTickCount64();
+      Log("spatial_host_stop revision=%u next_revision=%u", p->revision,
+          reload.revision);
+    }
+    if (reload.phase == ReloadState::Starting) {
+      if (WaitForSingleObject(reply, 0) == WAIT_OBJECT_0) {
+        if (p->result != 1)
+          throw std::runtime_error("NR helper initialization");
+        reload.Initialized();
+        Log("live_settings_ready revision=%u", p->revision);
+      } else if (GetTickCount64() - started > 120000)
+        throw std::runtime_error("NR helper startup timeout");
+    }
+    if (reload.phase == ReloadState::Stopping &&
+        GetTickCount64() - started > 130000)
+      throw std::runtime_error("NR helper stop timeout; restart withheld");
+    if (reload.NeedStart())
+      Start();
   }
 };
 Client *client = nullptr;
-bool failed = false, enabled = false;
+bool enabled = false;
 ComPtr<IDirect3DSurface9> Surface(IDirect3DDevice9 *d, unsigned slot) {
   ComPtr<IDirect3DBaseTexture9> base;
   Check(d->GetTexture(slot, &base));
@@ -123,7 +168,7 @@ ComPtr<IDirect3DSurface9> Surface(IDirect3DDevice9 *d, unsigned slot) {
 }
 } // namespace
 bool AllApplied(uint64_t frame) {
-  return !failed && client && client->p && !client->p->identity &&
+  return reload.CanApply() && client && client->p && !client->p->identity &&
          client->leftAppliedFrame == frame &&
          client->rightAppliedFrame == frame;
 }
@@ -142,29 +187,42 @@ void ProcessingJitter(uint64_t frame, float &x, float &y) {
     y = client->p->jitterY;
   }
 }
-bool SceneProcessingEnabled() { return enabled && !failed; }
+bool SceneProcessingEnabled() { return enabled && !reload.fault; }
 bool DlaaJitterReady() {
-  return enabled && !failed && client && client->ready && client->p->dlaa;
+  return enabled && reload.CanApply() && client && client->p->dlaa;
 }
 bool SpatialEnabled(uint64_t frame) {
-  if (failed)
-    return false;
-  if (frame % 30 == 0) {
-    const auto ini = Directory() + L"\\TTWVRNeuralRendering.ini";
-    enabled = GetPrivateProfileIntW(L"neural_rendering", L"enabled", 0,
-                                    ini.c_str()) &&
-              (GetPrivateProfileIntW(L"neural_rendering",
-                                     L"experimental_spatial", 0, ini.c_str()) ||
-               GetPrivateProfileIntW(L"neural_rendering",
-                                     L"experimental_temporal", 0, ini.c_str()));
-    enabled =
-        enabled || GetPrivateProfileIntW(L"dlaa", L"enabled", 0, ini.c_str());
+  try {
+    PollMenuInput();
+    static uint64_t polled = 0;
+    const auto now = GetTickCount64();
+    if (!reload.revision || now - polled >= 250) {
+      polled = now;
+      auto settings = ReadLiveSettings();
+      bool changed = reload.Request(settings, !reload.revision);
+      const bool retry =
+          DeleteFileW((Directory() + L"\\neural.request").c_str()) != FALSE;
+      if (ReadMenuRequest(reload.revision, settings) || retry)
+        changed = reload.Request(settings, true);
+      if (changed)
+        Log("live_settings_request revision=%u nr=%u dlaa=%u model=%u scale=%u",
+            reload.revision, settings.neural, settings.dlaa, settings.preset,
+            settings.resolution);
+    }
+    if (client)
+      client->Advance();
+  } catch (const std::exception &e) {
+    reload.Fail();
+    Log("spatial_bypass reason=%s original_hdr_retained=1", e.what());
   }
+  enabled = reload.requested.Active() && !reload.fault &&
+            reload.phase != ReloadState::Stopping;
+  PublishMenuState(reload, frame && AllApplied(frame - 1));
   return enabled;
 }
 bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
                     bool capture) {
-  if (failed || !enabled || eye > 1)
+  if (reload.fault || !enabled || eye > 1)
     return false;
   try {
     auto hdr = Surface(d, 1), bloom = Surface(d, 0);
@@ -191,10 +249,13 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
     if (!std::isfinite(c1[0]) || c1[0] <= 0)
       throw std::runtime_error("unverified HDR exposure parameter");
     if (!client) {
-      client = new Client;
-      client->Init(d, hd, bd);
+      auto fresh = std::make_unique<Client>();
+      fresh->Init(d, hd, bd);
+      client = fresh.release();
+      client->Start();
+      return false;
     }
-    if (!client->Poll())
+    if (!reload.CanApply())
       return false;
     if (eye == 1 && client->leftAppliedFrame != frame)
       return false;
@@ -278,7 +339,7 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
           p->temporal, p->dlaa);
     return true;
   } catch (const std::exception &e) {
-    failed = true;
+    reload.Fail();
     Log("spatial_bypass reason=%s original_hdr_retained=1", e.what());
     return false;
   }

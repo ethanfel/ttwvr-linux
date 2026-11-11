@@ -1,0 +1,32 @@
+; SPDX-License-Identifier: GPL-3.0-only
+begin Function {}
+ if IsComponentLoaded "HUDMainMenu/TTWVRNRState" == 0
+  InjectUIXML "HUDMainMenu" "Data/Menus/Prefabs/TTWVRNR/state.xml"
+  SetUIFloat "HUDMainMenu/TTWVRNRState/_input" (GetINIFloat "input:sequence" "TTWVRNR_input.ini")
+ endif
+ if MenuMode 1013
+  if IsComponentLoaded "StartMenu/TTWVRNR" == 0
+   InjectUIXML "StartMenu" "Data/Menus/Prefabs/TTWVRNR/panel.xml"
+  endif
+
+ endif
+ ModUIFloat "HUDMainMenu/TTWVRNRState/_poll" 1
+ if GetUIFloat "HUDMainMenu/TTWVRNRState/_poll" >= 3
+  SetUIFloat "HUDMainMenu/TTWVRNRState/_poll" 0
+  int sequence
+  let sequence := GetINIFloat "input:sequence" "TTWVRNR_input.ini"
+  if sequence != (GetUIFloat "HUDMainMenu/TTWVRNRState/_input")
+   SetUIFloat "HUDMainMenu/TTWVRNRState/_input" sequence
+   Call (CompileScript "TTWVRNR/Input.txt") (GetINIFloat "input:key" "TTWVRNR_input.ini")
+  endif
+ endif
+ if GetUIFloat "HUDMainMenu/TTWVRNRState/_pending" > 0
+  if GetINIFloat "state:sequence" "TTWVRNR_state.ini" == (GetUIFloat "HUDMainMenu/TTWVRNRState/_pending")
+   SetUIFloat "HUDMainMenu/TTWVRNRState/_pending" 0
+   SetUIFloat "HUDMainMenu/TTWVRNRState/_revision" (GetINIFloat "state:revision" "TTWVRNR_state.ini")
+  endif
+ endif
+ if GetUIFloat "HUDMainMenu/TTWVRNRState/_dialog" > 0 && MenuMode 1001 == 0
+  Call (CompileScript "TTWVRNR/Show.txt")
+ endif
+end

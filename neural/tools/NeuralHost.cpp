@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "../src/HostProtocol.h"
+#include "../src/LiveSettings.h"
 #include "../src/Support.h"
 #include "../src/backend/NeuralBackend.h"
 #include <algorithm>
@@ -41,7 +42,7 @@ int wmain(int argc, wchar_t **argv) {
     return 3;
   auto *p = static_cast<HostProtocol *>(
       MapViewOfFile(mapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(HostProtocol)));
-  if (!p || p->magic != 0x54544e52 || p->version != 2)
+  if (!p || p->magic != 0x54544e52 || p->version != 3)
     return 3;
   HANDLE request = OpenEventW(SYNCHRONIZE, FALSE, (name + L"-request").c_str());
   HANDLE reply =
@@ -52,6 +53,13 @@ int wmain(int argc, wchar_t **argv) {
   try {
     if (!p->width || !p->height || uint64_t(p->width) * p->height > 16000000)
       throw std::runtime_error("host dimensions");
+    LiveSettings settings;
+    settings.neural = p->neural; settings.dlaa = p->dlaa;
+    settings.temporal = p->temporal; settings.identity = p->identity;
+    settings.profile = p->profile; settings.resolution = p->resolution;
+    settings.preset = p->preset; settings.strength = p->strength;
+    settings.tone = p->tone; settings.detail = p->detail;
+    if (!settings.Valid()) throw std::runtime_error("host invalid settings snapshot");
     ComPtr<ID3D11Device> d;
     ComPtr<ID3D11DeviceContext> c;
     Check(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
@@ -157,27 +165,13 @@ RWTexture2D<float2> motion:register(u2);
     Check(d->CreateBuffer(&cbDesc, nullptr, &constants));
     NeuralBackend backend;
     NeuralOptions options;
-    const auto ini = Directory() + L"\\TTWVRNeuralRendering.ini";
-    auto percent = [&](const wchar_t *key, int fallback, int minimum) {
-      return std::clamp(static_cast<int>(GetPrivateProfileIntW(
-                            L"neural_rendering", key, fallback, ini.c_str())),
-                        minimum, 100);
-    };
-    options.resolutionPercent = percent(L"resolution_percent", 100, 25);
-    options.intensity = percent(L"intensity_percent", 50, 0) / 100.f;
-    options.tone = percent(L"tone_percent", 100, 0) / 100.f;
-    options.detail = percent(L"detail_percent", 100, 0) / 100.f;
-    wchar_t model[16]{};
-    GetPrivateProfileStringW(L"neural_rendering", L"model", L"B", model, 16,
-                             ini.c_str());
-    if (model[0] >= L'a' && model[0] <= L'b')
-      model[0] -= L'a' - L'A';
-    if (!model[1] && model[0] >= L'A' && model[0] <= L'B')
-      options.preset = model[0] - L'A' + 1;
-    else
-      Log("neural_invalid_model fallback=B");
-    options.profileGpu = GetPrivateProfileIntW(L"diagnostics", L"gpu_timing", 0,
-                                               ini.c_str()) != 0;
+    // Immutable configuration snapshot published before this helper starts.
+    options.resolutionPercent = p->resolution;
+    options.intensity = p->strength / 100.f;
+    options.tone = p->tone / 100.f;
+    options.detail = p->detail / 100.f;
+    options.preset = p->preset;
+    options.profileGpu = p->profile != 0;
     options.passthrough = p->identity != 0;
     options.neural = p->neural != 0;
     options.dlaa = p->dlaa != 0;

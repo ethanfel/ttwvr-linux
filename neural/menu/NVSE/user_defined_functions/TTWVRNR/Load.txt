@@ -1,0 +1,17 @@
+; SPDX-License-Identifier: GPL-3.0-only
+begin Function {}
+ if IsComponentLoaded "HUDMainMenu/TTWVRNRState" == 0
+  InjectUIXML "HUDMainMenu" "Data/Menus/Prefabs/TTWVRNR/state.xml"
+ endif
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_owned" 1
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_session" (GetINIFloat "state:session" "TTWVRNR_state.ini")
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_revision" (GetINIFloat "state:revision" "TTWVRNR_state.ini")
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_neural" (GetINIFloat "state:neural" "TTWVRNR_state.ini")
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_dlaa" (GetINIFloat "state:dlaa" "TTWVRNR_state.ini")
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_preset" (GetINIFloat "state:preset" "TTWVRNR_state.ini")
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_resolution" (GetINIFloat "state:resolution" "TTWVRNR_state.ini")
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_strength" (GetINIFloat "state:strength" "TTWVRNR_state.ini")
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_tone" (GetINIFloat "state:tone" "TTWVRNR_state.ini")
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_detail" (GetINIFloat "state:detail" "TTWVRNR_state.ini")
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_dialog" 1
+end

@@ -220,7 +220,8 @@ Super Resolution. The defaults remain B/100% with both effects off.
   visually checked in the loaded room.
 - Live all-effects-off then produced captures **2700/2701** in the same run:
   `capture_only`, both effect flags false, jitter `[0,0]` for both eyes. The idle
-  helper retained resources but issued no further neural evaluations.
+  helper retained resources but issued no further neural evaluations in that
+  earlier build. The live-Apply build below now shuts it down.
 - The removed query is a small cleanup, not a solution to the large application
   frame-time increase. Synchronous input/output handoffs still prevent the game
   thread from overlapping work. The failed cross-bitness Wine shared-fence
@@ -239,7 +240,67 @@ closed after final validation, with NR, DLAA and diagnostic probes disabled. WiV
 registration and the working full-resolution Steam path were unchanged.
 
 Only the loaded Vault 101 scene, this TTWVR binary and this resolution were
-validated. Menus, scene transitions, device recreation, resizing and mixed-eye
-failure recovery require additional work. Shader identities are verified locally;
-raw proprietary shader code is not distributed. Models, resolution and feature
-combinations require restart; all effects default off.
+validated. Native settings-menu navigation and live feature changes are now
+covered below; wider scene transitions, device recreation, resizing and mixed-eye
+failure recovery still require additional work. Shader identities are verified
+locally; raw proprietary shader code is not distributed. Feature combinations
+and tuning apply live; installing new binaries/scripts requires restart.
+All effects default off.
+
+## Native menu and live Apply (2026-11-11)
+
+The menu uses original XML and xNVSE/JIP scripts with native selection dialogs.
+F10/Escape bridge missing keyboard actions; Fallout handles arrows/Enter itself.
+The user confirmed menu operation and then confirmed the double-step arrow fix.
+Native controller injection through a private JIP test harness verified pause →
+X opens the dialog, A changes a draft, three D-pad steps reach Apply, and B returns
+from tuning or cancels. The input reader logged its verified JIP 57.30 wrapper and
+left the controller state unchanged. All eight production UDFs precompiled.
+
+In the 21:57:48 layer-log run (Wine game PID 552), menu sequence 7/revision 4
+started NR and sequence 8/revision 5 replaced it with NR+DLAA without restarting
+Fallout. The old helper exited before the replacement started. Both eyes logged
+`output_applied=1` on consecutive frames: NR **16378–16380**, then both effects
+**18880–18882**, with `reset=0` after the first frame. Captured NR frames
+**16710/16711** have matching stereo metadata at **2944×2208 per eye**. Same-frame
+HDR input/output was finite with unchanged alpha; mean absolute RGB changes were
+0.008669/0.008102. The stereo gameplay preview was visually inspected.
+
+These menu tests used model B, NR scale 25%, strength 20%, tone/detail 100%, as
+selected during the interactive test. That scales the NR guide grid together to
+736×552; game rendering and DLAA remain full resolution. It is not a new quality
+recommendation or performance benchmark. The public defaults remain B/100%,
+strength 50%, with both effects off.
+
+The final build was also tested in one restarted isolated game (Wine PID 548,
+22:08:36 layer-log run). Live menu/CLI changes produced these stereo captures:
+
+| Mode | Consecutive frames | HDR RGB mean absolute change, left/right |
+|---|---|---|
+| NR + DLAA | 660/661 | 0.012466 / 0.012137 |
+| DLAA alone | 7020/7021 | 0.006106 / 0.006507 |
+| Both off | 3630/3631 | Not processed; both effect flags false |
+
+Active captures had finite HDR output, unchanged alpha and both-eye applied
+metadata. Stereo gameplay previews were inspected. An earlier DLAA capture at
+3090/3091 passed processing checks but was obstructed by an NPC intersecting the
+simulated camera; it was not accepted as a quality preview. Reloading the copied
+save produced the unobstructed 7020/7021 pair. The off captures recorded `[0,0]`
+projection jitter for each eye and the helper exited. Head tracking was unchanged.
+These are scene checks, not identical-frame comparisons between separate runs.
+
+Temporarily withholding the stopped private helper caused revision 9 to report
+launch failure and retain the original HDR. Restoring it and explicitly retrying
+created revision 10, with successful NR on both eyes at frames 4981–4983 without
+restarting Fallout. A deliberately stale menu request was rejected without
+changing a byte of the INI; a current all-off request then succeeded. These tests
+do not cover an evaluation failure after only one eye has already been written.
+
+Both Windows targets built, and all four native tests passed, including reload
+coalescing, failure/retry and OpenXR ownership/capture lifecycle checks. Original
+save hashes were rechecked: all eight unchanged. Test automation and capture
+probes were disabled afterward; the isolated game was closed with both effects
+off and the menu installed. No binaries were replaced while loaded. Source and
+documentation are published; game captures, saves and NVIDIA dependencies remain
+local. WiVRn streaming, physical-headset latency and longer-motion visual comfort
+were not validated by these simulated-headset checks.

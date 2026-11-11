@@ -13,3 +13,8 @@ The New Vegas renderer/camera layout was cross-checked against the MIT-licensed
 [Kim2091/Remix-Wrappers FNV adapter](https://github.com/Kim2091/Remix-Wrappers/tree/main/FalloutNV-Remix-Wrapper).
 The layout was then verified against this game's live shader constants and
 image reprojection. No wrapper injector or game shader bytecode is distributed.
+
+The original menu scripts use public xNVSE/JIP UI APIs. The passive controller
+reader was checked against [JIP LN NVSE](https://github.com/jazzisparis/JIP-LN-NVSE)
+57.30 (`internal/xinput.cpp`) and the installed wrapper bytes. It does not
+redistribute JIP or modify its input state.

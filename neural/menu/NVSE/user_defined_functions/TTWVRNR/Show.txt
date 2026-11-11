@@ -1,0 +1,33 @@
+; SPDX-License-Identifier: GPL-3.0-only
+begin Function {}
+ string_var status
+ string_var nr
+ string_var aa
+ string_var model
+ let status := GetINIString "state:notice" "TTWVRNR_state.ini"
+ if eval (sv_Length status) == 0
+  let status := GetINIString "state:status" "TTWVRNR_state.ini"
+ endif
+ if eval (sv_Length status) == 0
+  let status := "Renderer unavailable. Start through the VR launcher."
+ endif
+ let nr := "OFF"
+ let aa := "OFF"
+ let model := "B"
+ if GetUIFloat "HUDMainMenu/TTWVRNRState/_neural"
+  let nr := "ON"
+ endif
+ if GetUIFloat "HUDMainMenu/TTWVRNRState/_dlaa"
+  let aa := "ON"
+ endif
+ if GetUIFloat "HUDMainMenu/TTWVRNRState/_preset" == 1
+  let model := "A"
+ endif
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_page" (GetUIFloat "HUDMainMenu/TTWVRNRState/_dialog")
+ if GetUIFloat "HUDMainMenu/TTWVRNRState/_dialog" == 2
+  MessageBoxExAlt (CompileScript "TTWVRNR/Tune.txt") "NR tuning%rGame and DLAA resolution stay unchanged.%r%z|Model: %z|Processing scale: %.0f%%|Strength: %.0f%%|Tone: %.0f%%|Detail: %.0f%%|Back" status model (GetUIFloat "HUDMainMenu/TTWVRNRState/_resolution") (GetUIFloat "HUDMainMenu/TTWVRNRState/_strength") (GetUIFloat "HUDMainMenu/TTWVRNRState/_tone") (GetUIFloat "HUDMainMenu/TTWVRNRState/_detail")
+ else
+  MessageBoxExAlt (CompileScript "TTWVRNR/Select.txt") "Neural Rendering%r%z%rChanges take effect after Apply.|Neural Rendering: %z|DLAA (native): %z|NR tuning...|Apply|Cancel" status nr aa
+ endif
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_dialog" 0
+end

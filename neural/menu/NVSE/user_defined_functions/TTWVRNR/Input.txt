@@ -1,0 +1,30 @@
+; SPDX-License-Identifier: GPL-3.0-only
+begin Function {int keyCode}
+ if keyCode == 68 && MenuMode 1001 == 0
+  if MenuMode == 0 || MenuMode 1013
+   Call (CompileScript "TTWVRNR/Load.txt")
+  endif
+ elseif keyCode == 1000 && MenuMode 1013 && MenuMode 1001 == 0
+  if GetUIFloat "StartMenu/NOGLOW_BRANCH/main_container/_enabled"
+   Call (CompileScript "TTWVRNR/Load.txt")
+  endif
+ elseif GetUIFloat "HUDMainMenu/TTWVRNRState/_owned" == 1 && MenuMode 1001
+  string_var message
+  let message := GetUIString "MessageMenu/NOGLOW_BRANCH/MM_MainRect/MM_MessageText/string"
+  if eval (sv_Find "Neural Rendering" message) != 0 && (sv_Find "NR tuning" message) != 0
+   SetUIFloat "HUDMainMenu/TTWVRNRState/_owned" 0
+   return
+  endif
+  if keyCode == 1 || keyCode == 1001
+   if GetUIFloat "HUDMainMenu/TTWVRNRState/_page" == 2
+    ClickMenuButton "MessageMenu#10"
+   else
+    ClickMenuButton "MessageMenu#9"
+   endif
+  endif
+ elseif MenuMode 1013
+  if keyCode == 1
+   ClickMenuButton "StartMenu/NOGLOW_BRANCH/main_back_button"
+  endif
+ endif
+end
