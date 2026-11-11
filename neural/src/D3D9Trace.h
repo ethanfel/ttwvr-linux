@@ -4,5 +4,5 @@
 namespace ttwvrnr {
 bool InstallD3D9Trace();
 void ArmD3D9Trace(bool enabled, uint64_t frame);
-void FinishD3D9Trace(uint64_t frame);
-}
+void FinishD3D9Trace(uint64_t frame, bool readback = true);
+} // namespace ttwvrnr

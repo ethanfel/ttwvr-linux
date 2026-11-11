@@ -144,15 +144,7 @@ int main() {
   depth9->GetSurfaceLevel(0, &depthSurface);
   Check(d9->SetRenderTarget(0, surface.Get()), "set_rt9");
   Check(d9->SetDepthStencilSurface(depthSurface.Get()), "set_depth9");
-  Check(d9->Clear(0, nullptr, D3DCLEAR_ZBUFFER, 0, .375f, 0), "clear_depth9");
   const float zValues[4] = {.1234567f, .375f, .9876543f, 1.f};
-  for (unsigned q = 0; q < 4; ++q) {
-    D3DRECT r{LONG(q % 2 * 32), LONG(q / 2 * 32), LONG(q % 2 * 32 + 32),
-              LONG(q / 2 * 32 + 32)};
-    Check(d9->Clear(1, &r, D3DCLEAR_ZBUFFER, 0, zValues[q], 0),
-          "depth quadrants");
-  }
-  Wait9(d9.Get());
   ComPtr<IDirect3DTexture9> packed9;
   HANDLE packedHandle = nullptr;
   Check(d9->CreateTexture(64, 64, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8B8G8R8,
@@ -160,9 +152,6 @@ int main() {
         "packed_depth9");
   ComPtr<IDirect3DSurface9> packedSurface;
   packed9->GetSurfaceLevel(0, &packedSurface);
-  if (!ttwvrnr::TransferDepthBits(d9.Get(), depthSurface.Get(),
-                                  packedSurface.Get()))
-    return 6;
   ComPtr<ID3D11Texture2D> depth11;
   Check(d11->OpenSharedResource(packedHandle, IID_PPV_ARGS(&depth11)),
         "open_packed_depth9_from11");
@@ -174,19 +163,49 @@ int main() {
   desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
   ComPtr<ID3D11Texture2D> depthStage;
   Check(d11->CreateTexture2D(&desc, nullptr, &depthStage), "stage_depth11");
-  c->CopyResource(depthStage.Get(), depth11.Get());
-  D3D11_MAPPED_SUBRESOURCE map{};
-  Check(c->Map(depthStage.Get(), 0, D3D11_MAP_READ, 0, &map), "read_depth11");
-  for (unsigned y = 0; y < 64; ++y)
-    for (unsigned x = 0; x < 64; ++x) {
-      uint32_t value;
-      memcpy(&value, static_cast<char *>(map.pData) + y * map.RowPitch + x * 4,
-             4);
-      mismatches += std::abs(float(value & 0xffffff) / 16777215.f -
-                             zValues[(y / 32) * 2 + x / 32]) > 1e-6f;
+  // Production queues color and depth before the Vulkan transfer. Its fence
+  // must complete BOTH without an additional D3D9 event-query flush/wait.
+  for (unsigned iter = 0; iter < 32; ++iter) {
+    const bool odd = iter & 1;
+    Check(d9->ColorFill(surface.Get(), nullptr, odd ? 0xff00ff00 : 0xffff0000),
+          "pending_color9");
+    for (unsigned q = 0; q < 4; ++q) {
+      D3DRECT r{LONG(q % 2 * 32), LONG(q / 2 * 32), LONG(q % 2 * 32 + 32),
+                LONG(q / 2 * 32 + 32)};
+      Check(d9->Clear(1, &r, D3DCLEAR_ZBUFFER, 0, zValues[(q + iter) % 4], 0),
+            "pending_depth9");
     }
-  c->Unmap(depthStage.Get(), 0);
-  printf("depth_pixels=4096 total_mismatches=%u\n", mismatches);
+    if (!ttwvrnr::TransferDepthBits(d9.Get(), depthSurface.Get(),
+                                    packedSurface.Get()))
+      return 6;
+    c->CopyResource(stage11.Get(), t11.Get());
+    D3D11_MAPPED_SUBRESOURCE map{};
+    Check(c->Map(stage11.Get(), 0, D3D11_MAP_READ, 0, &map), "fenced_color11");
+    const uint16_t expected[4] = {uint16_t(odd ? 0 : 0x3c00),
+                                  uint16_t(odd ? 0x3c00 : 0), 0, 0x3c00};
+    for (unsigned y = 0; y < 64; ++y)
+      for (unsigned x = 0; x < 64; ++x)
+        mismatches += std::memcmp(static_cast<char *>(map.pData) +
+                                      y * map.RowPitch + x * 8,
+                                  expected, sizeof(expected)) != 0;
+    c->Unmap(stage11.Get(), 0);
+    c->CopyResource(depthStage.Get(), depth11.Get());
+    Check(c->Map(depthStage.Get(), 0, D3D11_MAP_READ, 0, &map),
+          "fenced_depth11");
+    for (unsigned y = 0; y < 64; ++y)
+      for (unsigned x = 0; x < 64; ++x) {
+        uint32_t value;
+        memcpy(&value,
+               static_cast<char *>(map.pData) + y * map.RowPitch + x * 4, 4);
+        mismatches +=
+            std::abs(float(value & 0xffffff) / 16777215.f -
+                     zValues[((y / 32) * 2 + x / 32 + iter) % 4]) > 1e-6f;
+      }
+    c->Unmap(depthStage.Get(), 0);
+  }
+  printf("fence_only_round_trips=32 verified_color_depth_pixels=262144 "
+         "total_mismatches=%u\n",
+         mismatches);
   DestroyWindow(window);
   return mismatches ? 5 : 0;
 }

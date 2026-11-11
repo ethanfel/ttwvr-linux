@@ -54,7 +54,7 @@ std::wstring Prefix(uint64_t frame, unsigned pass) {
 }
 void Copy(IDirect3DDevice9 *d, IDirect3DSurface9 *surface,
           const std::wstring &path) {
-  if (!surface || colors.size() >= 8)
+  if (!surface || colors.size() >= 32)
     return;
   D3DSURFACE_DESC desc{};
   if (FAILED(surface->GetDesc(&desc)) ||
@@ -101,20 +101,30 @@ struct Depth {
   unsigned width = 0, height = 0;
   VkFormat format{};
   std::wstring path;
+// clang-format off
 #define PROC(name) PFN_##name name = nullptr;
   PROC(vkCreateBuffer)
-  PROC(vkGetBufferMemoryRequirements) PROC(vkAllocateMemory)
-      PROC(vkBindBufferMemory) PROC(vkCreateCommandPool)
-          PROC(vkAllocateCommandBuffers) PROC(vkBeginCommandBuffer)
-              PROC(vkEndCommandBuffer) PROC(vkCmdPipelineBarrier)
-                  PROC(vkCmdCopyImageToBuffer) PROC(vkCreateFence)
-                      PROC(vkQueueSubmit) PROC(vkWaitForFences)
-                          PROC(vkMapMemory) PROC(vkUnmapMemory)
-                              PROC(vkDestroyBuffer) PROC(vkFreeMemory)
-                                  PROC(vkDestroyCommandPool)
-                                      PROC(vkDestroyFence)
+  PROC(vkGetBufferMemoryRequirements)
+  PROC(vkAllocateMemory)
+  PROC(vkBindBufferMemory)
+  PROC(vkCreateCommandPool)
+  PROC(vkAllocateCommandBuffers)
+  PROC(vkBeginCommandBuffer)
+  PROC(vkEndCommandBuffer)
+  PROC(vkCmdPipelineBarrier)
+  PROC(vkCmdCopyImageToBuffer)
+  PROC(vkCreateFence)
+  PROC(vkQueueSubmit)
+  PROC(vkWaitForFences)
+  PROC(vkMapMemory)
+  PROC(vkUnmapMemory)
+  PROC(vkDestroyBuffer)
+  PROC(vkFreeMemory)
+  PROC(vkDestroyCommandPool)
+  PROC(vkDestroyFence)
 #undef PROC
-                                          ~Depth() {
+// clang-format on
+  ~Depth() {
     if (fence && vkWaitForFences) {
       auto r = vkWaitForFences(device, 1, &fence, VK_TRUE, 5000000000ull);
       if (r != VK_SUCCESS && r != VK_ERROR_DEVICE_LOST) {
@@ -158,7 +168,7 @@ void Check(VkResult r) {
 }
 void CopyDepth(IDirect3DDevice9 *d, IDirect3DSurface9 *surface,
                const std::wstring &path) {
-  if (!surface || depths.size() >= 2)
+  if (!surface || depths.size() >= 4)
     return;
   try {
     ComPtr<ID3D9VkInteropDevice> interop;
@@ -207,9 +217,9 @@ void CopyDepth(IDirect3DDevice9 *d, IDirect3DSurface9 *surface,
   if (!p->name)                                                                \
     return;
     LOAD(vkCreateBuffer)
-    LOAD(vkGetBufferMemoryRequirements) LOAD(vkAllocateMemory)
-        LOAD(vkBindBufferMemory) LOAD(vkCreateCommandPool) LOAD(
-            vkAllocateCommandBuffers) LOAD(vkBeginCommandBuffer)
+    LOAD(vkGetBufferMemoryRequirements)
+    LOAD(vkAllocateMemory) LOAD(vkBindBufferMemory) LOAD(vkCreateCommandPool)
+        LOAD(vkAllocateCommandBuffers) LOAD(vkBeginCommandBuffer)
             LOAD(vkEndCommandBuffer) LOAD(vkCmdPipelineBarrier) LOAD(
                 vkCmdCopyImageToBuffer) LOAD(vkCreateFence) LOAD(vkQueueSubmit)
                 LOAD(vkWaitForFences) LOAD(vkMapMemory) LOAD(vkUnmapMemory)
@@ -325,6 +335,10 @@ void CopyDepth(IDirect3DDevice9 *d, IDirect3DSurface9 *surface,
   }
 }
 } // namespace
+void CaptureExtraSurface(IDirect3DDevice9 *d, IDirect3DSurface9 *s,
+                         const std::wstring &path) {
+  Copy(d, s, path);
+}
 void CaptureSceneBeforeTone(IDirect3DDevice9 *d, uint64_t frame,
                             unsigned pass) {
   const auto prefix = Prefix(frame, pass);

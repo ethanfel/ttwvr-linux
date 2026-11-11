@@ -2,11 +2,20 @@
 
 ## 2026-11-11
 
+- **Added experimental temporal NR and independent DLAA:** verified camera and
+  object motion, per-eye history and native-resolution jitter; captured both eyes
+  on consecutive gameplay frames with each effect and both combined. Added NR
+  model A/B, resolution and tuning controls, plus separate GPU timing. Fixed
+  inconsistent jitter in TTWVR's replacement lighting shaders, separated capture
+  files per launch, and removed a redundant GPU completion wait after validating
+  pending color/depth copies. All effects still default off; normal Steam/Titanfall/WiVRn setup remains unchanged.
+  [Implementation and validation limits](neural/README.md)
+
 - **Added an isolated spatial NR prototype:** full-resolution D3D9 scene inputs,
   64-bit NGX helper, GPU depth/HDR transport, per-eye NR features and confirmed
   in-game stereo captures on consecutive frames. History resets every frame;
-  temporal NR and DLAA remain unvalidated and disabled. The working Steam setup
-  is unchanged. [Source and evidence](neural/README.md)
+  this original mode remains available alongside the temporal path. The working
+  Steam setup is unchanged. [Source and evidence](neural/README.md)
 
 - Added Amethyst as a native Linux alternative for base TTW setup, with its
   upstream guide. Amethyst integration with this project's VR launcher remains

@@ -2,7 +2,9 @@
 // TTWVR discovery only. No resource is classified as a neural input by its
 // slot.
 #include "D3D9Trace.h"
+#include "NativeGuides.h"
 #include "SceneCapture.h"
+#include "SceneJitter.h"
 #include "SpatialNR.h"
 #include "Support.h"
 #include <MinHook.h>
@@ -111,7 +113,7 @@ template <class T> std::string Shader(T *p, const char *stage) {
 void Observe(IDirect3DDevice9 *d, const char *op,
              IDirect3DSurface9 *extra = nullptr, unsigned arg = 0) {
   if ((!armed.load(std::memory_order_relaxed) &&
-       !spatial.load(std::memory_order_relaxed)) ||
+       !spatial.load(std::memory_order_relaxed) && !NativeGuidesEnabled()) ||
       observing)
     return;
   if (!armed.load(std::memory_order_relaxed) && std::strcmp(op, "draw_indexed"))
@@ -133,7 +135,15 @@ void Observe(IDirect3DDevice9 *d, const char *op,
     d->GetPixelShader(&ps);
     d->GetVertexShader(&vs);
     const auto pixelName = Shader(ps.Get(), "ps");
-    if ((captureInputs || spatial.load(std::memory_order_relaxed)) &&
+    if (NativeGuidesEnabled() && !std::strcmp(op, "draw_indexed") &&
+        Shader(vs.Get(), "vs") == "\"vs-6149896215606588438\"") {
+      D3DSURFACE_DESC scene{};
+      if (rt && SUCCEEDED(rt->GetDesc(&scene)) && scene.Width == 2944 &&
+          scene.Height == 2208 && scene.Format == D3DFMT_A16B16G16R16F)
+        NativeGuidesObserveScene(d, frame);
+    }
+    if ((captureInputs || spatial.load(std::memory_order_relaxed) ||
+         NativeGuidesEnabled()) &&
         !std::strcmp(op, "draw_indexed") &&
         pixelName == "\"ps-18030291181409727554\"" && tonePass < 2) {
       D3DSURFACE_DESC desc{};
@@ -141,11 +151,13 @@ void Observe(IDirect3DDevice9 *d, const char *op,
         rt->GetDesc(&desc);
       if (desc.Format == D3DFMT_X8R8G8B8 && desc.Width == 2944 &&
           desc.Height == 2208) {
-        pendingTone = static_cast<int>(tonePass++);
+        const auto selectedTone = tonePass++;
+        NativeGuidesBeforeTone(d, frame, selectedTone, captureInputs);
         if (spatial.load(std::memory_order_relaxed))
-          ApplySpatialNR(d, frame, static_cast<unsigned>(pendingTone));
+          ApplySpatialNR(d, frame, selectedTone, captureInputs);
         if (captureInputs)
-          CaptureSceneBeforeTone(d, frame, static_cast<unsigned>(pendingTone));
+          CaptureSceneBeforeTone(d, frame, selectedTone);
+        pendingTone = static_cast<int>(selectedTone);
       }
     }
     if (!armed.load(std::memory_order_relaxed)) {
@@ -203,6 +215,7 @@ HRESULT STDMETHODCALLTYPE HookClear(IDirect3DDevice9 *d, DWORD n,
 HRESULT STDMETHODCALLTYPE HookDraw(IDirect3DDevice9 *d, D3DPRIMITIVETYPE t,
                                    UINT start, UINT count) {
   Observe(d, "draw", nullptr, count);
+  SceneJitter jitter(d, observing);
   return draw(d, t, start, count);
 }
 HRESULT STDMETHODCALLTYPE HookIndexed(IDirect3DDevice9 *d, D3DPRIMITIVETYPE t,
@@ -212,6 +225,7 @@ HRESULT STDMETHODCALLTYPE HookIndexed(IDirect3DDevice9 *d, D3DPRIMITIVETYPE t,
   Observe(d, "draw_indexed", nullptr, count);
   const auto selected = pendingTone;
   pendingTone = -1;
+  SceneJitter jitter(d, observing);
   const auto result = indexed(d, t, b, min, n, start, count);
   if (captureInputs && selected >= 0 && SUCCEEDED(result)) {
     observing = true;
@@ -223,6 +237,7 @@ HRESULT STDMETHODCALLTYPE HookIndexed(IDirect3DDevice9 *d, D3DPRIMITIVETYPE t,
 HRESULT STDMETHODCALLTYPE HookUP(IDirect3DDevice9 *d, D3DPRIMITIVETYPE t,
                                  UINT n, const void *p, UINT stride) {
   Observe(d, "draw_up", nullptr, n);
+  SceneJitter jitter(d, observing);
   return up(d, t, n, p, stride);
 }
 HRESULT STDMETHODCALLTYPE HookIndexedUP(IDirect3DDevice9 *d, D3DPRIMITIVETYPE t,
@@ -230,6 +245,7 @@ HRESULT STDMETHODCALLTYPE HookIndexedUP(IDirect3DDevice9 *d, D3DPRIMITIVETYPE t,
                                         const void *idx, D3DFORMAT f,
                                         const void *v, UINT stride) {
   Observe(d, "draw_indexed_up", nullptr, count);
+  SceneJitter jitter(d, observing);
   return indexedUp(d, t, min, n, count, idx, f, v, stride);
 }
 HRESULT STDMETHODCALLTYPE HookStretch(IDirect3DDevice9 *d,
@@ -351,6 +367,8 @@ bool InstallD3D9Trace() {
       MH_RemoveHook(p);
     }
   // Borrowed device, owned by TTWVR. No reference or state is changed.
+  if (ready)
+    InstallNativeGuides(module);
   Log("d3d9_trace_ready=%d capture_only=1", ready);
   return ready;
 }
@@ -368,12 +386,14 @@ void ArmD3D9Trace(bool enabled, uint64_t nextFrame) {
           (Directory() + L"\\TTWVRNeuralRendering.ini").c_str()) != 0;
   captureInputs = captureInputs && enabled;
   spatial = SpatialEnabled(nextFrame);
+  NativeGuidesFrame(nextFrame);
   armed = enabled;
 }
-void FinishD3D9Trace(uint64_t completedFrame) {
+void FinishD3D9Trace(uint64_t completedFrame, bool readback) {
   armed = false;
   std::lock_guard lock(mutex);
-  FinishSceneCapture();
+  if (readback)
+    FinishSceneCapture();
   if (events.empty())
     return;
   const auto path =

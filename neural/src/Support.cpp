@@ -52,10 +52,22 @@ bool ConsumeCaptureRequest() {
     return DeleteFileW((Directory() + L"\\capture.request").c_str()) != FALSE;
 }
 std::wstring CaptureDirectory() {
-    const auto path = Directory() + L"\\captures";
-    if (!CreateDirectoryW(path.c_str(), nullptr) && GetLastError() != ERROR_ALREADY_EXISTS) {
-        Log("capture_directory_failed error=%lu", GetLastError()); return {};
-    }
+    // Scene/guide filenames use frame numbers; isolate launches so a later
+    // frame 1020 cannot overwrite an earlier run's matching evidence.
+    static const std::wstring path = [] {
+        const auto root = Directory() + L"\\captures";
+        if (!CreateDirectoryW(root.c_str(), nullptr) && GetLastError() != ERROR_ALREADY_EXISTS) {
+            Log("capture_directory_failed error=%lu", GetLastError()); return std::wstring{};
+        }
+        FILETIME time{}; GetSystemTimeAsFileTime(&time);
+        const uint64_t ticks = (uint64_t(time.dwHighDateTime) << 32) | time.dwLowDateTime;
+        const auto run = root + L"\\run-" + std::to_wstring(GetCurrentProcessId()) + L"-" + std::to_wstring(ticks);
+        if (!CreateDirectoryW(run.c_str(), nullptr)) {
+            Log("capture_run_directory_failed error=%lu", GetLastError()); return std::wstring{};
+        }
+        Log("capture_run_directory=%ls", run.c_str());
+        return run;
+    }();
     return path;
 }
 }

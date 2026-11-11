@@ -66,7 +66,8 @@ The optional audit and profile tools describe their inputs with `--help`.
 
 ## Experimental neural rendering
 
-The separate [spatial NR prototype](neural/README.md) has processed both TTWVR
-stereo eyes in an isolated Linux test. It is off by default and does not change
-the normal Steam launch. Temporal NR, DLAA and real-headset quality checks remain
-unfinished; frame generation is excluded.
+The separate [neural rendering prototype](neural/README.md) has processed both
+TTWVR eyes with temporal NR, native-resolution DLAA and both together in isolated
+simulated-headset tests. NR has model A/B and processing-resolution controls.
+It remains separate from the normal Steam launch; physical-headset quality and
+performance checks are still needed. No frame generation is implemented.

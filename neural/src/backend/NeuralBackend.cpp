@@ -3,6 +3,7 @@
 #include "NeuralBackend.h"
 #include "../Support.h"
 #include "GpuInterop.h"
+#include "GpuTiming.h"
 #include "NgxLifetime.h"
 #include <algorithm>
 #include <array>
@@ -149,6 +150,7 @@ struct ContextState {
 } // namespace
 struct NeuralBackend::Impl {
   GpuInterop gpu;
+  GpuTiming timing;
   ComPtr<ID3D11Device> device;
   ComPtr<ID3D11ComputeShader> prepare, resolve, prepareAA, resolveAA;
   ComPtr<ID3D11Buffer> dimensions;
@@ -212,7 +214,7 @@ struct NeuralBackend::Impl {
   }
   bool Init(ID3D11Device *d, unsigned width, unsigned height,
             const std::wstring &directory, const NeuralOptions &opt) {
-    if (opt.dlaa)
+    if (opt.dlaa && !opt.temporalGuides)
       throw std::runtime_error(
           "TTW DLAA requires verified motion and jitter; disabled");
     device = d;
@@ -225,6 +227,8 @@ struct NeuralBackend::Impl {
                  height * std::clamp(opt.resolutionPercent, 25u, 100u) / 100);
     if (!gpu.Init(d))
       return false;
+    if (opt.profileGpu)
+      timing.Init(gpu);
     for (auto pair : {std::pair<const char *, ID3D11ComputeShader **>{
                           "Prepare", prepare.GetAddressOf()},
                       {"Resolve", resolve.GetAddressOf()},
@@ -358,8 +362,7 @@ struct NeuralBackend::Impl {
         ttwvrnr_parameter_set_int(p,
                                   NVSDK_NGX_Parameter_DLSS_Feature_Create_Flags,
                                   NVSDK_NGX_DLSS_Feature_Flags_IsHDR |
-                                      NVSDK_NGX_DLSS_Feature_Flags_MVLowRes |
-                                      NVSDK_NGX_DLSS_Feature_Flags_MVJittered);
+                                      NVSDK_NGX_DLSS_Feature_Flags_MVLowRes);
         auto *list = gpu.Begin();
         if (!list)
           throw std::runtime_error("dlaa_create_list");
@@ -462,6 +465,7 @@ struct NeuralBackend::Impl {
     if (failed || eye > 1)
       return false;
     const auto start = std::chrono::steady_clock::now();
+    timing.Sample(frame, eye);
     auto &e = eyes[eye];
     auto *c = gpu.Context11();
     D3D11_TEXTURE2D_DESC dd{};
@@ -489,12 +493,10 @@ struct NeuralBackend::Impl {
     };
     Dimensions dims{fullW, fullH, w, h, 0, 0, 0, 0};
     if (options.dlaa) {
-      dims.offsetX = jitterX;
-      dims.offsetY = jitterY;
-      if (!reset) {
-        dims.motionX = jitterX - e.previousJitterX;
-        dims.motionY = jitterY - e.previousJitterY;
-      }
+      // DLAA output is unjittered. Guides remain on the jittered scene grid;
+      // sample at its raster displacement. Motion itself excludes jitter.
+      dims.offsetX = -jitterX;
+      dims.offsetY = -jitterY;
     }
     c->UpdateSubresource(dimensions.Get(), 0, nullptr, &dims, 0, 0);
     if (options.dlaa && !options.passthrough) {
@@ -520,7 +522,9 @@ struct NeuralBackend::Impl {
                                   NVSDK_NGX_Parameter_Jitter_Offset_X, jitterX);
       ttwvrnr_parameter_set_float(e.aaParams,
                                   NVSDK_NGX_Parameter_Jitter_Offset_Y, jitterY);
+      timing.Begin(list, 0);
       Ngx(evaluate(list, e.aaFeature, e.aaParams, nullptr), "dlaa_evaluate");
+      timing.End(list, 0);
       for (auto *t : {&e.aaColor, &e.aaDepth, &e.aaMotion, &e.aaExposure})
         GpuInterop::Transition(list, t->d12.Get(),
                                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
@@ -566,7 +570,9 @@ struct NeuralBackend::Impl {
                                D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         reset = reset || e.evaluations == 0 || e.previousFrame + 1 != frame;
         ttwvrnr_parameter_set_int(e.params, "DLSSNR.Reset", reset ? 1 : 0);
+        timing.Begin(list, 1);
         Ngx(evaluate(list, e.feature, e.params, nullptr), "evaluate");
+        timing.End(list, 1);
         for (auto *t : {&e.color, &e.depth, &e.motion})
           GpuInterop::Transition(list, t->d12.Get(),
                                  D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
@@ -642,6 +648,10 @@ struct NeuralBackend::Impl {
     return true;
   }
 };
+void NeuralBackend::LogCompletedGpuTiming() {
+  if (impl_ && !impl_->failed)
+    impl_->timing.Collect(impl_->gpu);
+}
 NeuralBackend::NeuralBackend() = default;
 NeuralBackend::~NeuralBackend() { Shutdown(); }
 bool NeuralBackend::Init(ID3D11Device *d, unsigned w, unsigned h,

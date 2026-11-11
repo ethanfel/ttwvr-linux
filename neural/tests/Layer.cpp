@@ -109,9 +109,12 @@ bool QueueCaptureWrite(std::function<void()> work) {
  return true;
 }
 bool SpatialApplied(uint64_t){return false;}
+bool DlaaApplied(uint64_t){return false;}
+bool TemporalNRApplied(uint64_t){return false;}
+void ProcessingJitter(uint64_t,float&,float&){}
 bool InstallD3D9Trace(){return true;}
 void ArmD3D9Trace(bool,uint64_t){}
-void FinishD3D9Trace(uint64_t){}
+void FinishD3D9Trace(uint64_t, bool){}
 
 std::shared_ptr<CapturedImage> CaptureImage(ID3D11Device*, ID3D11Texture2D* texture, int64_t, bool, bool) {
     Check(releaseCalls == copies, "GPU copy happens before downstream image release");

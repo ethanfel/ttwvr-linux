@@ -55,6 +55,7 @@ struct CapturedView {
 struct CapturedFrame {
     bool neural = false;
     bool dlaa = false;
+    bool temporal = false;
     struct { float x=0,y=0; } jitter;
     uint64_t frame = 0;
     XrTime displayTime = 0;
@@ -322,7 +323,7 @@ bool WriteCapturedFrame(const CapturedFrame& frame, const std::wstring& burstBas
                 "  \"position\": [%g, %g, %g], \"orientation\": [%g, %g, %g, %g],\n"
                 "  \"fov\": [%g, %g, %g, %g],\n"
                 "  \"depth_submitted\": %s, \"motion_submitted\": %s, \"synthesis_submitted\": %s\n}\n",
-                frame.neural ? "spatial_nr_reset_every_frame" : frame.dlaa ? "dlaa" : "capture_only", frame.neural ? "true" : "false",
+                frame.dlaa ? (frame.neural ? "temporal_nr_dlaa" : "dlaa") : frame.neural ? (frame.temporal ? "temporal_nr" : "spatial_nr_reset_every_frame") : "capture_only", frame.neural ? "true" : "false",
                 frame.dlaa ? "true" : "false",frame.jitter.x,frame.jitter.y,
                 static_cast<unsigned long long>(frame.frame), static_cast<long long>(frame.displayTime), frame.layer, eye,
                 burstIndex, burstCount, view.imageIndex, layout.slice, static_cast<long long>(view.format),
@@ -356,6 +357,9 @@ void InspectFrame(Session& s, const XrFrameEndInfo* info) {
     bool selectedTargets = false;
     CapturedFrame capturedFrame;
     capturedFrame.neural = SpatialApplied(s.frames);
+    capturedFrame.dlaa = DlaaApplied(s.frames);
+    capturedFrame.temporal = TemporalNRApplied(s.frames);
+    ProcessingJitter(s.frames,capturedFrame.jitter.x,capturedFrame.jitter.y);
     capturedFrame.frame = s.frames; capturedFrame.displayTime = info->displayTime;
     std::map<uint64_t, bool> seen;
     for (uint32_t layerIndex = 0; layerIndex < std::min(info->layerCount, 64u); ++layerIndex) {
@@ -461,7 +465,7 @@ XrResult XRAPI_CALL EndFrame(XrSession handle, const XrFrameEndInfo* info) {
         for (auto& entry : s->histories) entry.second.Invalidate();
         Log("end_frame_result=%d; temporal history invalidated", r);
     }
-    FinishD3D9Trace(s->frames);
+    FinishD3D9Trace(s->frames, !s->capturePending || r != XR_SUCCESS);
     ++s->frames;
     if (s->instance->config.capture && !s->capturePending && !CaptureWriteBusy() && s->frames % 30 == 0 && ConsumeCaptureRequest()) {
         s->instance->config.burstFrames=ReadConfig().burstFrames;

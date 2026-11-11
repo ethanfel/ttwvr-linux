@@ -1,7 +1,8 @@
 # Isolated validation, 2026-11-11
 
-This records a working **spatial NR prototype**, not completed temporal NR, DLAA,
-or a headset comfort/performance validation. All screenshots below were checked
+This records **spatial NR, temporal NR, native-resolution DLAA and combined
+NR/DLAA prototypes** in an isolated simulated headset. It is not a physical
+headset comfort/performance validation. All screenshots below were checked
 after the game loaded Vault 101, beyond the main menu. Raw evidence is retained
 locally rather than published with game assets or identifying save filenames.
 
@@ -76,15 +77,169 @@ locally rather than published with game assets or identifying save filenames.
   as identical-frame comparisons. Consecutive screenshots do not establish
   flicker/ghosting/comfort; those remain open.
 
+## Temporal guide validation
+
+- Reused the hash-verified TTWVR 1.1.0 object-motion recorder with its upscaler
+  inactive. Captured RGBA16F vectors at 2944×2208: XY current-to-previous pixels,
+  B validity, A zero. Observed moving character silhouettes match the scene.
+- Verified camera view/projection/world matrices against the common scene shader's
+  actual MVP constants (typical normalized error around 1e-7; threshold 2e-4).
+  World rendering is camera-relative: the separate camera origin must be restored
+  before reconstructing background motion. Applying only the rotation matrices
+  produced incorrect translation and was rejected.
+- Independent pixel reprojection for consecutive frames **1020/1021**:
+
+  | Byte RGB MAE | Left | Right |
+  |---|---:|---:|
+  | No reprojection | 12.430 | 12.457 |
+  | Verified reprojection | 1.051 | 1.164 |
+  | Reversed direction | 17.528 | 17.613 |
+  | Background only, verified | 1.018 | 1.132 |
+  | Object-motion pixels, verified | 1.411 | 1.580 |
+
+  Native object motion covered approximately 8.7%/7.7%; camera reprojection fills
+  the remainder. This verifies the captured scene, not all game geometry/materials.
+- Eight Halton phases, same phase for both eyes, with D3D9 integer pixel centers.
+  Motion excludes jitter; `MVJittered` remains off. Projection uses per-eye state.
+  Jitter-only reprojection confirmed the sampling/sign convention. The diagnostic
+  images from that stage are not accepted final visuals, for the lighting issue below.
+- Camera matrices are verified for each matching draw. Missing guides skip
+  processing; gaps, pauses over 250 ms and large camera changes reset history.
+  Both eyes logged consecutive processing with `reset=0` after warmup.
+
+Fresh final motion-only capture **1080/1081**, with both effects and jitter off,
+was rechecked in a unique run directory after the filename-collision fix.
+Reprojection reduced full-image byte MAE from **9.030 to 1.214** (left) and
+**8.809 to 1.192** (right); reversing direction worsened it to 12.973/12.633.
+Background error was 1.174/1.160; object error 1.575/1.507. Native object-motion
+coverage was 9.97%/9.30%, with 107/105 verified camera draws and relative MVP
+error about 6.98e-8. The matching raw guides, images, report and preview remain
+local and separate from all later launches.
+
+## DLAA and temporal NR captures
+
+- Early DLAA frames **1200/1201** processed but had bright/white surfaces. The
+  jitter parser handled engine `ModelViewProj` matrices but missed TTWVR lighting
+  shaders' `MVP` four-vector arrays. Matching depth and lighting passes therefore
+  disagreed. Added the locally verified array layout, with register save/restore.
+  Those early images are rejected as quality evidence.
+- Corrected DLAA-only frames **1590/1591**: both eyes, native 2944×2208,
+  `mode=dlaa`, NR false, DLAA true, and actual `dlaa_evaluate output_applied=1`.
+  The loaded room and lighting look normal in both sampled eye images.
+- Exact same-frame pre/post-feature HDR for frame 1590: finite output and identical
+  alpha in both eyes. Mean RGB change 0.006050/0.006316. DLAA input preparation
+  clamps negative RGB, unlike the signed-HDR NR identity path. This is disclosed
+  rather than presented as an unchanged HDR range.
+- Turning both effects off produced frames **6570/6571** with `capture_only`,
+  both feature flags false and zero jitter. Motion recording now also stops in
+  bypass unless the explicit diagnostic `native_motion_probe` was selected.
+- Temporal NR-only frames **1740/1741**: both eyes, `mode=temporal_nr`, zero
+  jitter, DLAA false, sustained `neural_evaluate reset=0 output_applied=1`.
+  Exact-frame RGB changes 0.011786/0.011712; alpha unchanged and all values finite.
+- Combined frames **5610/5611**: both evaluations and writes confirmed on both
+  eyes. A nearby character intersects the simulated view; the same geometry is
+  already visible in the captured pre-feature HDR. These frames demonstrate
+  processing but are not a clean composition for comparing quality. A separate
+  earlier-scene pair **1410/1411** was captured in the timed 100%-B run; visual
+  inspection showed a clear view of the loaded room. Exact-frame RGB changes
+  0.013086/0.012353, alpha unchanged, finite output.
+- Model B at 50%: frames **1020/1021** (separate launch from the earlier motion
+  diagnostic), both eyes with both features applied. Model A at 50%: frames
+  **3000/3001**, also both eyes and both features applied. Creation logs confirm
+  1472×1104 NR resources and 2944×2208 DLAA resources for both models.
+- Frame-number-only scene filenames could collide between launches; the 50%-B
+  capture exposed that issue. Captures now use a unique per-launch directory.
+  The earlier motion-validation report and preview were preserved; subsequent
+  guide verification uses the new run directories.
+- Pre/post-feature comparisons are the exact same HDR frame. Their previews use
+  a labelled HDR display proxy, not the game's tone mapping. OpenXR previews use
+  the final in-game eye image. Both outputs are retained locally with metadata.
+- Two-frame still captures do not establish absence of flicker, ghosting, stereo
+  disagreement during movement, or HUD/text distortion. Longer sequences and
+  physical-headset assessment remain necessary.
+
+## Performance and controls
+
+Initial whole-application median intervals were about 42.97 ms with DLAA alone
+(41 intervals) and 46.43 ms with temporal NR alone (21 intervals). They include
+guide rendering, CPU work and synchronous cross-process handoffs; they do not
+isolate the NGX evaluation. Captures stall and are excluded from performance data.
+
+Optional D3D12 timestamp queries now surround the actual NGX calls. Results are
+read only after the existing host GPU completion wait; no extra wait or CPU image
+transfer is added. These measurements exclude conversions, guide rendering, GPU
+copies, synchronization and the base game. All tests use the same saved room with
+moving NPCs and a moving simulated headset, not an identical-frame benchmark.
+
+RTX 5090, warmed samples after frame 900, excluding captures and the next 120
+frames for GPU timings. Application samples are adjacent 120-frame intervals
+without captures. Both effects were active; DLAA stayed at full resolution:
+
+| NR model/grid | DLAA GPU ms/eye | NR GPU ms/eye | GPU samples | App ms/frame | App intervals |
+|---|---:|---:|---:|---:|---:|
+| B / 100% | 0.719 | 3.449 | 66 | 61.49 | 7 |
+| B / 50% | 0.718 | 1.531 | 106 | 49.26 | 9 |
+| A / 50% | 0.717 | 2.731 | 200 | 57.96 | 22 |
+
+NR is the more expensive NGX stage in these measurements. Model A was slower
+than B at 50%; no quality preference is inferred from speed. Whole-frame costs
+are much larger than the sum of the two eyes' NGX times, so blaming either neural
+feature alone for the full FPS reduction would be incorrect. These are simulated
+runtime observations, not predictions of WiVRn headset FPS.
+
+The NR controls mirror the Titanfall addon: models A/B, model resolution, strength,
+tone and detail. At 50%, color/depth/motion on the NR grid are 1472×1104; the game,
+DLAA and final output remain 2944×2208. Motion magnitude is scaled to model pixels.
+There is no independent depth-only downscale. The model result is converted to
+bounded gain and applied to the original full-resolution HDR; it is not DLSS
+Super Resolution. The defaults remain B/100% with both effects off.
+
+## Handoff investigation
+
+- Sampled camera verification was roughly 0.1 ms per eye and native motion draw
+  submission roughly 0.5 ms per eye; these are CPU times, not the GPU time of
+  motion rendering. Camera sampling was kept intact rather than weakened for a
+  negligible saving.
+- In the 50%-B combined run, median sampled depth transfer/completion was about
+  0.838 ms per eye and helper wait 5.041 ms per eye (27 samples). The latter includes NGX,
+  conversions, transfers and queue synchronization. It cannot be described as
+  pure inter-process overhead.
+- An additional D3D9 event-query flush/wait after the depth transfer cost about
+  0.090 ms per eye in that run. Removed it: the depth transfer already flushes the D3D9 command
+  and submission threads, queues its Vulkan copy on the same rendering queue,
+  and waits for that copy's fence. Thus earlier color, motion and bloom copies
+  have also completed before the helper receives its request.
+- Extended the independent GPU transport probe with 32 alternating color/depth
+  sequences, verifying 262144 pixels with **zero mismatches**, without another
+  D3D9 wait. Its existing 100 HDR round trips also passed: 819200 pixels, zero
+  mismatches. The retained Vulkan completion wait is bounded and still required.
+- The revised live path processed combined model-B/50% NR and native DLAA
+  continuously with `reset=0` on both eyes. Captures **1620/1621**, in a unique
+  run directory, confirm both outputs applied at 2944×2208. Same-frame HDR alpha
+  is unchanged, output finite; RGB changes 0.021307/0.021194. Stereo preview was
+  visually checked in the loaded room.
+- Live all-effects-off then produced captures **2700/2701** in the same run:
+  `capture_only`, both effect flags false, jitter `[0,0]` for both eyes. The idle
+  helper retained resources but issued no further neural evaluations.
+- The removed query is a small cleanup, not a solution to the large application
+  frame-time increase. Synchronous input/output handoffs still prevent the game
+  thread from overlapping work. The failed cross-bitness Wine shared-fence
+  experiment remains disabled; the helper's internal D3D11/D3D12 fences remain.
+- An early CPU profiling attempt converted absolute uptime to floating point
+  under the game's x87 single-precision mode and quantized samples to 32 ms.
+  Rejected those samples; the corrected profiler subtracts integer time points
+  before converting the interval. GPU timestamp results were unaffected.
+
 ## Preservation and limits
 
 The test used copied game executables, MO2, prefix, profile and saves, with the
 original game/MO2/prefix and Titanfall paths mounted read-only. All eight original
 save files matched their preparation hashes afterward. The isolated game was
-closed after capture and its NR setting returned to disabled. WiVRn's default
+closed after final validation, with NR, DLAA and diagnostic probes disabled. WiVRn's default
 registration and the working full-resolution Steam path were unchanged.
 
 Only the loaded Vault 101 scene, this TTWVR binary and this resolution were
 validated. Menus, scene transitions, device recreation, resizing and mixed-eye
 failure recovery require additional work. Shader identities are verified locally;
-raw proprietary shader code is not distributed. DLAA activation is rejected.
+raw proprietary shader code is not distributed. Models, resolution and feature
+combinations require restart; all effects default off.

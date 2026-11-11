@@ -8,3 +8,8 @@ NVIDIA SDKs and runtime DLLs are external dependencies under NVIDIA's terms;
 none are redistributed here. No frame generation is included in this port.
 
 DXVK interop declarations retain the zlib license in licenses/DXVK.txt.
+
+The New Vegas renderer/camera layout was cross-checked against the MIT-licensed
+[Kim2091/Remix-Wrappers FNV adapter](https://github.com/Kim2091/Remix-Wrappers/tree/main/FalloutNV-Remix-Wrapper).
+The layout was then verified against this game's live shader constants and
+image reprojection. No wrapper injector or game shader bytecode is distributed.

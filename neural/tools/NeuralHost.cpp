@@ -2,6 +2,7 @@
 #include "../src/HostProtocol.h"
 #include "../src/Support.h"
 #include "../src/backend/NeuralBackend.h"
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -40,7 +41,7 @@ int wmain(int argc, wchar_t **argv) {
     return 3;
   auto *p = static_cast<HostProtocol *>(
       MapViewOfFile(mapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(HostProtocol)));
-  if (!p || p->magic != 0x54544e52 || p->version != 1)
+  if (!p || p->magic != 0x54544e52 || p->version != 2)
     return 3;
   HANDLE request = OpenEventW(SYNCHRONIZE, FALSE, (name + L"-request").c_str());
   HANDLE reply =
@@ -55,7 +56,7 @@ int wmain(int argc, wchar_t **argv) {
     ComPtr<ID3D11DeviceContext> c;
     Check(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
                             nullptr, 0, D3D11_SDK_VERSION, &d, nullptr, &c));
-    ComPtr<ID3D11Texture2D> hdr, packed, bloom;
+    ComPtr<ID3D11Texture2D> hdr, packed, bloom, objectMotion;
     Check(d->OpenSharedResource(
         reinterpret_cast<HANDLE>(uintptr_t(p->colorHandle)),
         IID_PPV_ARGS(&hdr)));
@@ -65,6 +66,9 @@ int wmain(int argc, wchar_t **argv) {
     Check(d->OpenSharedResource(
         reinterpret_cast<HANDLE>(uintptr_t(p->bloomHandle)),
         IID_PPV_ARGS(&bloom)));
+    Check(d->OpenSharedResource(
+        reinterpret_cast<HANDLE>(uintptr_t(p->motionHandle)),
+        IID_PPV_ARGS(&objectMotion)));
     D3D11_TEXTURE2D_DESC td{};
     hdr->GetDesc(&td);
     if (td.Width != p->width || td.Height != p->height ||
@@ -74,6 +78,10 @@ int wmain(int argc, wchar_t **argv) {
     if (td.Width != p->width || td.Height != p->height ||
         td.Format != DXGI_FORMAT_R8G8B8A8_UNORM)
       throw std::runtime_error("host packed depth description");
+    objectMotion->GetDesc(&td);
+    if (td.Width != p->width || td.Height != p->height ||
+        td.Format != DXGI_FORMAT_R16G16B16A16_FLOAT)
+      throw std::runtime_error("host motion description");
     td.MiscFlags = 0;
     td.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
     td.Format = DXGI_FORMAT_R32_FLOAT;
@@ -84,6 +92,8 @@ int wmain(int argc, wchar_t **argv) {
     td.Width = td.Height = 1;
     td.Format = DXGI_FORMAT_R16_FLOAT;
     Check(d->CreateTexture2D(&td, nullptr, &exposure));
+    ComPtr<ID3D11ShaderResourceView> objectSrv;
+    Check(d->CreateShaderResourceView(objectMotion.Get(), nullptr, &objectSrv));
     ComPtr<ID3D11ShaderResourceView> bloomSrv;
     Check(d->CreateShaderResourceView(bloom.Get(), nullptr, &bloomSrv));
     ComPtr<ID3D11ShaderResourceView> input;
@@ -94,18 +104,38 @@ int wmain(int argc, wchar_t **argv) {
     Check(d->CreateUnorderedAccessView(exposure.Get(), nullptr, &exposureUav));
     const float zero[4]{};
     c->ClearUnorderedAccessViewFloat(motionUav.Get(), zero);
-    const char *source =
-        "cbuffer Constants:register(b0){float hdrParam;};Texture2D<float4> "
-        "packed:register(t0);Texture2D<float4> "
-        "bloom:register(t1);RWTexture2D<float> "
-        "depth:register(u0);RWTexture2D<float> "
-        "exposure:register(u1);[numthreads(8,8,1)]void main(uint3 "
-        "p:SV_DispatchThreadID){uint "
-        "w,h;depth.GetDimensions(w,h);if(p.x>=w||p.y>=h)return;float3 "
-        "b=round(packed.Load(int3(p.xy,0)).rgb*255);depth[p.xy]=dot(b,float3(1,"
-        "256,65536))/"
-        "16777215.0;if(p.x==0&&p.y==0)exposure[uint2(0,0)]=hdrParam/"
-        "max(bloom.Load(int3(0,0,0)).a,hdrParam);}";
+    const char *source = R"(
+cbuffer Constants:register(b0) {
+  float hdrParam; uint width; uint height; uint temporal;
+  row_major float4x4 clipToPrevious;
+  float2 jitter; uint reset; uint padding;
+};
+Texture2D<float4> packed:register(t0);
+Texture2D<float4> bloom:register(t1);
+Texture2D<float4> objectMotion:register(t2);
+RWTexture2D<float> depth:register(u0);
+RWTexture2D<float> exposure:register(u1);
+RWTexture2D<float2> motion:register(u2);
+[numthreads(8,8,1)]void main(uint3 p:SV_DispatchThreadID) {
+ if(p.x>=width||p.y>=height)return;
+ float3 b=round(packed.Load(int3(p.xy,0)).rgb*255);
+ float z=dot(b,float3(1,256,65536))/16777215.0;
+ depth[p.xy]=z;
+ float2 mv=0;
+ if(temporal && !reset) {
+   float2 center=float2(p.xy)+jitter;
+   float4 clip=float4(center*float2(2.0/width,-2.0/height)+float2(-1,1),z,1);
+   float4 previous=mul(clip,clipToPrevious);
+   if(previous.w>1e-6) {
+     float2 pixel=(previous.xy/previous.w*float2(.5,-.5)+.5)*float2(width,height);
+     mv=pixel-center;
+   }
+   float4 object=objectMotion.Load(int3(p.xy,0));
+   if(object.z>.5)mv=object.xy;
+ }
+ motion[p.xy]=mv;
+ if(p.x==0&&p.y==0)exposure[uint2(0,0)]=hdrParam/max(bloom.Load(int3(0,0,0)).a,hdrParam);
+})";
     ComPtr<ID3DBlob> code, errors;
     Check(D3DCompile(source, strlen(source), nullptr, nullptr, nullptr, "main",
                      "cs_5_0", D3DCOMPILE_OPTIMIZATION_LEVEL3, 0, &code,
@@ -114,24 +144,53 @@ int wmain(int argc, wchar_t **argv) {
     Check(d->CreateComputeShader(code->GetBufferPointer(),
                                  code->GetBufferSize(), nullptr, &decode));
     D3D11_BUFFER_DESC cbDesc{};
-    cbDesc.ByteWidth = 16;
+    struct Constants {
+      float hdrParam;
+      uint32_t width, height, temporal;
+      float clipToPrevious[16], jitterX, jitterY;
+      uint32_t reset, padding;
+    };
+    static_assert(sizeof(Constants) == 96);
+    cbDesc.ByteWidth = sizeof(Constants);
     cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     ComPtr<ID3D11Buffer> constants;
     Check(d->CreateBuffer(&cbDesc, nullptr, &constants));
     NeuralBackend backend;
     NeuralOptions options;
-    options.intensity = p->intensity;
+    const auto ini = Directory() + L"\\TTWVRNeuralRendering.ini";
+    auto percent = [&](const wchar_t *key, int fallback, int minimum) {
+      return std::clamp(static_cast<int>(GetPrivateProfileIntW(
+                            L"neural_rendering", key, fallback, ini.c_str())),
+                        minimum, 100);
+    };
+    options.resolutionPercent = percent(L"resolution_percent", 100, 25);
+    options.intensity = percent(L"intensity_percent", 50, 0) / 100.f;
+    options.tone = percent(L"tone_percent", 100, 0) / 100.f;
+    options.detail = percent(L"detail_percent", 100, 0) / 100.f;
+    wchar_t model[16]{};
+    GetPrivateProfileStringW(L"neural_rendering", L"model", L"B", model, 16,
+                             ini.c_str());
+    if (model[0] >= L'a' && model[0] <= L'b')
+      model[0] -= L'a' - L'A';
+    if (!model[1] && model[0] >= L'A' && model[0] <= L'B')
+      options.preset = model[0] - L'A' + 1;
+    else
+      Log("neural_invalid_model fallback=B");
+    options.profileGpu = GetPrivateProfileIntW(L"diagnostics", L"gpu_timing", 0,
+                                               ini.c_str()) != 0;
     options.passthrough = p->identity != 0;
-    options.dlaa = false;
-    options.resolutionPercent = 100;
+    options.neural = p->neural != 0;
+    options.dlaa = p->dlaa != 0;
+    options.temporalGuides = p->temporal != 0;
+
     if (!backend.Init(d.Get(), p->width, p->height, Directory() + L"\\runtime",
                       options))
       throw std::runtime_error("host NR initialization");
     p->result = 1;
     SetEvent(reply);
-    Log("host_ready spatial_only=1 native_resolution=1 "
-        "reset_every_evaluation=1 identity=%u",
-        p->identity);
+    Log("host_ready native_resolution=1 neural=%u dlaa=%u temporal=%u "
+        "identity=%u",
+        p->neural, p->dlaa, p->temporal, p->identity);
     HANDLE waits[] = {parent, request};
     while (true) {
       auto status = WaitForMultipleObjects(2, waits, FALSE, 60000);
@@ -147,32 +206,56 @@ int wmain(int argc, wchar_t **argv) {
       if (p->command != 1 || p->eye > 1 || !std::isfinite(p->hdrParam) ||
           p->hdrParam <= 0)
         throw std::runtime_error("host request");
-      float parameters[4] = {p->hdrParam, 0, 0, 0};
-      c->UpdateSubresource(constants.Get(), 0, nullptr, parameters, 0, 0);
+      Constants parameters{};
+      parameters.hdrParam = p->hdrParam;
+      parameters.width = p->width;
+      parameters.height = p->height;
+      parameters.temporal = p->temporal;
+      parameters.reset = p->reset;
+      parameters.jitterX = p->jitterX;
+      parameters.jitterY = p->jitterY;
+      std::memcpy(parameters.clipToPrevious, p->clipToPrevious,
+                  sizeof(parameters.clipToPrevious));
+      for (float v : parameters.clipToPrevious)
+        if (!std::isfinite(v))
+          throw std::runtime_error("host invalid camera");
+      if (!std::isfinite(p->jitterX) || !std::isfinite(p->jitterY) ||
+          std::abs(p->jitterX) > .5f || std::abs(p->jitterY) > .5f)
+        throw std::runtime_error("host invalid jitter");
+      c->UpdateSubresource(constants.Get(), 0, nullptr, &parameters, 0, 0);
       auto *cb = constants.Get();
       c->CSSetConstantBuffers(0, 1, &cb);
-      ID3D11ShaderResourceView *srvs[] = {input.Get(), bloomSrv.Get()};
-      ID3D11UnorderedAccessView *uavs[] = {depthUav.Get(), exposureUav.Get()};
+      ID3D11ShaderResourceView *srvs[] = {input.Get(), bloomSrv.Get(),
+                                          objectSrv.Get()};
+      ID3D11UnorderedAccessView *uavs[] = {depthUav.Get(), exposureUav.Get(),
+                                           motionUav.Get()};
       c->CSSetShader(decode.Get(), nullptr, 0);
-      c->CSSetShaderResources(0, 2, srvs);
-      c->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
+      c->CSSetShaderResources(0, 3, srvs);
+      c->CSSetUnorderedAccessViews(0, 3, uavs, nullptr);
       c->Dispatch((p->width + 7) / 8, (p->height + 7) / 8, 1);
-      srvs[0] = srvs[1] = nullptr;
-      uavs[0] = uavs[1] = nullptr;
-      c->CSSetShaderResources(0, 2, srvs);
-      c->CSSetUnorderedAccessViews(0, 2, uavs, nullptr);
+      srvs[0] = srvs[1] = srvs[2] = nullptr;
+      uavs[0] = uavs[1] = uavs[2] = nullptr;
+      c->CSSetShaderResources(0, 3, srvs);
+      c->CSSetUnorderedAccessViews(0, 3, uavs, nullptr);
       auto start = GetTickCount64();
       if (!backend.Render(hdr.Get(), depth.Get(), motion.Get(), exposure.Get(),
-                          p->eye, p->frame, true))
+                          p->eye, p->frame, p->reset != 0, p->jitterX,
+                          p->jitterY))
         throw std::runtime_error("host evaluate");
       Wait(d.Get(), c.Get());
+      backend.LogCompletedGpuTiming();
+      // The client may overwrite the shared request as soon as reply is set.
+      const auto completedFrame = p->frame;
+      const auto completedEye = p->eye;
+      const auto elapsed = GetTickCount64() - start;
       p->result = 1;
       SetEvent(reply);
-      if (p->frame % 120 == 0)
+      if (completedFrame % 120 == 0)
         Log("host_completed frame=%llu eye=%u gpu_wait_included_ms=%llu "
-            "spatial_only=1",
-            (unsigned long long)p->frame, p->eye,
-            (unsigned long long)(GetTickCount64() - start));
+            "temporal=%u dlaa=%u",
+            (unsigned long long)completedFrame, completedEye,
+            (unsigned long long)elapsed, options.temporalGuides,
+            options.dlaa);
     }
     backend.Shutdown();
   } catch (const std::exception &e) {

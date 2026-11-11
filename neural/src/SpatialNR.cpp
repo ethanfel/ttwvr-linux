@@ -2,8 +2,12 @@
 #include "SpatialNR.h"
 #include "DepthTransfer.h"
 #include "HostProtocol.h"
+#include "NativeGuides.h"
+#include "SceneCapture.h"
 #include "Support.h"
+#include <chrono>
 #include <cmath>
+#include <cstring>
 #include <memory>
 #include <stdexcept>
 #include <wrl/client.h>
@@ -24,26 +28,13 @@ struct Texture {
     Check(texture->GetSurfaceLevel(0, &surface));
   }
 };
-void Wait(IDirect3DDevice9 *d) {
-  ComPtr<IDirect3DQuery9> q;
-  Check(d->CreateQuery(D3DQUERYTYPE_EVENT, &q));
-  Check(q->Issue(D3DISSUE_END));
-  auto start = GetTickCount64();
-  HRESULT r;
-  while ((r = q->GetData(nullptr, 0, D3DGETDATA_FLUSH)) == S_FALSE) {
-    if (GetTickCount64() - start > 5000)
-      throw std::runtime_error("D3D9 GPU timeout");
-    Sleep(0);
-  }
-  Check(r);
-}
 struct Client {
   ComPtr<IDirect3DDevice9> device;
-  Texture color, depth, bloom;
+  Texture color, depth, bloom, motion;
   HANDLE mapping = nullptr, request = nullptr, reply = nullptr,
          process = nullptr;
   HostProtocol *p = nullptr;
-  bool ready = false;
+  bool ready = false, profile = false;
   uint64_t started = 0, leftAppliedFrame = ~uint64_t(0),
            rightAppliedFrame = ~uint64_t(0);
   void Init(IDirect3DDevice9 *d, const D3DSURFACE_DESC &hdr,
@@ -52,6 +43,7 @@ struct Client {
     color.Init(d, hdr.Width, hdr.Height, D3DFMT_A16B16G16R16F);
     depth.Init(d, hdr.Width, hdr.Height, D3DFMT_A8B8G8R8);
     bloom.Init(d, b.Width, b.Height, D3DFMT_A16B16G16R16F);
+    motion.Init(d, hdr.Width, hdr.Height, D3DFMT_A16B16G16R16F);
     const auto name = L"Local\\TTWVRNR-" +
                       std::to_wstring(GetCurrentProcessId()) + L"-" +
                       std::to_wstring(GetTickCount64());
@@ -70,6 +62,16 @@ struct Client {
     p->depthHandle = reinterpret_cast<uintptr_t>(depth.handle);
     p->bloomHandle = reinterpret_cast<uintptr_t>(bloom.handle);
     p->parentPid = GetCurrentProcessId();
+    p->motionHandle = reinterpret_cast<uintptr_t>(motion.handle);
+    const auto ini = Directory() + L"\\TTWVRNeuralRendering.ini";
+    profile = GetPrivateProfileIntW(L"diagnostics", L"gpu_timing", 0,
+                                    ini.c_str()) != 0;
+    p->neural = GetPrivateProfileIntW(L"neural_rendering", L"enabled", 0,
+                                      ini.c_str()) != 0;
+    p->dlaa = GetPrivateProfileIntW(L"dlaa", L"enabled", 0, ini.c_str()) != 0;
+    p->temporal = p->dlaa || GetPrivateProfileIntW(L"neural_rendering",
+                                                   L"experimental_temporal", 0,
+                                                   ini.c_str());
     p->identity =
         GetPrivateProfileIntW(
             L"neural_rendering", L"transport_identity", 1,
@@ -100,7 +102,7 @@ struct Client {
       if (p->result != 1)
         throw std::runtime_error("NR helper initialization");
       ready = true;
-    } else if (GetTickCount64() - started > 30000 ||
+    } else if (GetTickCount64() - started > 120000 ||
                WaitForSingleObject(process, 0) == WAIT_OBJECT_0)
       throw std::runtime_error("NR helper startup timeout/exit");
     return ready;
@@ -120,9 +122,29 @@ ComPtr<IDirect3DSurface9> Surface(IDirect3DDevice9 *d, unsigned slot) {
   return surface;
 }
 } // namespace
-bool SpatialApplied(uint64_t frame) {
-  return !failed && client && client->p && !client->p->identity && client->leftAppliedFrame == frame &&
+bool AllApplied(uint64_t frame) {
+  return !failed && client && client->p && !client->p->identity &&
+         client->leftAppliedFrame == frame &&
          client->rightAppliedFrame == frame;
+}
+bool SpatialApplied(uint64_t frame) {
+  return AllApplied(frame) && client->p->neural;
+}
+bool DlaaApplied(uint64_t frame) {
+  return AllApplied(frame) && client->p->dlaa;
+}
+bool TemporalNRApplied(uint64_t frame) {
+  return SpatialApplied(frame) && client->p->temporal;
+}
+void ProcessingJitter(uint64_t frame, float &x, float &y) {
+  if (AllApplied(frame)) {
+    x = client->p->jitterX;
+    y = client->p->jitterY;
+  }
+}
+bool SceneProcessingEnabled() { return enabled && !failed; }
+bool DlaaJitterReady() {
+  return enabled && !failed && client && client->ready && client->p->dlaa;
 }
 bool SpatialEnabled(uint64_t frame) {
   if (failed)
@@ -131,12 +153,17 @@ bool SpatialEnabled(uint64_t frame) {
     const auto ini = Directory() + L"\\TTWVRNeuralRendering.ini";
     enabled = GetPrivateProfileIntW(L"neural_rendering", L"enabled", 0,
                                     ini.c_str()) &&
-              GetPrivateProfileIntW(L"neural_rendering",
-                                    L"experimental_spatial", 0, ini.c_str());
+              (GetPrivateProfileIntW(L"neural_rendering",
+                                     L"experimental_spatial", 0, ini.c_str()) ||
+               GetPrivateProfileIntW(L"neural_rendering",
+                                     L"experimental_temporal", 0, ini.c_str()));
+    enabled =
+        enabled || GetPrivateProfileIntW(L"dlaa", L"enabled", 0, ini.c_str());
   }
   return enabled;
 }
-bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye) {
+bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
+                    bool capture) {
   if (failed || !enabled || eye > 1)
     return false;
   try {
@@ -173,18 +200,50 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye) {
       return false;
     if (client->device.Get() != d)
       throw std::runtime_error("scene device changed");
+    TemporalGuides guides;
+    if (client->p->temporal && !GetTemporalGuides(frame, eye, guides))
+      return false;
     const auto start = GetTickCount64();
+    const bool sample = client->profile && frame % 120 == 0;
+    auto stamp = [&] {
+      return sample ? std::chrono::steady_clock::now()
+                    : std::chrono::steady_clock::time_point{};
+    };
+    // Subtract integer ticks before converting. The game uses x87 single
+    // precision, which would quantize absolute uptime milliseconds.
+    auto elapsed = [](auto a, auto b) {
+      return std::chrono::duration<double, std::milli>(b - a).count();
+    };
+    const auto beforeCopies = stamp();
+    const auto capturePrefix = CaptureDirectory() + L"\\feature-frame-" +
+                               std::to_wstring(frame) + L"-eye-" +
+                               std::to_wstring(eye);
+    if (capture)
+      CaptureExtraSurface(d, hdr.Get(), capturePrefix + L"-input-hdr.dds");
+    if (client->p->temporal)
+      Check(d->StretchRect(guides.motion, nullptr, client->motion.surface.Get(),
+                           nullptr, D3DTEXF_NONE));
     Check(d->StretchRect(hdr.Get(), nullptr, client->color.surface.Get(),
                          nullptr, D3DTEXF_NONE));
     Check(d->StretchRect(bloom.Get(), nullptr, client->bloom.surface.Get(),
                          nullptr, D3DTEXF_NONE));
+    const auto beforeDepth = stamp();
     if (!TransferDepthBits(d, depth.Get(), client->depth.surface.Get()))
       throw std::runtime_error("depth bit transport");
-    Wait(d);
+    const auto afterDepth = stamp();
+    // TransferDepthBits flushes D3D9's CS/submission queues and waits on a
+    // same-queue Vulkan fence after all earlier color/motion/bloom copies.
+    // A second D3D9 event query would submit and wait again without new work.
+    const auto afterWait = afterDepth;
     auto *p = client->p;
     p->frame = frame;
     p->eye = eye;
     p->hdrParam = c1[0];
+    p->reset = client->p->temporal ? guides.reset : 1;
+    p->jitterX = guides.jitterX;
+    p->jitterY = guides.jitterY;
+    std::memcpy(p->clipToPrevious, guides.clipToPrevious,
+                sizeof(p->clipToPrevious));
     p->command = 1;
     p->result = 0;
     if (!SetEvent(client->request))
@@ -193,20 +252,30 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye) {
     if (WaitForMultipleObjects(2, waits, FALSE, 5000) != WAIT_OBJECT_0 + 1 ||
         p->result != 1)
       throw std::runtime_error("NR request timeout/failure");
+    const auto afterHelper = stamp();
     // This is the first write to the game's HDR. Failure before this point
     // leaves it untouched. The helper owns only private copies, including on
     // timeout.
     Check(d->StretchRect(client->color.surface.Get(), nullptr, hdr.Get(),
                          nullptr, D3DTEXF_NONE));
+    if (capture)
+      CaptureExtraSurface(d, hdr.Get(), capturePrefix + L"-output-hdr.dds");
     if (eye == 0)
       client->leftAppliedFrame = frame;
     else
       client->rightAppliedFrame = frame;
+    if (sample)
+      Log("handoff_timing frame=%llu eye=%u copies_ms=%.3f depth_ms=%.3f "
+          "d3d9_wait_ms=%.3f helper_wait_ms=%.3f output_ms=%.3f",
+          (unsigned long long)frame, eye, elapsed(beforeCopies, beforeDepth),
+          elapsed(beforeDepth, afterDepth), elapsed(afterDepth, afterWait),
+          elapsed(afterWait, afterHelper), elapsed(afterHelper, stamp()));
     if (frame % 120 == 0)
       Log("spatial_output_applied frame=%llu eye=%u native=%ux%u wall_ms=%llu "
-          "identity=%u temporal=0",
+          "identity=%u temporal=%u dlaa=%u",
           (unsigned long long)frame, eye, hd.Width, hd.Height,
-          (unsigned long long)(GetTickCount64() - start), p->identity);
+          (unsigned long long)(GetTickCount64() - start), p->identity,
+          p->temporal, p->dlaa);
     return true;
   } catch (const std::exception &e) {
     failed = true;

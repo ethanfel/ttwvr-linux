@@ -47,6 +47,15 @@ public:
   // Subsequent D3D11 commands are ordered after the D3D12 output fence.
   bool Submit();
   bool Drain(DWORD timeoutMs = 5000);
+  uint64_t TimestampFrequency() const {
+    UINT64 frequency = 0;
+    return queue_ && SUCCEEDED(queue_->GetTimestampFrequency(&frequency))
+               ? frequency
+               : 0;
+  }
+  bool Completed() const {
+    return output12_ && output12_->GetCompletedValue() >= serial_;
+  }
   ID3D12Device *Device12() const { return device12_.Get(); }
   ID3D11DeviceContext4 *Context11() const { return context11_.Get(); }
   static void Transition(ID3D12GraphicsCommandList *, ID3D12Resource *,
