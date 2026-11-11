@@ -109,6 +109,7 @@ bool QueueCaptureWrite(std::function<void()> work) {
  return true;
 }
 bool SpatialApplied(uint64_t){return false;}
+bool SrApplied(uint64_t) { return false; }
 bool DlaaApplied(uint64_t){return false;}
 bool TemporalNRApplied(uint64_t){return false;}
 void ProcessingJitter(uint64_t,float&,float&){}

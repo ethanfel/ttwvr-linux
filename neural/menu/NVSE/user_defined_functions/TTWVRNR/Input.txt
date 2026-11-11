@@ -19,7 +19,7 @@ begin Function {int keyCode}
    if GetUIFloat "HUDMainMenu/TTWVRNRState/_page" == 2
     ClickMenuButton "MessageMenu#10"
    else
-    ClickMenuButton "MessageMenu#9"
+    ClickMenuButton "MessageMenu#10"
    endif
   endif
  elseif MenuMode 1013

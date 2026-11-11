@@ -2,6 +2,7 @@
 begin Function {}
  string_var status
  string_var nr
+ string_var sr
  string_var aa
  string_var model
  let status := GetINIString "state:notice" "TTWVRNR_state.ini"
@@ -13,6 +14,10 @@ begin Function {}
  endif
  let nr := "OFF"
  let aa := "OFF"
+ let sr := "OFF"
+ if GetUIFloat "HUDMainMenu/TTWVRNRState/_sr"
+  let sr := "ON"
+ endif
  let model := "B"
  if GetUIFloat "HUDMainMenu/TTWVRNRState/_neural"
   let nr := "ON"
@@ -27,7 +32,7 @@ begin Function {}
  if GetUIFloat "HUDMainMenu/TTWVRNRState/_dialog" == 2
   MessageBoxExAlt (CompileScript "TTWVRNR/Tune.txt") "NR tuning%rGame and DLAA resolution stay unchanged.%r%z|Model: %z|Processing scale: %.0f%%|Strength: %.0f%%|Tone: %.0f%%|Detail: %.0f%%|Back" status model (GetUIFloat "HUDMainMenu/TTWVRNRState/_resolution") (GetUIFloat "HUDMainMenu/TTWVRNRState/_strength") (GetUIFloat "HUDMainMenu/TTWVRNRState/_tone") (GetUIFloat "HUDMainMenu/TTWVRNRState/_detail")
  else
-  MessageBoxExAlt (CompileScript "TTWVRNR/Select.txt") "Neural Rendering%r%z%rChanges take effect after Apply.|Neural Rendering: %z|DLAA (native): %z|NR tuning...|Apply|Cancel" status nr aa
+  MessageBoxExAlt (CompileScript "TTWVRNR/Select.txt") "Neural Rendering%r%z%rChanges take effect after Apply.%rDLSS Quality runs separately from NR/DLAA.|Neural Rendering: %z|DLAA (native): %z|DLSS Quality: %z|NR tuning...|Apply|Cancel" status nr aa sr
  endif
  SetUIFloat "HUDMainMenu/TTWVRNRState/_dialog" 0
 end

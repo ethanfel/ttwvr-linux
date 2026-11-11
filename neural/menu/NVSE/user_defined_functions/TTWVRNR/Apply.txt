@@ -10,6 +10,7 @@ begin Function {}
   SetINIFloat "request:revision" (GetUIFloat "HUDMainMenu/TTWVRNRState/_revision") "TTWVRNR_request.ini"
   SetINIFloat "request:neural" (GetUIFloat "HUDMainMenu/TTWVRNRState/_neural") "TTWVRNR_request.ini"
   SetINIFloat "request:dlaa" (GetUIFloat "HUDMainMenu/TTWVRNRState/_dlaa") "TTWVRNR_request.ini"
+  SetINIFloat "request:sr" (GetUIFloat "HUDMainMenu/TTWVRNRState/_sr") "TTWVRNR_request.ini"
   SetINIFloat "request:preset" (GetUIFloat "HUDMainMenu/TTWVRNRState/_preset") "TTWVRNR_request.ini"
   SetINIFloat "request:resolution" (GetUIFloat "HUDMainMenu/TTWVRNRState/_resolution") "TTWVRNR_request.ini"
   SetINIFloat "request:strength" (GetUIFloat "HUDMainMenu/TTWVRNRState/_strength") "TTWVRNR_request.ini"

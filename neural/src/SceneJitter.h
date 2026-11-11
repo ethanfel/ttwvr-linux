@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #pragma once
+#include <cstdint>
 #include <d3d9.h>
 namespace ttwvrnr {
+void SceneJitterFrame(uint64_t nextFrame);
 // Only the verified scene MVP registers change, for this draw alone.
 class SceneJitter {
   IDirect3DDevice9 *device = nullptr;

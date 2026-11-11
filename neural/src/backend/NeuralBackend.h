@@ -15,6 +15,9 @@ struct NeuralOptions {
   bool profileGpu = false; // Optional NGX GPU timestamp samples.
   bool neural = true;
   bool dlaa = false;
+  bool sr = false;
+  // SR uses a lower-resolution input and a distinct native output.
+  unsigned outputWidth = 0, outputHeight = 0;
   bool temporalGuides = false; // Explicit verified motion/jitter contract.
   bool passthrough =
       false; // Exercises the complete GPU conversion route without NGX.
@@ -36,7 +39,8 @@ public:
   // feature/history per eye; the owner supplies eye identity and reset.
   bool Render(ID3D11Texture2D *hdr, ID3D11Texture2D *depth,
               ID3D11Texture2D *motion, ID3D11Texture2D *exposure, unsigned eye,
-              uint64_t frame, bool reset, float jitterX = 0, float jitterY = 0);
+              uint64_t frame, bool reset, float jitterX = 0, float jitterY = 0,
+              ID3D11Texture2D *output = nullptr);
   // Serialized host only: call after its existing GPU completion wait.
   void LogCompletedGpuTiming();
   bool Shutdown();

@@ -8,6 +8,7 @@ begin Function {}
  SetUIFloat "HUDMainMenu/TTWVRNRState/_revision" (GetINIFloat "state:revision" "TTWVRNR_state.ini")
  SetUIFloat "HUDMainMenu/TTWVRNRState/_neural" (GetINIFloat "state:neural" "TTWVRNR_state.ini")
  SetUIFloat "HUDMainMenu/TTWVRNRState/_dlaa" (GetINIFloat "state:dlaa" "TTWVRNR_state.ini")
+ SetUIFloat "HUDMainMenu/TTWVRNRState/_sr" (GetINIFloat "state:sr" "TTWVRNR_state.ini")
  SetUIFloat "HUDMainMenu/TTWVRNRState/_preset" (GetINIFloat "state:preset" "TTWVRNR_state.ini")
  SetUIFloat "HUDMainMenu/TTWVRNRState/_resolution" (GetINIFloat "state:resolution" "TTWVRNR_state.ini")
  SetUIFloat "HUDMainMenu/TTWVRNRState/_strength" (GetINIFloat "state:strength" "TTWVRNR_state.ini")

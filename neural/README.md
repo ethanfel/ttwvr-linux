@@ -5,7 +5,9 @@ Both eyes were captured with DLAA alone, temporal NR alone and both combined
 in the loaded Vault 101 scene on consecutive frames,
 at the original **2944 × 2208 per eye**. The temporal motion path is experimental;
 see the exact tested modes in [the evidence record](docs/EVIDENCE.md).
-No frame generation or Super Resolution upscaling is implemented. The regular Steam launch requires an explicit
+An experimental **DLSS Quality Super Resolution** path also reconstructs
+1963×1472 scene rendering to 2944×2208 per eye; see [SR evidence and limitations](docs/SUPER-RESOLUTION.md).
+Its first measured build is slower than native rendering. Frame generation is not implemented. The regular Steam launch requires an explicit
 [addon installation and opt-in](docs/STEAM.md).
 
 This GPL-3.0-only port uses
@@ -104,7 +106,7 @@ Place these together in the private layer directory:
 - `neural_host.exe` from the x64 build;
 - the manifest and INI in this directory;
 - your separately obtained `runtime/nvngx_dlssnr.dll` for NR;
-- your separately obtained `runtime/nvngx_dlss.dll` for DLAA.
+- your separately obtained `runtime/nvngx_dlss.dll` for DLAA or SR.
 
 The helper requires the driver NGX core, working D3D12, NVIDIA GPU visibility and
 native D3DCompiler 47. Register the manifest **only in the copied prefix's 32-bit
@@ -127,8 +129,8 @@ in-game menu. Feature combinations and tuning apply live:
 
 Use `transport_identity=1` first to exercise GPU transport; real evaluation
 requires `transport_identity=0`. Identity mode is not evidence of an NGX effect.
-The diagnostic `jitter_probe` should stay zero. Turning both `enabled` settings
-to zero restores bypass. Settings are polled every 250 ms at a stereo frame
+The diagnostic `jitter_probe` and `super_resolution.capture_probe` should stay zero.
+Turning NR, DLAA and SR `enabled` settings to zero restores native bypass. Settings are polled every 250 ms at a stereo frame
 boundary. A change stops the old helper, waits for its exit, then starts one
 helper with an immutable settings snapshot. The game keeps rendering without
 effects during this rebuild. Jitter resumes only at a later frame boundary,
@@ -152,12 +154,17 @@ profile. It uses the existing xNVSE (6.3.3+), JIP LN and UIO plugins; no ESP,
 MCM download, game UI replacement or changes to saves are required.
 
 Open the pause menu and press **X**, or use **F10** with the desktop game focused.
-The native selection dialog provides separate NR/DLAA toggles, **NR tuning**,
+The native selection dialog provides NR/DLAA toggles, an experimental **DLSS Quality**
+toggle, **NR tuning**,
 **Apply** and **Cancel**. Use the stick/D-pad and A; B returns from tuning or
 cancels the main dialog. Arrows and Enter use Fallout's existing handling; the bridge adds Escape.
 NR tuning cycles model A/B, processing scale 25/50/75/100%, and strength/tone/detail
 in 10% steps. Game and DLAA resolution remain unchanged. Reopen the menu to see
 the current renderer status. Changing a row only edits a draft; Apply saves it.
+DLSS Quality is exclusive of NR/DLAA in this first path: selecting it clears
+the other two draft switches, and selecting either of those clears SR. Final
+eye output remains native sized. The VR mod's own upscaler setting is separate
+and still unavailable on the tested Linux path.
 
 The menu draft lives in a persistent HUD node, because showing a native dialog
 can close `StartMenu`. Requests include a session token and base revision, and
@@ -177,7 +184,7 @@ only for this addon's own dialog or the vanilla pause menu. OpenXR action/image
 ownership is unchanged.
 
 Installing a new DLL or script version still requires a game restart. Changing
-NR/DLAA settings afterward does not. First-time feature creation can take longer
+NR/DLAA/SR settings afterward does not. First-time feature creation can take longer
 than a warm change; bypass continues during initialization.
 
 ### Terminal controls

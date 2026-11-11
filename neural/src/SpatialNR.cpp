@@ -6,6 +6,7 @@
 #include "MenuInput.h"
 #include "NativeGuides.h"
 #include "SceneCapture.h"
+#include "SuperResolution.h"
 #include "Support.h"
 #include <chrono>
 #include <cmath>
@@ -33,7 +34,7 @@ struct Texture {
 ReloadState reload;
 struct Client {
   ComPtr<IDirect3DDevice9> device;
-  Texture color, depth, bloom, motion;
+  Texture color, depth, bloom, motion, output;
   HANDLE mapping = nullptr, request = nullptr, reply = nullptr,
          process = nullptr;
   HostProtocol *p = nullptr;
@@ -51,10 +52,14 @@ struct Client {
   void Init(IDirect3DDevice9 *d, const D3DSURFACE_DESC &hdr,
             const D3DSURFACE_DESC &b) {
     device = d;
-    color.Init(d, hdr.Width, hdr.Height, D3DFMT_A16B16G16R16F);
-    depth.Init(d, hdr.Width, hdr.Height, D3DFMT_A8B8G8R8);
+    const unsigned width = reload.requested.sr ? InputWidth : hdr.Width;
+    const unsigned height = reload.requested.sr ? InputHeight : hdr.Height;
+    if (reload.requested.sr)
+      output.Init(d, OutputWidth, OutputHeight, D3DFMT_A16B16G16R16F);
+    color.Init(d, width, height, D3DFMT_A16B16G16R16F);
+    depth.Init(d, width, height, D3DFMT_A8B8G8R8);
     bloom.Init(d, b.Width, b.Height, D3DFMT_A16B16G16R16F);
-    motion.Init(d, hdr.Width, hdr.Height, D3DFMT_A16B16G16R16F);
+    motion.Init(d, width, height, D3DFMT_A16B16G16R16F);
     name = L"Local\\TTWVRNR-" + std::to_wstring(GetCurrentProcessId()) + L"-" +
            std::to_wstring(GetTickCount64());
     mapping = CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE,
@@ -66,8 +71,12 @@ struct Client {
     if (!p)
       throw std::runtime_error("NR mapping view");
     new (p) HostProtocol;
-    p->width = hdr.Width;
-    p->height = hdr.Height;
+    p->width = width;
+    p->height = height;
+    p->sr = reload.requested.sr;
+    p->outputWidth = OutputWidth;
+    p->outputHeight = OutputHeight;
+    p->outputHandle = reinterpret_cast<uintptr_t>(output.handle);
     p->colorHandle = reinterpret_cast<uintptr_t>(color.handle);
     p->depthHandle = reinterpret_cast<uintptr_t>(depth.handle);
     p->bloomHandle = reinterpret_cast<uintptr_t>(bloom.handle);
@@ -111,9 +120,10 @@ struct Client {
     CloseHandle(pi.hThread);
     started = GetTickCount64();
     reload.Started();
-    Log("spatial_host_start revision=%u native=%ux%u nr=%u dlaa=%u model=%u "
+    Log("spatial_host_start revision=%u native=%ux%u nr=%u dlaa=%u sr=%u "
+        "model=%u "
         "scale=%u identity=%u",
-        p->revision, p->width, p->height, p->neural, p->dlaa, p->preset,
+        p->revision, p->width, p->height, p->neural, p->dlaa, p->sr, p->preset,
         p->resolution, p->identity);
   }
   // This method runs before either eye. Never enable DLAA halfway through a
@@ -149,7 +159,7 @@ struct Client {
     if (reload.phase == ReloadState::Stopping &&
         GetTickCount64() - started > 130000)
       throw std::runtime_error("NR helper stop timeout; restart withheld");
-    if (reload.NeedStart())
+    if (reload.NeedStart() && p->sr == reload.requested.sr)
       Start();
   }
 };
@@ -178,6 +188,10 @@ bool SpatialApplied(uint64_t frame) {
 bool DlaaApplied(uint64_t frame) {
   return AllApplied(frame) && client->p->dlaa;
 }
+bool SrApplied(uint64_t frame) { return AllApplied(frame) && client->p->sr; }
+bool SuperResolutionReady() {
+  return enabled && reload.CanApply() && client && client->p->sr;
+}
 bool TemporalNRApplied(uint64_t frame) {
   return SpatialApplied(frame) && client->p->temporal;
 }
@@ -189,7 +203,8 @@ void ProcessingJitter(uint64_t frame, float &x, float &y) {
 }
 bool SceneProcessingEnabled() { return enabled && !reload.fault; }
 bool DlaaJitterReady() {
-  return enabled && reload.CanApply() && client && client->p->dlaa;
+  return enabled && reload.CanApply() && client &&
+         (client->p->dlaa || (client->p->sr && SuperResolutionLow()));
 }
 bool SpatialEnabled(uint64_t frame) {
   try {
@@ -205,12 +220,20 @@ bool SpatialEnabled(uint64_t frame) {
       if (ReadMenuRequest(reload.revision, settings) || retry)
         changed = reload.Request(settings, true);
       if (changed)
-        Log("live_settings_request revision=%u nr=%u dlaa=%u model=%u scale=%u",
-            reload.revision, settings.neural, settings.dlaa, settings.preset,
-            settings.resolution);
+        Log("live_settings_request revision=%u nr=%u dlaa=%u sr=%u model=%u "
+            "scale=%u",
+            reload.revision, settings.neural, settings.dlaa, settings.sr,
+            settings.preset, settings.resolution);
     }
-    if (client)
+    if (client) {
       client->Advance();
+      // The old helper must release its shared images before resizing
+      // transport.
+      if (!client->process && client->p->sr != reload.requested.sr) {
+        delete client;
+        client = nullptr;
+      }
+    }
   } catch (const std::exception &e) {
     reload.Fail();
     Log("spatial_bypass reason=%s original_hdr_retained=1", e.what());
@@ -227,7 +250,10 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
   try {
     auto hdr = Surface(d, 1), bloom = Surface(d, 0);
     ComPtr<IDirect3DSurface9> depth;
-    Check(d->GetDepthStencilSurface(&depth));
+    if (SuperResolutionLow())
+      depth = SuperResolutionDepth();
+    else
+      Check(d->GetDepthStencilSurface(&depth));
     if (!depth)
       return false;
     D3DSURFACE_DESC hd{}, bd{}, dd{};
@@ -236,9 +262,11 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
     Check(depth->GetDesc(&dd));
     if (hd.Format != D3DFMT_A16B16G16R16F ||
         bd.Format != D3DFMT_A16B16G16R16F || dd.Format != D3DFMT_D24S8 ||
-        hd.Width != 2944 || hd.Height != 2208 || dd.Width != hd.Width ||
-        dd.Height != hd.Height || bd.Width != hd.Width / 4 ||
-        bd.Height != hd.Height / 4 || dd.MultiSampleType != D3DMULTISAMPLE_NONE)
+        hd.Width != (SuperResolutionLow() ? InputWidth : OutputWidth) ||
+        hd.Height != (SuperResolutionLow() ? InputHeight : OutputHeight) ||
+        dd.Width != hd.Width || dd.Height != hd.Height ||
+        bd.Width != OutputWidth / 4 || bd.Height != OutputHeight / 4 ||
+        dd.MultiSampleType != D3DMULTISAMPLE_NONE)
       throw std::runtime_error("unverified scene layout");
     DWORD srgb = 0;
     Check(d->GetSamplerState(1, D3DSAMP_SRGBTEXTURE, &srgb));
@@ -255,7 +283,7 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
       client->Start();
       return false;
     }
-    if (!reload.CanApply())
+    if (!reload.CanApply() || (client->p->sr && !SuperResolutionLow()))
       return false;
     if (eye == 1 && client->leftAppliedFrame != frame)
       return false;
@@ -317,10 +345,16 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
     // This is the first write to the game's HDR. Failure before this point
     // leaves it untouched. The helper owns only private copies, including on
     // timeout.
-    Check(d->StretchRect(client->color.surface.Get(), nullptr, hdr.Get(),
-                         nullptr, D3DTEXF_NONE));
+    if (p->sr) {
+      if (!SuperResolutionBindOutput(d, client->output.texture.Get()))
+        throw std::runtime_error("SR tone-map output binding");
+    } else {
+      Check(d->StretchRect(client->color.surface.Get(), nullptr, hdr.Get(),
+                           nullptr, D3DTEXF_NONE));
+    }
     if (capture)
-      CaptureExtraSurface(d, hdr.Get(), capturePrefix + L"-output-hdr.dds");
+      CaptureExtraSurface(d, p->sr ? client->output.surface.Get() : hdr.Get(),
+                          capturePrefix + L"-output-hdr.dds");
     if (eye == 0)
       client->leftAppliedFrame = frame;
     else
@@ -333,10 +367,10 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
           elapsed(afterWait, afterHelper), elapsed(afterHelper, stamp()));
     if (frame % 120 == 0)
       Log("spatial_output_applied frame=%llu eye=%u native=%ux%u wall_ms=%llu "
-          "identity=%u temporal=%u dlaa=%u",
+          "identity=%u temporal=%u dlaa=%u sr=%u output=%ux%u",
           (unsigned long long)frame, eye, hd.Width, hd.Height,
           (unsigned long long)(GetTickCount64() - start), p->identity,
-          p->temporal, p->dlaa);
+          p->temporal, p->dlaa, p->sr, p->outputWidth, p->outputHeight);
     return true;
   } catch (const std::exception &e) {
     reload.Fail();

@@ -4,6 +4,8 @@
 struct IDirect3DDevice9;
 namespace ttwvrnr {
 bool SpatialApplied(uint64_t frame);
+bool SrApplied(uint64_t frame);
+bool SuperResolutionReady();
 bool DlaaApplied(uint64_t frame);
 bool TemporalNRApplied(uint64_t frame);
 bool DlaaJitterReady();

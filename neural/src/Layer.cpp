@@ -55,6 +55,7 @@ struct CapturedView {
 struct CapturedFrame {
     bool neural = false;
     bool dlaa = false;
+    bool sr = false;
     bool temporal = false;
     struct { float x=0,y=0; } jitter;
     uint64_t frame = 0;
@@ -323,7 +324,7 @@ bool WriteCapturedFrame(const CapturedFrame& frame, const std::wstring& burstBas
                 "  \"position\": [%g, %g, %g], \"orientation\": [%g, %g, %g, %g],\n"
                 "  \"fov\": [%g, %g, %g, %g],\n"
                 "  \"depth_submitted\": %s, \"motion_submitted\": %s, \"synthesis_submitted\": %s\n}\n",
-                frame.dlaa ? (frame.neural ? "temporal_nr_dlaa" : "dlaa") : frame.neural ? (frame.temporal ? "temporal_nr" : "spatial_nr_reset_every_frame") : "capture_only", frame.neural ? "true" : "false",
+                frame.sr ? "super_resolution" : frame.dlaa ? (frame.neural ? "temporal_nr_dlaa" : "dlaa") : frame.neural ? (frame.temporal ? "temporal_nr" : "spatial_nr_reset_every_frame") : "capture_only", frame.neural ? "true" : "false",
                 frame.dlaa ? "true" : "false",frame.jitter.x,frame.jitter.y,
                 static_cast<unsigned long long>(frame.frame), static_cast<long long>(frame.displayTime), frame.layer, eye,
                 burstIndex, burstCount, view.imageIndex, layout.slice, static_cast<long long>(view.format),
@@ -358,6 +359,7 @@ void InspectFrame(Session& s, const XrFrameEndInfo* info) {
     CapturedFrame capturedFrame;
     capturedFrame.neural = SpatialApplied(s.frames);
     capturedFrame.dlaa = DlaaApplied(s.frames);
+    capturedFrame.sr = SrApplied(s.frames);
     capturedFrame.temporal = TemporalNRApplied(s.frames);
     ProcessingJitter(s.frames,capturedFrame.jitter.x,capturedFrame.jitter.y);
     capturedFrame.frame = s.frames; capturedFrame.displayTime = info->displayTime;

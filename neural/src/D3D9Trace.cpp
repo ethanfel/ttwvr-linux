@@ -6,6 +6,7 @@
 #include "SceneCapture.h"
 #include "SceneJitter.h"
 #include "SpatialNR.h"
+#include "SuperResolution.h"
 #include "Support.h"
 #include <MinHook.h>
 #include <array>
@@ -138,8 +139,8 @@ void Observe(IDirect3DDevice9 *d, const char *op,
     if (NativeGuidesEnabled() && !std::strcmp(op, "draw_indexed") &&
         Shader(vs.Get(), "vs") == "\"vs-6149896215606588438\"") {
       D3DSURFACE_DESC scene{};
-      if (rt && SUCCEEDED(rt->GetDesc(&scene)) && scene.Width == 2944 &&
-          scene.Height == 2208 && scene.Format == D3DFMT_A16B16G16R16F)
+      if (rt && SUCCEEDED(rt->GetDesc(&scene)) && scene.Width == (SuperResolutionLow()?InputWidth:OutputWidth) &&
+          scene.Height == (SuperResolutionLow()?InputHeight:OutputHeight) && scene.Format == D3DFMT_A16B16G16R16F)
         NativeGuidesObserveScene(d, frame);
     }
     if ((captureInputs || spatial.load(std::memory_order_relaxed) ||
@@ -152,6 +153,7 @@ void Observe(IDirect3DDevice9 *d, const char *op,
       if (desc.Format == D3DFMT_X8R8G8B8 && desc.Width == 2944 &&
           desc.Height == 2208) {
         const auto selectedTone = tonePass++;
+        SuperResolutionObserveTone(d);
         NativeGuidesBeforeTone(d, frame, selectedTone, captureInputs);
         if (spatial.load(std::memory_order_relaxed))
           ApplySpatialNR(d, frame, selectedTone, captureInputs);
@@ -204,7 +206,7 @@ void Observe(IDirect3DDevice9 *d, const char *op,
 HRESULT STDMETHODCALLTYPE HookSetRT(IDirect3DDevice9 *d, DWORD n,
                                     IDirect3DSurface9 *p) {
   Observe(d, "before_set_target", p, n);
-  return setRT(d, n, p);
+  return SuperResolutionSetTarget(d, n, p, setRT);
 }
 HRESULT STDMETHODCALLTYPE HookClear(IDirect3DDevice9 *d, DWORD n,
                                     const D3DRECT *r, DWORD flags,
@@ -227,6 +229,7 @@ HRESULT STDMETHODCALLTYPE HookIndexed(IDirect3DDevice9 *d, D3DPRIMITIVETYPE t,
   pendingTone = -1;
   SceneJitter jitter(d, observing);
   const auto result = indexed(d, t, b, min, n, start, count);
+  if (selected >= 0) SuperResolutionRestoreTone(d);
   if (captureInputs && selected >= 0 && SUCCEEDED(result)) {
     observing = true;
     CaptureSceneAfterTone(d, frame, static_cast<unsigned>(selected));
@@ -369,6 +372,7 @@ bool InstallD3D9Trace() {
   // Borrowed device, owned by TTWVR. No reference or state is changed.
   if (ready)
     InstallNativeGuides(module);
+  if (ready) InstallSuperResolution(device);
   Log("d3d9_trace_ready=%d capture_only=1", ready);
   return ready;
 }
@@ -385,7 +389,9 @@ void ArmD3D9Trace(bool enabled, uint64_t nextFrame) {
           L"capture", L"scene_inputs", 0,
           (Directory() + L"\\TTWVRNeuralRendering.ini").c_str()) != 0;
   captureInputs = captureInputs && enabled;
+  SceneJitterFrame(nextFrame);
   spatial = SpatialEnabled(nextFrame);
+  SuperResolutionFrame(SuperResolutionReady());
   NativeGuidesFrame(nextFrame);
   armed = enabled;
 }

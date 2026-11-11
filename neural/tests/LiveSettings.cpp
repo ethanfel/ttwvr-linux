@@ -44,6 +44,36 @@ int main() {
   r.Initialized();
   r.Exited(); // unexpected helper death
   assert(r.fault && !r.CanApply() && !r.NeedStart());
+  // SR changes transport dimensions. An old generation must release its GPU
+  // resources before starting SR, even when multiple requests coalesce.
+  LiveSettings sr = dlaa;
+  sr.dlaa = 0;
+  sr.sr = 1;
+  assert(sr.Valid());
+  assert(r.Request(sr, true) && r.NeedStart());
+  r.Started();
+  r.Initialized();
+  assert(r.CanApply());
+  assert(r.Request(dlaa) && r.NeedStop() && !r.CanApply());
+  assert(r.Request(sr) && !r.NeedStart());
+  r.Initialized();
+  assert(!r.CanApply());
+  r.Exited();
+  assert(r.NeedStart() && r.requested.sr);
+  r.Started();
+  r.Initialized();
+  r.Fail();
+  r.Exited();
+  assert(r.fault && !r.CanApply());
+  auto invalidSR = sr;
+  invalidSR.neural = 1;
+  assert(!invalidSR.Valid());
+  invalidSR = sr;
+  invalidSR.dlaa = 1;
+  assert(!invalidSR.Valid());
+  invalidSR = sr;
+  invalidSR.temporal = 0;
+  assert(!invalidSR.Valid());
   auto bad = both;
   bad.resolution = 0;
   assert(!r.Request(bad, true) && r.fault);
