@@ -1,0 +1,60 @@
+{
+  "deployed": true,
+  "files": [
+    {
+      "path": "FalloutNV.exe",
+      "before_sha256": "3a87f92f011e5dc9179ddf733cf08be2b39ea6e5b7a8a9e3a9a72dafcc1b104d",
+      "after_sha256": "518c87f58a6c4d9826e9ef8fbb7f4213882fa70822675610d45aea2464502a57",
+      "verified": true
+    },
+    {
+      "path": "nvse_editor_1_4.dll",
+      "before_sha256": null,
+      "after_sha256": "4191776b53536b8a9a3b0e3b5cb3826e9843d322af7519da123cff5c94d6864a",
+      "verified": true
+    },
+    {
+      "path": "nvse_steam_loader.dll",
+      "before_sha256": null,
+      "after_sha256": "aee398e4f249923a5ae9e6efb60c98cf402e34426860dbed6e79d7cd7c9c62b0",
+      "verified": true
+    },
+    {
+      "path": "nvse_1_4.dll",
+      "before_sha256": null,
+      "after_sha256": "e82c5d348bac255a8ff4cf477df2e48149304b18f02b42b2a835c3cba71f3dfb",
+      "verified": true
+    },
+    {
+      "path": "nvse_loader.exe",
+      "before_sha256": null,
+      "after_sha256": "da4204a0e940693a553ce0636a0ac7eb91eb1db149289684676093e01cc9a5eb",
+      "verified": true
+    },
+    {
+      "path": "ogg.dll",
+      "before_sha256": null,
+      "after_sha256": "8d8141a8fd6d7a95d7b997c62cec6afe42f8a257b9529a67d2f6892d069c8ea8",
+      "verified": true
+    },
+    {
+      "path": "libvorbisfile.dll",
+      "before_sha256": "6fc78d8abf8683a91d25166732085d5f934003150087b3d435bbc19e532a7994",
+      "after_sha256": "b8c838517ef7bb7f9d4061e119750952b9b9e04c2f5f59d3bb39f0ddabcb8bc8",
+      "verified": true
+    },
+    {
+      "path": "libvorbis.dll",
+      "before_sha256": "a34f3b4ee26cf093d096c574aba26c6e9fe0ce3dbfa073f92378fe1dffa01f0d",
+      "after_sha256": "bb2898a4be2b8b87395c66a9dbbb7039f0371f2782d9f861ceda0f5413df4cf7",
+      "verified": true
+    },
+    {
+      "path": "Data/NVSE/nvse_config.ini",
+      "before_sha256": null,
+      "after_sha256": "42316c21a8885f0f820da73d5679d9de3d811c090d2a61e97ea3a3abdac9dd6c",
+      "verified": true
+    }
+  ],
+  "note": "cp -a reported unsupported metadata preservation on the game filesystem; all file contents independently verified by SHA-256."
+}

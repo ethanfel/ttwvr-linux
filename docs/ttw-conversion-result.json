@@ -1,0 +1,20 @@
+{
+  "upstream_installer_commit": "936b0aef1f8379662c85aad639510f356dd9a0db",
+  "upstream_installer_sha256": "63c7b990269bb5d075be1fc07c6e558b6de417d07fe3ce0f44839c11763e9fb1",
+  "conversion_file_count": 288,
+  "conversion_bytes": 18609522654,
+  "converted_esm_count": 18,
+  "bsa_count": 28,
+  "asset_operations_succeeded": 196915,
+  "asset_operations_failed": 2,
+  "failed_operations": [
+    "libvorbis.dll root copy: read-only filesystem",
+    "libvorbisfile.dll root copy: read-only filesystem"
+  ],
+  "resolution": "Both root DLLs had already been deployed from the newer official Updated OGG Vorbis Files package; installed hashes verified against that package. No conversion asset failures reported.",
+  "checks": [
+    "TES4 headers and MAST dependency order for all 18 enabled ESMs",
+    "BSA signature, version 104 and nonempty header counts for 28 output BSAs"
+  ],
+  "in_game_validated": false
+}

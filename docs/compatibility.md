@@ -38,7 +38,27 @@ runtime evidence, and record the exact affected build.
   a WiVRn compositor socket path was present. This does not establish connection
   state because the inspection did not query the running desktop services.
 
+The installed Proton 11 script accepts `PROTON_USE_WOW64=1` and selects Wine's
+WoW64 architecture for that launch. Its x86_64 Unix VR bridges contain the
+`/linux64` runtime path. This is a candidate way to use the installed 64-bit
+xrizer with 32-bit New Vegas; it is exposed by the wrapper's `--wow64` option.
+It has not yet been validated with TTWVR. No existing prefix is deleted or
+recreated by the wrapper, and no global Steam compatibility setting is changed.
+
 ## First launch sequence
+
+The initial ordinary Steam launch on 2026-11-11 completed successfully according
+to the user. The xNVSE runtime log reports version 6.4.9, `init complete`, and
+`NewGameHook`; the loader log records a normal return from the game. The plugin
+directory was empty in this run because MO2 was not used. This validates the
+base-game launch and xNVSE autoloading, not TTW or VR initialization.
+
+The first wrapper launch opened MO2 2.5.2 and loaded `game_ttw.dll`. MO2 rejected
+the generated display name as its internal game identifier; `gameName=TTW` is
+the correction. Separately, Proton's VR startup probe loaded xrizer but reported
+that `/usr/share/openxr/1/openxr_wivrn.json` was unavailable inside the container.
+The runtime manifest path/import still needs correction and verification before
+the VR test. This probe occurred before any TTWVR plugin was launched.
 
 1. Complete TTW conversion and the official dependencies; verify TTW in flat mode.
 2. Add the supplied TTWVR as the final asset override in a dedicated MO2 profile.
@@ -49,6 +69,36 @@ runtime evidence, and record the exact affected build.
    Pip-Boy, loading a new game, and saving/reloading.
 6. Only after a failure is reproduced, change one component or option at a time.
    Preserve original files and record checksums, diffs, and rollback instructions.
+
+## Simulated-headset preflight
+
+The user supplied an existing Monado runtime built from source revision
+`3acbda6b7dacbe014749020e8543fded54ef076b` in the TF2VR autotest directory. It
+is reusable independently of that game. Its intended native-app environment is:
+
+```sh
+XR_RUNTIME_JSON=/path/to/monado-build/openxr_monado-dev.json
+SIMULATED_ENABLE=1
+XRT_COMPOSITOR_NULL=1
+XRT_COMPOSITOR_NULL_FPS=90
+```
+
+The original runtime was not changed. In the restricted agent process, the
+provided OpenXR preflight failed at libusb's udev hotplug-monitor initialization
+(`XRT_ERROR_PROBER_CREATION_FAILED`, followed by `XR_ERROR_RUNTIME_UNAVAILABLE`).
+
+A separate build from the same source disabled `XRT_HAVE_LIBUSB`,
+`XRT_HAVE_LIBUDEV`, `XRT_HAVE_HIDAPI`, and `XRT_HAVE_INTERNAL_HID`. Configuration
+also needed `PYTHONPATH` unset because an inherited Resolve scripting path
+contained a leading colon that broke Monado's CMake generator expressions.
+
+That build successfully created the OpenXR instance, selected a simulated HMD
+with two views, and started a 90 Hz null compositor. It then failed Vulkan
+initialization. A standalone `vulkaninfo --summary` in the same restricted
+process could not load the NVIDIA ICD and reported no Vulkan drivers. Therefore
+this is not evidence of a TTWVR failure or of a broken host driver. Neither
+preflight reached a successful rendering session, and a host-side test remains
+necessary.
 
 ## Primary references
 

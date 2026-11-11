@@ -51,17 +51,42 @@ mpi_installer install \
   --dest '/path/to/MO2/mods/Tale of Two Wastelands'
 ```
 
-Conversion has not yet run. The native binary is obtained separately; this
-repository does not bundle it. A source-build attempt could not fetch crates
-from the restricted build environment and was stopped before compilation.
+Conversion assets are generated. The native CLI was built from the inspected upstream
+commit, without source changes. Its 525 registry dependencies were downloaded
+separately, verified against Cargo.lock, and supplied as a local vendored source
+for an offline release build. This repository does not bundle those dependencies
+or the resulting binary.
+
+The conversion produced 18,609,522,654 bytes. It reported 196,915 successful asset
+operations and two failures, both attempts to copy Vorbis DLLs into the game
+root. Those two default files were already superseded by the separately deployed
+newer official Vorbis update; the installed update hashes were verified. The
+nonzero converter exit is preserved in the result record rather than hidden.
+All 18 masters have readable TES4 headers and a valid dependency order; all 28
+generated BSA headers have version 104 and nonzero file counts. These checks do
+not replace an in-game test.
+
+## Prepared MO2 profiles
+
+`tools/create_profiles.py` initializes a new portable instance from ordered JSON
+lists of staged mods and plugins and from launcher-generated INIs. It refuses to
+overwrite an existing instance or either target profile. The profile names are
+`TTW - Flat` and `TTW - VR`, with Flat selected first. Only the latter enables
+TTWVR, which has the final asset override priority. Profiles have separate saves
+and INIs. MO2's default automatic archive invalidation is enabled and the per-
+profile setting is left unset so MO2 performs the actual initialization.
+
+MO2's INI must use `gameName=TTW`, the plugin's internal `gameName()` value.
+`Tale of Two Wastelands` is its display title and is not accepted here. The first
+launch exposed this configuration error; the local INI and generator were
+corrected. See the [upstream game plugin](https://github.com/ModOrganizer2/modorganizer-game_ttw/blob/master/src/gamefalloutttw.cpp).
 
 ## Remaining setup
 
-- Complete conversion, check its log, masters and output size.
-- Complete the official guide utility set and create flat/VR MO2 profiles.
-- Back up and deploy the root files (xNVSE, the patched executable, Vorbis).
-- Generate/verify game INIs, TTW's starting quest, archive invalidation and load
-  order; launch flat TTW first.
+- Complete the official guide utility set; the ten-mod core profiles are ready.
+- Root files are deployed and their backups and checksums are recorded locally.
+- Verify MO2 initializes archive invalidation and launch flat TTW first. The
+  copied guide custom INI includes TTW's starting quest and disables the NV intro.
 - Select the VR profile and test the WiVRn launch path. Keep results distinct
   from settings that have only been prepared on disk.
 

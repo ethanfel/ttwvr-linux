@@ -32,6 +32,8 @@ def main():
     parser.add_argument("--xr-runtime", type=Path,
                         default=Path("/usr/share/openxr/1/openxr_wivrn.json"))
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--wow64", action="store_true",
+                        help="test Proton 11's WoW64 mode with the 64-bit native VR bridge")
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command[1:] if args.command[:1] == ["--"] else args.command
@@ -70,6 +72,8 @@ def main():
         "PROTON_LOG": "1",
         "PROTON_LOG_DIR": str(state),
     }
+    if args.wow64:
+        changes["PROTON_USE_WOW64"] = "1"
     registry = {"version": 1, "runtime": [container_path(xrizer)]}
     if args.dry_run:
         print(json.dumps({"environment": changes, "openvr_registry": registry,

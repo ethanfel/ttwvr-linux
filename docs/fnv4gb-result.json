@@ -7,5 +7,5 @@
   "size_after": 16549704,
   "differing_bytes": 188,
   "large_address_aware": true,
-  "deployed": false
+  "deployed": true
 }

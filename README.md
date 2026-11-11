@@ -25,6 +25,11 @@ work. Obtain prerequisites from their original authors.
 
 ## Tools
 
+`tools/create_profiles.py` prepares new flat/VR MO2 profiles from staged mods,
+ordered JSON lists, launcher-generated INIs, and a custom INI. It refuses to
+overwrite existing instance/profile configuration. See `--help` and the
+[installation record](docs/installation.md).
+
 Run a read-only installation audit (the report does not include absolute paths):
 
 ```sh
@@ -50,8 +55,14 @@ python3 tools/steam_mo2.py --dry-run \
 The eventual Steam launch option has the same arguments, without `--dry-run`,
 and ends in `-- %command%` rather than the example Proton command. Start WiVRn
 and connect the headset first. MO2 and the prerequisites must be configured
-before this wrapper can launch the modded game. No launch option has yet been
-applied to the user's Steam configuration.
+before this wrapper can launch the modded game. The wrapper has opened MO2
+through Steam successfully; a game launch from MO2 remains unverified.
+
+With Proton 11, `--wow64` enables the optional 64-bit host-side Wine/VR path
+for the 32-bit game. This is a compatibility experiment, not yet verified in
+game. For Monado simulation, supply its manifest through `--xr-runtime` and set
+`SIMULATED_ENABLE=1 XRT_COMPOSITOR_NULL=1 XRT_COMPOSITOR_NULL_FPS=90` in the
+launch environment. The user's system-wide runtime selection is not modified.
 
 Use [CHANGELOG.md](CHANGELOG.md) to distinguish changes actually made from
 experiments still to perform.

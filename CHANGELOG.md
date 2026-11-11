@@ -15,6 +15,36 @@ Completed:
 - Applied the author's FNV4GB for Proton 1.5 patcher to a staged copy of the
   original executable. Verified LAA enabled, unchanged file length, and 188
   differing bytes. [Checksums and deployment status](docs/fnv4gb-result.json).
+- Backed up the existing game-root files and deployed the patched executable,
+  xNVSE, and updated Vorbis libraries. Verified all eight deployed files by
+  SHA-256. The game filesystem does not support all metadata preservation;
+  the reported copy warnings did not affect verified file contents.
+- Built the native TTW installer from upstream commit
+  `936b0aef1f8379662c85aad639510f356dd9a0db`, without source changes. Verified
+  525 dependency archives against Cargo.lock and compiled offline. The installer
+  accepted both games and parsed 196,917 operations in the TTW 3.4 package.
+- Completed the TTW conversion assets: 18,609,522,654 bytes, 18 ESMs and 28 BSAs.
+  The converter exited nonzero for two game-root Vorbis copies blocked by its
+  restricted process. Both are superseded by the separately installed and
+  checksum-verified newer official Vorbis files. All 196,915 other asset
+  operations succeeded. [Detailed result](docs/ttw-conversion-result.json).
+- Deployed and verified xNVSE's configuration file (nine root/data files total).
+- Confirmed a normal Steam New Vegas launch with the user. The runtime log shows
+  xNVSE 6.4.9 initialized, reached `NewGameHook`, and returned from the game
+  normally. No MO2 plugins were loaded in this run; TTW remains untested in game.
+- Created `TTW - Flat` and `TTW - VR` portable MO2 profiles from launcher-generated
+  INIs, the official guide custom INI, and a dependency-checked 18-master load
+  order. The VR asset mod has the final override priority and is disabled in Flat.
+- First Steam wrapper launch opened MO2 2.5.2. Fixed the generated `gameName`
+  value from the display title to the plugin's internal identifier `TTW` after
+  MO2 rejected the display title. The installed `game_ttw.dll` loaded correctly;
+  this was a configuration error, not a missing plugin. Backed up the local INI
+  and corrected the profile generator to prevent recurrence.
+- Added optional Proton 11 WoW64 selection to the launch wrapper; this remains
+  an unverified VR compatibility candidate.
+- Located the user's existing simulated Monado runtime. Recorded the restricted
+  process's USB-discovery failure and the separate simulation-only build's Vulkan
+  failure; neither is a TTWVR runtime result. See the compatibility notes.
 - Verified the wrapper with a controlled subprocess: command arguments survive
   paths containing spaces; ambiguous commands are rejected; dry-run creates no
   files; runtime selection and its private registry reach the launched process.
@@ -23,10 +53,10 @@ Completed:
 
 Not yet done:
 
-- TTW conversion and installation of the remaining guide dependencies.
-- MO2 profile configuration and deployment of root files into New Vegas.
+- Installation of the remaining guide dependencies.
+- First-run MO2 initialization and archive-invalidation verification.
 - Live Proton/WiVRn test, headset rendering, controls, and save/load verification.
 - Any binary or source compatibility patch to TTWVR/DXVK/Proton/xrizer.
 
-The original game installation and downloaded archives have not been modified.
-The patched executable exists only in local staging so far.
+Downloaded archives remain unchanged. Changed original game-root files are
+backed up under the local workspace's `local/backups/fnv-root-before-install/`.
