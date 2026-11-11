@@ -4,7 +4,9 @@ Work in progress: installation tooling and compatibility investigation for
 KUPOkinz's **Tale of Two Realities (TTWVR)** with Tale of Two Wastelands.
 
 **TTWVR now displays loaded gameplay on a Quest 3 through WiVRn under Proton 11
-WoW64. Performance and full controller behavior remain under investigation.** This repository contains
+WoW64. The full-resolution performance patch has passed an initial 120 Hz
+headset test: a 59.8 FPS spectator capture and user-confirmed clear, smooth
+gameplay. Full controller and sustained-session checks remain.** This repository contains
 installation tooling and compatibility findings, not TTWVR or TTW binaries.
 Confirmed observations and unresolved work are recorded in
 [docs/compatibility.md](docs/compatibility.md).
@@ -84,8 +86,9 @@ enabled by the normal launcher; they have not made DLSS usable.
 A [full-resolution DXVK memory-pool patch](docs/dxvk-pools.md) reduces repeated
 eye-buffer allocations. The matching simulated control showed 18.8 FPS versus
 44.1 FPS with the patch, at the same resolution. A subsequent 120 Hz simulation
-showed 58.9 FPS. It is configured locally for VR; physical-headset and
-sustained-session validation remain pending.
+showed 58.9 FPS. The physical Quest 3 retest at 120 Hz showed 59.8 FPS, and the
+user confirmed clear, very smooth gameplay. The patch is configured locally
+for VR; sustained-session validation remains pending.
 
 For Steam's container command, the wrapper gives the selected OpenXR manifest
 to pressure-vessel's importer, then clears the host override before Proton so

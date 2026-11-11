@@ -166,8 +166,10 @@ launches. See [performance findings and reproduction](performance.md).
 
 A later [DXVK memory-pool change](dxvk-pools.md) improved the original-resolution
 simulated scene from an 18.8 FPS control snapshot to 44.1 FPS at 90 Hz. At
-120 Hz, a further capture showed 58.9 FPS. The patch is enabled locally for VR;
-physical headset validation remains pending. DLSS remains unavailable.
+120 Hz, a further capture showed 58.9 FPS. The physical Quest 3 / WiVRn 120 Hz
+retest then showed a 59.8 FPS spectator snapshot, and the user confirmed a
+clear image and very smooth gameplay. The patch is enabled locally for VR;
+sustained-session checks remain. DLSS remains unavailable.
 
 ## Primary references
 

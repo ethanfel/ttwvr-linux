@@ -1,6 +1,7 @@
 # Full-resolution eye-buffer allocation experiment
 
-This is a source-built diagnostic, separate from the unsuccessful DLSS patches.
+This source-built performance patch has passed an initial physical Quest 3
+test through WiVRn at 120 Hz, separately from the unsuccessful DLSS patches.
 It preserves the original TTWVR DLL, 2944x2208 eye dimensions, texture detail,
 and `Resolution=150%`. Native D3DCompiler 47 and the proven OpenXR bridge patch
 remain in use.
@@ -72,7 +73,8 @@ the matching control and disappearance of repeated mappings support a real
 allocation bottleneck, rather than a change in rendering quality or compiler
 alone. A later launch through the integrated wrapper rendered the scene at a
 41.0 FPS snapshot, with all three candidate hashes verified inside the game.
-Physical WiVRn performance and long-session address-space use remain untested.
+The subsequent physical WiVRn result is recorded below. Long-session
+address-space use remains untested.
 
 The locally enabled `[VR]` settings in `ttwvr-linux.ini` are:
 
@@ -141,11 +143,32 @@ and 113 W; an earlier 90 Hz sample was 37% and 104 W. These samples are not
 controlled GPU benchmarks. No extra cached-upload or forced-pacing option was
 retained, and no image quality setting changed.
 
-WiVRn's D-Bus properties list 72/80/90/120 Hz for the user's Quest, with its
-preferred refresh rate still 90 Hz and the headset disconnected. That preference
+Before the physical retest, WiVRn's D-Bus properties listed 72/80/90/120 Hz
+for the user's Quest, with its preference at 90 Hz and the headset disconnected. That preference
 is client-owned and read-only over this server interface. The headset's
 [Video settings](https://github.com/WiVRn/WiVRn/blob/master/client/scenes/gui_settings.cpp)
-provide the refresh-rate selector. A physical 120 Hz test has been requested;
-this simulator result cannot establish headset encoding, latency or smoothness.
+provide the refresh-rate selector. The simulator result alone cannot establish
+headset encoding, latency or smoothness; the physical retest follows below.
 The local simulation launcher accepts `TTWVR_SIM_FPS=120`; its default remains
 90 Hz for reproducible baseline runs.
+
+## Physical Quest 3 / WiVRn result
+
+The user selected 120 Hz and reconnected the Quest. WiVRn reported the headset
+connected, a preferred refresh rate of 120 Hz, and an active session. The normal
+VR launcher started the game with all three private renderer hashes verified
+inside its namespace; simulated-headset environment variables were absent.
+
+TTWVR identified WiVRn 26.9 and the Quest 3, initialized direct OpenXR, and
+reported an 8.33 ms runtime period. Loaded gameplay retained 2944x2208 eye
+targets and `Resolution=150%`. The DLSS path remained inactive. A spectator
+HUD capture showed **59.8 FPS**; the user reported **“clear and very smooth”**
+in the headset. This confirms usable physical headset output and a successful
+initial gameplay check. It is not a sustained-session, outdoor-scene, latency
+or dropped-frame benchmark, and it does not mean the game renders 120 FPS.
+
+The proven renderer configuration remains enabled and the game was left running.
+Logs and screenshots remain local. No further graphics or runtime changes were
+made after the successful report. The patched configuration has not been
+retested physically at 90 Hz; a return toward 45 FPS there is an expectation
+from current frame times and observed pacing, not a measured physical A/B.

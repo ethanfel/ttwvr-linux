@@ -1,5 +1,19 @@
 # Change log
 
+## 2026-11-11 — Physical 120 Hz performance validation
+
+- Confirmed Quest 3 connected through WiVRn 26.9 at the user's selected 120 Hz.
+- Launched through the normal VR wrapper with the private DXVK pool build;
+  verified all three renderer hashes inside the game and no simulation flags.
+- Loaded gameplay retained 2944x2208 eye targets and the 150% menu setting.
+  DLSS remained inactive. The spectator HUD showed 59.8 FPS.
+- The user confirmed the headset image was clear and gameplay very smooth.
+  The game was left running with the successful configuration.
+- This validates initial physical headset gameplay, not sustained outdoor
+  performance or 120 game frames per second. A physical 90 Hz comparison
+  with the new pool patch has not been performed.
+- [Physical result and retained configuration](docs/dxvk-pools.md#physical-quest-3--wivrn-result).
+
 ## 2026-11-11 — Full-resolution DXVK allocation fix
 
 - Restored original 2944x2208 eye targets and the original 150% menu setting.
