@@ -115,3 +115,37 @@ a capture showed 30.4 FPS and the view/NPC positions differed. The option was
 restored in a `finally` block and the process subsequently stopped. No runtime
 file, launch default, or WiVRn server setting was changed. This experiment
 does not justify overriding physical headset pacing.
+
+A separate launch added `d3d11.cachedDynamicResources=a` to the proven pool
+configuration. The 2944x2208 targets and candidate DLLs stayed the same. It
+showed a 41.1 FPS snapshot and a 13.597 ms median begin/submit phase across 80
+settled live samples, versus the earlier 12.420 ms sample. No benefit was
+established; this option was removed for subsequent launches.
+
+## 120 Hz simulated cadence
+
+Keeping the same patched renderer, staging setting, 2944x2208 targets and saved
+scene, the simulated null compositor was launched at 120 Hz instead of 90 Hz.
+TTWVR confirmed an 8.33 ms runtime period. The user reported a large jump and a
+spectator capture showed **58.9 FPS**, versus the earlier 41–44 FPS snapshots
+at 90 Hz. This is consistent with a roughly 60 Hz application cadence instead
+of 45 Hz when individual phases exceed one hardware refresh interval. It is
+not native 120 FPS rendering. A subsequent non-pausing read of Monado's frame
+prediction counter measured 718 OpenXR frame requests over 12.014 seconds:
+**59.76 requests/second**. That supports the observed cadence but is not a
+physical display or dropped-frame measurement.
+
+Settled runtime phase medians were 12.741 ms begin/submit and 11.516 ms
+submit/completion, with an 8.333 ms display period. A GPU sample was 54% usage
+and 113 W; an earlier 90 Hz sample was 37% and 104 W. These samples are not
+controlled GPU benchmarks. No extra cached-upload or forced-pacing option was
+retained, and no image quality setting changed.
+
+WiVRn's D-Bus properties list 72/80/90/120 Hz for the user's Quest, with its
+preferred refresh rate still 90 Hz and the headset disconnected. That preference
+is client-owned and read-only over this server interface. The headset's
+[Video settings](https://github.com/WiVRn/WiVRn/blob/master/client/scenes/gui_settings.cpp)
+provide the refresh-rate selector. A physical 120 Hz test has been requested;
+this simulator result cannot establish headset encoding, latency or smoothness.
+The local simulation launcher accepts `TTWVR_SIM_FPS=120`; its default remains
+90 Hz for reproducible baseline runs.

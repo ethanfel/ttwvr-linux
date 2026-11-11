@@ -1,5 +1,8 @@
 # Performance investigation — 2026-11-11
 
+The subsequent [DXVK memory-pool fix and 120 Hz result](dxvk-pools.md)
+improve performance at the original resolution, independently of DLSS.
+
 Hardware/runtime: RTX 5090, NVIDIA 615.78.08, Quest 3 at 90 Hz through WiVRn
 26.9, TTWVR 1.1.0, Proton Experimental 11 WoW64. Both the native D3DCompiler
 47 workaround and private OpenXR bridge patch remain enabled throughout.

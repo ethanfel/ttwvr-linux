@@ -164,6 +164,11 @@ a fence created by another process. A standalone 32/64-bit D3D11 test reproduces
 the same Proton crash without TTWVR. Those experiments are not enabled in normal
 launches. See [performance findings and reproduction](performance.md).
 
+A later [DXVK memory-pool change](dxvk-pools.md) improved the original-resolution
+simulated scene from an 18.8 FPS control snapshot to 44.1 FPS at 90 Hz. At
+120 Hz, a further capture showed 58.9 FPS. The patch is enabled locally for VR;
+physical headset validation remains pending. DLSS remains unavailable.
+
 ## Primary references
 
 - [TTW official installation guide](https://thebestoftimes.moddinglinked.com/ttw.html)

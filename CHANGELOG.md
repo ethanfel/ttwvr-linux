@@ -12,7 +12,11 @@
   copy, with original/candidate hash checks and real-prefix alias rejection.
   Enabled locally; the integrated launch rendered correctly. Fourteen checks pass.
 - Original Proton, prefix renderer DLLs, mod DLL and all eight saves are preserved.
-  Physical WiVRn testing and further copy/pacing investigation remain.
+  A later 120 Hz simulated run reached a 58.9 FPS snapshot; the user observed
+  the increase. The runtime uses roughly 60 FPS cadence there, versus roughly
+  45 at 90 Hz. Physical WiVRn testing at 120 Hz remains pending.
+- Cached-upload and forced-pacing experiments did not establish further gains
+  and were reverted. Normal VR launches keep only the verified pool fix.
 - [Source patch, build, scope, results and rollback](docs/dxvk-pools.md).
 
 ## 2026-11-11 — Performance diagnostics and DLSS investigation
