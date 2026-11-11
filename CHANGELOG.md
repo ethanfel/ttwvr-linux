@@ -30,4 +30,3 @@ Not yet done:
 
 The original game installation and downloaded archives have not been modified.
 The patched executable exists only in local staging so far.
-

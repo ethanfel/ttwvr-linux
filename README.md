@@ -55,4 +55,3 @@ applied to the user's Steam configuration.
 
 Use [CHANGELOG.md](CHANGELOG.md) to distinguish changes actually made from
 experiments still to perform.
-
