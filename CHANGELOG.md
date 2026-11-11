@@ -1,5 +1,23 @@
 # Change log
 
+## 2026-11-11 — Quest 3 gameplay and private OpenXR bridge patch
+
+- Connected TTWVR's direct OpenXR backend to WiVRn 26.9 / Meta Quest 3 at 90 Hz.
+  The user saw the menu, then a black headset view after loading the save.
+- Reproduced Proton's mixed-layer allocation bug: projection-first arrays
+  reserve only 48 bytes per layer and corrupt subsequent 112-byte quads.
+- Created a hash-guarded two-byte workaround in a private `wineopenxr.so` copy.
+  Both conversion paths reserve 120 bytes for projection-first arrays.
+- Added an actual-binary regression harness: the original bridge corrupts the
+  first quad in both architectures; the private patch passes all four checks.
+- The wrapper overlays the verified file for VR launches through bubblewrap.
+  The system's original Proton checksum is unchanged. Eight launcher tests
+  pass, including refusing a changed Proton build and ignoring this patch in Flat.
+- Verified the private library is loaded in the game's mount namespace. The
+  user confirmed visible headset gameplay after loading, and the invalid-pose
+  errors disappeared. Performance tuning and full controls testing remain.
+- [Exact scope, hashes, commands, evidence, and rollback](docs/openxr-layers.md).
+
 ## 2026-11-11 — Simulated VR save load and shader compiler workaround
 
 - Backed up the user's flat save and copied it into the separate VR profile.

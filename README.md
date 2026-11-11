@@ -3,8 +3,8 @@
 Work in progress: installation tooling and compatibility investigation for
 KUPOkinz's **Tale of Two Realities (TTWVR)** with Tale of Two Wastelands.
 
-**TTWVR loads a Vault 101 save and renders its VR spectator view with simulated
-Monado under Proton 11 WoW64. Physical WiVRn gameplay is not yet verified.** This repository contains
+**TTWVR now displays loaded gameplay on a Quest 3 through WiVRn under Proton 11
+WoW64. Performance and full controller behavior remain under investigation.** This repository contains
 installation tooling and compatibility findings, not TTWVR or TTW binaries.
 Confirmed observations and unresolved work are recorded in
 [docs/compatibility.md](docs/compatibility.md).
@@ -69,6 +69,12 @@ Loading a save in TTWVR exposed a crash in Wine's shader compiler. Installing
 native D3DCompiler 47 and enabling it for VR launches passed that same save-load
 check. See the [compiler workaround and rollback](docs/simulated-vr.md), including
 the optional `ttwvr-linux.ini` beside MO2. The wrapper does not install DLLs.
+
+A separate Proton OpenXR conversion bug made the headset go black after loading
+gameplay. The [private OpenXR bridge patch](docs/openxr-layers.md) resolves that
+observed failure. It is restricted to one verified Proton build and is applied
+only inside the game's launch environment. It does not modify Steam's installed
+Proton or redistribute its binaries.
 
 For Steam's container command, the wrapper gives the selected OpenXR manifest
 to pressure-vessel's importer, then clears the host override before Proton so

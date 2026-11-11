@@ -91,6 +91,8 @@ early if that export exists. The installed Proton DXVK exports that ordinal.
 This is evidence for the stock-DXVK detection bypassing the bundled renderer;
 it is not evidence of an NVTF conflict. NVTF has not been modified or disabled.
 
-No binary patch has been applied. Physical WiVRn output, stereo correctness,
-controller mapping, calibration, Pip-Boy, extended play, and VR save/reload
-remain to be validated.
+At this stage no binary patch had been applied. The later physical WiVRn test
+required a [private Proton OpenXR bridge workaround](openxr-layers.md) before
+the user confirmed visible headset gameplay. Full controller mapping,
+calibration, Pip-Boy, stereo correctness, extended play, and VR save/reload
+still require validation.

@@ -2,10 +2,13 @@
 """Experimental Steam launch wrapper; use --dry-run to inspect without writing."""
 import argparse
 import configparser
+import hashlib
 import json
 import os
 from pathlib import Path
 import shlex
+
+from patch_openxr_bridge import SOURCE_SHA256, PATCHED_SHA256
 
 
 def replace_game(command, mo2):
@@ -79,6 +82,19 @@ def native_compiler_override(value):
     return ";".join(rules + ["d3dcompiler_47=n"])
 
 
+def private_openxr_bridge(command, bridge):
+    """Overlay one verified Unix bridge in this launch's mount namespace."""
+    protons = [Path(arg) for arg in command if Path(arg).name == "proton"]
+    if len(protons) != 1:
+        raise ValueError("cannot identify one Proton installation for the OpenXR patch")
+    original = protons[0].parent / "files/lib/wine/x86_64-unix/wineopenxr.so"
+    for path, expected in ((original, SOURCE_SHA256), (bridge, PATCHED_SHA256)):
+        if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+            raise ValueError(f"OpenXR bridge hash mismatch: {path}; check the Proton version")
+    return ["/usr/bin/bwrap", "--bind", "/", "/", "--dev-bind", "/dev", "/dev",
+            "--ro-bind", str(bridge), str(original), "--", *command]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mo2", type=Path, required=True)
@@ -93,6 +109,8 @@ def main():
                         help="test Proton 11's WoW64 mode with the 64-bit native VR bridge")
     parser.add_argument("--native-d3dcompiler47", action="store_true",
                         help="use an installed native D3DCompiler 47 for VR launches")
+    parser.add_argument("--openxr-bridge", type=Path,
+                        help="private patched wineopenxr.so for the supported Proton build")
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command[1:] if args.command[:1] == ["--"] else args.command
@@ -109,6 +127,10 @@ def main():
         compatibility.read(mo2.parent / "ttwvr-linux.ini")
         vr_wow64 = compatibility.getboolean("VR", "wow64", fallback=False)
         vr_compiler = compatibility.getboolean("VR", "native_d3dcompiler47", fallback=False)
+        bridge_setting = compatibility.get("VR", "openxr_bridge", fallback="")
+        bridge = args.openxr_bridge or (Path(bridge_setting) if bridge_setting else None)
+        if bridge and not bridge.is_absolute():
+            bridge = mo2.parent / bridge
     except (ValueError, configparser.Error) as exc:
         parser.error(str(exc))
     for path in ((mo2, runtime) if vr else (mo2,)):
@@ -125,7 +147,9 @@ def main():
             if not runtime_manifest["runtime"]["library_path"]:
                 raise ValueError("missing runtime library")
             command = use_imported_openxr(command)
-    except (KeyError, ValueError) as exc:
+        if vr and bridge:
+            command = private_openxr_bridge(command, bridge.resolve())
+    except (KeyError, OSError, ValueError) as exc:
         parser.error(str(exc))
 
     bindings = [p for p in os.environ.get("PRESSURE_VESSEL_FILESYSTEMS_RW", "").split(":") if p]

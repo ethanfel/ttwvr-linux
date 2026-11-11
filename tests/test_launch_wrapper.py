@@ -127,6 +127,22 @@ os.execvpe(command[0], command, os.environ)
             self.assertEqual(json.loads(result.stdout)['overrides'],
                              'd3dcompiler_47=n' if mode == 'vr' else None)
 
+    def test_bridge_rejects_changed_proton_and_flat_ignores_bridge(self):
+        original = self.root / 'files/lib/wine/x86_64-unix/wineopenxr.so'
+        original.parent.mkdir(parents=True)
+        original.write_bytes(b'a different Proton build')
+        (self.mo2.parent / 'ttwvr-linux.ini').write_text(
+            '[VR]\nopenxr_bridge=missing-private-bridge.so\n')
+        result = self.launch([self.proton, 'waitforexitandrun', self.game],
+                             '--mode', 'vr')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('OpenXR bridge hash mismatch', result.stderr)
+        self.assertFalse(self.state.exists())
+        self.assertEqual(original.read_bytes(), b'a different Proton build')
+        result = self.launch([self.proton, 'waitforexitandrun', self.game],
+                             '--mode', 'flat')
+        self.assertEqual(result.returncode, 0, result.stderr)
+
 
 if __name__ == '__main__':
     unittest.main()

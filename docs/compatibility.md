@@ -147,8 +147,16 @@ See [the detailed test, workaround, hashes, and rollback](simulated-vr.md).
 Proton's stock DXVK is still in use; the supplied custom DXVK is bypassed by a
 DXVK-detection guard. DLSS/FSR initialization remains unavailable, and the mod
 reported failed depth copies for its blood effect. The simulated WMR trigger
-test did not establish working input. Physical WiVRn display, stereo
-correctness, controllers, calibration, and sustained gameplay remain unverified.
+test did not establish working input.
+
+The first physical WiVRn test displayed the menu but went black after the save
+loaded, with repeated `XR_ERROR_POSE_INVALID` for a corrupted overlay layer.
+A private, hash-guarded Proton OpenXR bridge workaround corrected the observed
+allocation bug. The user then confirmed persistent gameplay visibility on the
+Quest 3; no invalid-pose errors occurred in that retest. The original installed
+Proton bridge remains unchanged. See [the patch and regression test](openxr-layers.md).
+Performance tuning, full controller/calibration checks, stereo correctness,
+and sustained gameplay validation remain in progress.
 
 ## Primary references
 

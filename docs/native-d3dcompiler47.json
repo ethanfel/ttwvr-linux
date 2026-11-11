@@ -22,7 +22,8 @@
     "native_i386_loaded": true,
     "copied_vault101_save_loaded": true,
     "spectator_world_view_observed": true,
-    "physical_headset_tested": false,
-    "registry_override_added": false
+    "physical_headset_tested": true,
+    "registry_override_added": false,
+    "physical_test_requires_openxr_bridge_patch": true
   }
 }
