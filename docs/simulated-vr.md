@@ -1,6 +1,7 @@
 # Simulated TTWVR investigation — 2026-11-11
 
-Builds and binary hashes are recorded in [compatibility.md](compatibility.md).
+Current status is in [compatibility.md](compatibility.md); the original binary
+hashes are in [investigation.md](investigation.md#supplied-build).
 Tests use Proton Experimental 11.0-100, its WoW64 mode, Steam Linux Runtime 4,
 MO2 2.5.2, TTWVR 1.1.0 build D13C92BA, and the original user-supplied Monado
 runtime. The runtime and global WiVRn registration have not been modified.

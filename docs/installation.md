@@ -1,97 +1,101 @@
-# Installation record and remaining work
+# Installation
 
-The local workspace keeps the original downloads, MO2, conversion output,
-backups, and runtime logs outside this Git repository.
+[← README](../README.md) · [Troubleshooting](troubleshooting.md)
 
-## Layout
+This is a manual setup for **TTW 3.4 / TTWVR 1.1.0**. If flat TTW already works,
+start at step 3, retaining the Steam wrapper from step 2.
 
-```text
-workspace/
-  TTWVR.zip                    original user-supplied archive
-  downloads/                   original third-party archives
-  local/
-    MO2/                       portable Mod Organizer 2
-      mods/                    individually staged mods
-    TTW-Installer/             original Windows installer + TTW 3.4 MPI
-    TTW_Linux_Installer/       upstream native installer source checkout
-    root-mods/                 staged xNVSE and Vorbis libraries
-    patched-root/              patched EXE, original backup, upstream patcher
-    vr-state/                  created only when the VR wrapper is run
-  ttwvr-linux/                 this repository, original tooling and records only
-```
+## 1. Get the requirements
 
-## 4GB patch reproduction
+| Download / install | Source |
+|---|---|
+| English New Vegas Ultimate + Fallout 3 GOTY, all DLC | Your Steam library |
+| TTW, YUPTTW, xNVSE and required utilities/presets | [The Best of Times](https://thebestoftimes.moddinglinked.com/intro.html) |
+| Portable Mod Organizer 2 (tested: 2.5.2) | [MO2 releases](https://github.com/ModOrganizer2/modorganizer/releases/tag/v2.5.2) |
+| FNV4GB **for Proton** (tested: 1.5) | [Author's download page](https://www.nexusmods.com/newvegas/mods/62552?tab=files) |
+| Tale of Two Realities / TTWVR 1.1.0 | [KUPOkinz's Flat2VR thread](https://discord.com/channels/747967102895390741/1560413111423344730), Discord access required |
+| WiVRn and xrizer | [WiVRn](https://github.com/WiVRn/WiVRn), [xrizer](https://github.com/Supreeeme/xrizer#download--usage) |
 
-Obtain **FNV4GB for Proton 1.5** from
-[the original patcher page](https://www.nexusmods.com/newvegas/mods/62552?tab=files).
-Copy the original `FalloutNV.exe` to an empty staging directory, extract
-`FalloutNVPatcher` beside it, make the patcher executable, and run it from that
-directory. It creates `FalloutNV_backup.exe` and patches the copy in place.
+Install Python 3, Git, curl and bubblewrap (`/usr/bin/bwrap`). The performance patch
+also needs Meson, Ninja, glslang and the i686 MinGW-w64 C/C++ compiler with POSIX
+thread support. Use working Vulkan drivers, including their 32-bit support.
 
-The observed input and output hashes are in [fnv4gb-result.json](fnv4gb-result.json).
-This is the author's existing patch, not an original patch developed here. The
-original executable must be backed up before the staged output is deployed.
+The supported Proton build is **`experimental-11.0-20261105c-x86_64`** with
+Steam Linux Runtime 4. Check the `version` file in your Proton installation.
+Other builds need patch revalidation; do not bypass a hash mismatch.
 
-## Native TTW conversion
-
-[SulfurNitride's native installer](https://github.com/SulfurNitride/TTW_Linux_Installer)
-supports TTW MPI packages. The inspected source commit is
-`936b0aef1f8379662c85aad639510f356dd9a0db` (version 0.2.0). Its README notes that
-its output is approximately 18 GB rather than the Windows installer's 17 GB.
-Size alone is not a sufficient validation: check asset/BSA failures and required
-masters too.
-
-The CLI documented upstream is:
+Launch each unmodded game once through Steam to initialize its prefix and INIs.
+Close both games before setup. Clone this repository:
 
 ```sh
-mpi_installer install \
-  --mpi '/path/to/Tale of Two Wastelands 3.4.mpi' \
-  --fo3 '/path/to/Fallout 3 goty' \
-  --fnv '/path/to/Fallout New Vegas' \
-  --dest '/path/to/MO2/mods/Tale of Two Wastelands'
+git clone https://github.com/ethanfel/ttwvr-linux.git
 ```
 
-Conversion assets are generated. The native CLI was built from the inspected upstream
-commit, without source changes. Its 525 registry dependencies were downloaded
-separately, verified against Cargo.lock, and supplied as a local vendored source
-for an offline release build. This repository does not bundle those dependencies
-or the resulting binary.
+## 2. Set up and verify flat TTW
 
-The conversion produced 18,609,522,654 bytes. It reported 196,915 successful asset
-operations and two failures, both attempts to copy Vorbis DLLs into the game
-root. Those two default files were already superseded by the separately deployed
-newer official Vorbis update; the installed update hashes were verified. The
-nonzero converter exit is preserved in the result record rather than hidden.
-All 18 masters have readable TES4 headers and a valid dependency order; all 28
-generated BSA headers have version 104 and nonzero file counts. These checks do
-not replace an in-game test.
+Extract portable MO2 to a directory you own. In **New Vegas → Properties →
+General → Launch Options**, paste this as one line, replacing the paths:
 
-## Prepared MO2 profiles
+```text
+python3 "/path/to/ttwvr-linux/tools/steam_mo2.py" --mode flat --mo2 "/path/to/MO2/ModOrganizer.exe" --state-dir "/path/to/ttwvr-state" -- %command%
+```
 
-`tools/create_profiles.py` initializes a new portable instance from ordered JSON
-lists of staged mods and plugins and from launcher-generated INIs. It refuses to
-overwrite an existing instance or either target profile. The profile names are
-`TTW - Flat` and `TTW - VR`, with Flat selected first. Only the latter enables
-TTWVR, which has the final asset override priority. Profiles have separate saves
-and INIs. MO2's default automatic archive invalidation is enabled and the per-
-profile setting is left unset so MO2 performs the actual initialization.
+Select the supported Proton build in Steam's Compatibility settings, then
+start New Vegas to open MO2. Create a portable instance for **Tale of Two
+Wastelands**, pointing at the New Vegas directory.
 
-MO2's INI must use `gameName=TTW`, the plugin's internal `gameName()` value.
-`Tale of Two Wastelands` is its display title and is not accepted here. The first
-launch exposed this configuration error; the local INI and generator were
-corrected. See the [upstream game plugin](https://github.com/ModOrganizer2/modorganizer-game_ttw/blob/master/src/gamefalloutttw.cpp).
+Follow [The Best of Times](https://thebestoftimes.moddinglinked.com/intro.html)
+for mod order, utilities and INIs, with these Linux-specific steps:
 
-## Remaining setup
+- Use **FNV4GB for Proton**. Back up `FalloutNV.exe` before patching it.
+- Convert TTW using [the native Linux installer](https://github.com/SulfurNitride/TTW_Linux_Installer).
+  Select the extracted TTW `.mpi`, both game directories and MO2's
+  `mods/Tale of Two Wastelands` as the output directory.
+- Name the MO2 profile **`TTW - Flat`** and enable profile-specific INIs and saves.
+- Run `FalloutNV.exe` from MO2; the tested Proton 4GB patch autoloads xNVSE.
 
-- The official guide utility set and presets have been staged and enabled in
-  both profiles. ML Utilities Checker passed in game and is now disabled.
-- Root files are deployed and their backups and checksums are recorded locally.
-- MO2 initialized automatic archive invalidation in Flat. A new game reached
-  the TTW intro scene, confirmed by the user. The
-  copied guide custom INI includes TTW's starting quest and disables the NV intro.
-- Select the VR profile and test the WiVRn launch path. Keep results distinct
-  from settings that have only been prepared on disk.
+**Checkpoint:** ML Utilities Checker reports **“All utilities installed!”** and
+a new game reaches the TTW intro. Disable the checker after it passes, make a
+save, and close the game and MO2.
 
-No binary compatibility change should be applied without a reproducible runtime
-failure. Record any future change with its upstream version, before/after hashes,
-reason, validation, and rollback.
+## 3. Create the VR profile
+
+Duplicate the working flat profile as **`TTW - VR`**, with separate INIs and
+saves. Install the author's TTWVR archive and enable it only in this profile.
+Give it final asset override priority in MO2's left pane. Follow the included
+TTWVR instructions for its controls and calibration.
+
+Copy the flat save and its matching `.nvse` companion into the VR profile's
+`saves` directory if you want to continue from that point; keep the originals.
+
+## 4. Apply the Linux fixes
+
+**[Follow these three patch steps](linux-fixes.md)** to install the native shader
+compiler, prepare the private OpenXR bridge, and build the DXVK performance fix.
+That page also creates `ttwvr-linux.ini` beside `ModOrganizer.exe`.
+
+All three fixes are part of the tested setup. Keep TTWVR's original
+`Resolution=150%`; the performance fix does not need reduced resolution or DLSS.
+
+## 5. Launch in VR
+
+Replace Steam's launch option with this single line, adjusting the paths:
+
+```text
+python3 "/path/to/ttwvr-linux/tools/steam_mo2.py" --mode vr --mo2 "/path/to/MO2/ModOrganizer.exe" --state-dir "/path/to/ttwvr-state" --xrizer "/opt/xrizer" --xr-runtime "/usr/share/openxr/1/openxr_wivrn.json" -- %command% -p "TTW - VR"
+```
+
+The xrizer path must contain `bin/linux64/vrclient.so`. Adjust the runtime
+manifest path if your WiVRn installation uses another location.
+
+1. Start WiVRn and connect your headset.
+2. On the tested Quest 3, select **120 Hz** in WiVRn's headset video settings.
+3. Start New Vegas in Steam, then run `FalloutNV.exe` from MO2's VR profile.
+4. Load the copied save. Check that gameplay stays visible in the headset and
+   head tracking works; then check your controls and calibration.
+
+The measured result was about **60 game FPS at 120 Hz**, at the original eye
+resolution. Performance will depend on your hardware and scene.
+
+To return to flat play, close the game and MO2, use the step 2 launch option,
+and select **`TTW - Flat`**. Always restart MO2 when changing launch modes.

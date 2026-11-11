@@ -92,5 +92,5 @@ addresses are specific to that build. The original binary returns 1 with two
 The live Quest 3 retest loaded the patched hash inside the game's namespace,
 while a host-side checksum still matched the original. The copied save loaded
 with zero invalid-pose errors, and the user confirmed that gameplay remained
-visible in the headset. Performance was initially poor and then improved; it
-is still being investigated. DLSS fallback and blood-depth-copy warnings remain.
+visible in the headset. The later [DXVK pool fix](dxvk-pools.md) improved performance
+at the original resolution. DLSS fallback and blood-depth-copy warnings remain.

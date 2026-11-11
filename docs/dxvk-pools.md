@@ -1,4 +1,7 @@
-# Full-resolution eye-buffer allocation experiment
+# Full-resolution DXVK performance fix
+
+For setup commands, see [Apply the Linux fixes](linux-fixes.md#3-dxvk-performance-patch).
+This page records the reason for the patch and its measurements.
 
 This source-built performance patch has passed an initial physical Quest 3
 test through WiVRn at 120 Hz, separately from the unsuccessful DLSS patches.
