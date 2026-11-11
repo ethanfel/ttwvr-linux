@@ -158,6 +158,12 @@ Proton bridge remains unchanged. See [the patch and regression test](openxr-laye
 Performance tuning, full controller/calibration checks, stereo correctness,
 and sustained gameplay validation remain in progress.
 
+Later renderer experiments enabled the bundled DXVK and corrected its
+Wine Vulkan-module lookup, but the 64-bit upscaler helper then crashed importing
+a fence created by another process. A standalone 32/64-bit D3D11 test reproduces
+the same Proton crash without TTWVR. Those experiments are not enabled in normal
+launches. See [performance findings and reproduction](performance.md).
+
 ## Primary references
 
 - [TTW official installation guide](https://thebestoftimes.moddinglinked.com/ttw.html)

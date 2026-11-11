@@ -76,6 +76,11 @@ observed failure. It is restricted to one verified Proton build and is applied
 only inside the game's launch environment. It does not modify Steam's installed
 Proton or redistribute its binaries.
 
+The [performance investigation](docs/performance.md) records the renderer and
+Vulkan-loader experiments, and a standalone reproducer for Proton's separate
+cross-process GPU-fence crash. The experimental TTWVR DLL changes are not
+enabled by the normal launcher; they have not made DLSS usable.
+
 For Steam's container command, the wrapper gives the selected OpenXR manifest
 to pressure-vessel's importer, then clears the host override before Proton so
 the loader uses the imported manifest. Launcher checks can be run with:

@@ -1,5 +1,28 @@
 # Change log
 
+## 2026-11-11 — Performance diagnostics and DLSS investigation
+
+- Tested the modern VR resolution percentage at 100%; the fallback renderer
+  remained at 2944x2208. A physical gameplay capture showed 23.5 FPS.
+- Added a hash-guarded, private TTWVR copy with 1920x1440 fallback defaults.
+  The same saved scene in Monado simulation showed 39.1–42.3 FPS captures,
+  compared with 15.4 FPS before. This trades image detail for speed and is
+  not a DLSS fix or a physical-headset benchmark.
+- Added optional VR-only launcher overlays for that copy, verifying both mod
+  hashes each launch. Ten launcher tests pass, including update rejection.
+  The user rejected lower resolution as a solution: this overlay is disabled
+  and the original resolution percentage (150%) is restored.
+- Experimentally enabled TTWVR's bundled DXVK and corrected its Vulkan loader
+  lookup under Wine. Its 64-bit DLSS helper then crashed in Proton's
+  cross-process shared-fence import. These patches are not normally enabled.
+- Added a standalone 32/64-bit D3D11 fence round-trip reproducer, which exposes
+  the same failure without a game or headset. A separate monotonic-only runtime
+  experiment passed that probe but produced a black TTWVR image; it was reverted.
+- Original mod and Proton binaries remain unchanged. All eight VR save files
+  matched their pre-test hashes. Local captures and full logs remain private.
+- [Measurements, exact patches, scope and rollback](docs/performance.md),
+  [failed fence experiment](docs/fence-experiment.md).
+
 ## 2026-11-11 — Quest 3 gameplay and private OpenXR bridge patch
 
 - Connected TTWVR's direct OpenXR backend to WiVRn 26.9 / Meta Quest 3 at 90 Hz.

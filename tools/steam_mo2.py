@@ -9,6 +9,8 @@ from pathlib import Path
 import shlex
 
 from patch_openxr_bridge import SOURCE_SHA256, PATCHED_SHA256
+from patch_fallback_resolution import SOURCE_SHA256 as TTWVR_SOURCE_SHA256
+from patch_fallback_resolution import PATCHED_SHA256 as TTWVR_FALLBACK_SHA256
 
 
 def replace_game(command, mo2):
@@ -95,6 +97,16 @@ def private_openxr_bridge(command, bridge):
             "--ro-bind", str(bridge), str(original), "--", *command]
 
 
+def private_fallback_resolution(command, original, patched):
+    """Use the smaller fallback DLL only while both supported hashes match."""
+    for path, expected in ((original, TTWVR_SOURCE_SHA256),
+                           (patched, TTWVR_FALLBACK_SHA256)):
+        if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+            raise ValueError(f"TTWVR fallback hash mismatch: {path}; check the mod version")
+    return ["/usr/bin/bwrap", "--bind", "/", "/", "--dev-bind", "/dev", "/dev",
+            "--ro-bind", str(patched), str(original), "--", *command]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mo2", type=Path, required=True)
@@ -131,6 +143,13 @@ def main():
         bridge = args.openxr_bridge or (Path(bridge_setting) if bridge_setting else None)
         if bridge and not bridge.is_absolute():
             bridge = mo2.parent / bridge
+        fallback_paths = []
+        for key in ("fallback_resolution_source", "fallback_resolution_patch"):
+            value = compatibility.get("VR", key, fallback="")
+            path = Path(value).expanduser() if value else None
+            if path and not path.is_absolute():
+                path = mo2.parent / path
+            fallback_paths.append(path.resolve() if path else None)
     except (ValueError, configparser.Error) as exc:
         parser.error(str(exc))
     for path in ((mo2, runtime) if vr else (mo2,)):
@@ -149,6 +168,10 @@ def main():
             command = use_imported_openxr(command)
         if vr and bridge:
             command = private_openxr_bridge(command, bridge.resolve())
+        if vr and any(fallback_paths):
+            if not all(fallback_paths):
+                raise ValueError("set both fallback_resolution_source and fallback_resolution_patch")
+            command = private_fallback_resolution(command, *fallback_paths)
     except (KeyError, OSError, ValueError) as exc:
         parser.error(str(exc))
 

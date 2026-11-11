@@ -127,6 +127,29 @@ os.execvpe(command[0], command, os.environ)
             self.assertEqual(json.loads(result.stdout)['overrides'],
                              'd3dcompiler_47=n' if mode == 'vr' else None)
 
+    def test_fallback_rejects_changed_mod_and_flat_ignores_setting(self):
+        original = self.mo2.parent / 'TTWVR.dll'
+        original.write_bytes(b'changed mod version')
+        patched = self.mo2.parent / 'fallback.dll'
+        patched.touch()
+        (self.mo2.parent / 'ttwvr-linux.ini').write_text(
+            '[VR]\nfallback_resolution_source=TTWVR.dll\n'
+            'fallback_resolution_patch=fallback.dll\n')
+        result = self.launch([self.proton, 'waitforexitandrun', self.game], '--mode', 'vr')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('TTWVR fallback hash mismatch', result.stderr)
+        self.assertFalse(self.state.exists())
+        result = self.launch([self.proton, 'waitforexitandrun', self.game], '--mode', 'flat')
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_incomplete_fallback_configuration_rejected_in_vr(self):
+        (self.mo2.parent / 'ttwvr-linux.ini').write_text(
+            '[VR]\nfallback_resolution_patch=fallback.dll\n')
+        result = self.launch([self.proton, 'waitforexitandrun', self.game], '--mode', 'vr')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('set both fallback_resolution', result.stderr)
+        self.assertFalse(self.state.exists())
+
     def test_bridge_rejects_changed_proton_and_flat_ignores_bridge(self):
         original = self.root / 'files/lib/wine/x86_64-unix/wineopenxr.so'
         original.parent.mkdir(parents=True)
