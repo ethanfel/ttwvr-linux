@@ -99,3 +99,16 @@ resolution. Performance will depend on your hardware and scene.
 
 To return to flat play, close the game and MO2, use the step 2 launch option,
 and select **`TTW - Flat`**. Always restart MO2 when changing launch modes.
+
+## Native manager alternative
+
+[Amethyst](https://github.com/ChrisDKN/Amethyst-Mod-Manager) is a native Linux
+mod manager with TTW installation and 4GB patch wizards. Its
+[TTW guide](https://github.com/ChrisDKN/Amethyst-Mod-Manager/wiki/3.5-Installing-Viva-New-Vegas-and-Tale-of-Two-Wastelands#tale-of-two-wastelands)
+covers game detection, the manually downloaded `.mpi`, conversion and missing
+requirements, including the separate JIP/NVTF INIs.
+
+This can simplify the base installation. **Amethyst + TTWVR has not been tested
+in this repository.** Our `steam_mo2.py` launcher and `ttwvr-linux.ini` are
+MO2-specific; Amethyst does not automatically apply these VR fixes. Its launch
+path needs separate validation before using the patches with it.

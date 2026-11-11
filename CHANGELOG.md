@@ -2,6 +2,9 @@
 
 ## 2026-11-11
 
+- Added Amethyst as a native Linux alternative for base TTW setup, with its
+  upstream guide. Amethyst integration with this project's VR launcher remains
+  untested.
 - **Documented setup:** short README, numbered installation steps, Linux patch
   commands, troubleshooting and a current compatibility summary.
 - **Fixed save-load crash:** native D3DCompiler 47 replaces the failing Wine
