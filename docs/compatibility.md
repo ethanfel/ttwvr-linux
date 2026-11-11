@@ -78,6 +78,9 @@ all 16 utility DLLs reported successful loading. The user supplied a screenshot
 of ML Utilities Checker's **All utilities installed!** result, confirming its
 plugin checks, the LAA patch, and the custom INI's `iNumHWThreads=3` value.
 The temporary checker was disabled after that successful test.
+The user then confirmed that a new game reached TTW's intro scene. The runtime
+log records `NewGameHook`. Flat-mode startup and initial gameplay are verified;
+extended gameplay, save/load, and VR remain separate checks.
 
 1. Complete TTW conversion and the official dependencies; verify TTW in flat mode.
 2. Add the supplied TTWVR as the final asset override in a dedicated MO2 profile.

@@ -16,5 +16,6 @@
     "TES4 headers and MAST dependency order for all 18 enabled ESMs",
     "BSA signature, version 104 and nonempty header counts for 28 output BSAs"
   ],
-  "in_game_validated": false
+  "in_game_validated": true,
+  "in_game_validation_scope": "User confirmed a new game reaches the TTW intro scene; utility checker passed. Full playthrough, save/load and VR are not yet validated."
 }

@@ -54,6 +54,9 @@ Completed:
 - The user confirmed the in-game **All utilities installed!** message. This
   validates the checker-covered plugins, LAA patch and custom INI setting.
   Disabled the checker in both profiles after the game and MO2 closed.
+- The user confirmed a new game reached TTW's intro scene in the Flat profile;
+  the xNVSE log also records `NewGameHook`. This is an initial gameplay check,
+  not a full playthrough or save/load validation.
 - Fixed the flat-profile startup waiting for a disconnected VR runtime. Auto
   mode now selects an empty private OpenVR registry and `DXVK_NO_VR=1` for
   `TTW - Flat`; game and MO2 startup were subsequently observed. Five launcher
@@ -77,7 +80,7 @@ Completed:
 
 Not yet done:
 
-- Complete TTW gameplay validation.
+- Extended TTW gameplay and save/load validation.
 - Live Proton/WiVRn test, headset rendering, controls, and save/load verification.
 - Any binary or source compatibility patch to TTWVR/DXVK/Proton/xrizer.
 
