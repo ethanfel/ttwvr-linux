@@ -16,3 +16,10 @@ state/
 *.dds
 *.fos
 *.nvse
+
+# Private neural diagnostics and build artifacts
+neural/captures/
+neural/runtime/
+neural/build*/
+*.obj
+*.bin

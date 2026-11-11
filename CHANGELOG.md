@@ -2,6 +2,12 @@
 
 ## 2026-11-11
 
+- **Added an isolated spatial NR prototype:** full-resolution D3D9 scene inputs,
+  64-bit NGX helper, GPU depth/HDR transport, per-eye NR features and confirmed
+  in-game stereo captures on consecutive frames. History resets every frame;
+  temporal NR and DLAA remain unvalidated and disabled. The working Steam setup
+  is unchanged. [Source and evidence](neural/README.md)
+
 - Added Amethyst as a native Linux alternative for base TTW setup, with its
   upstream guide. Amethyst integration with this project's VR launcher remains
   untested.

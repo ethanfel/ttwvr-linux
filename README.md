@@ -63,3 +63,10 @@ Run launcher checks from the repository: `python3 -m unittest discover -s tests 
 The optional audit and profile tools describe their inputs with `--help`.
 
 </details>
+
+## Experimental neural rendering
+
+The separate [spatial NR prototype](neural/README.md) has processed both TTWVR
+stereo eyes in an isolated Linux test. It is off by default and does not change
+the normal Steam launch. Temporal NR, DLAA and real-headset quality checks remain
+unfinished; frame generation is excluded.
