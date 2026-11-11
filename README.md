@@ -70,5 +70,5 @@ The separate [neural rendering prototype](neural/README.md) has processed both
 TTWVR eyes with temporal NR, native-resolution DLAA and both together in isolated
 simulated-headset tests. The in-game menu provides independent NR/DLAA toggles
 and NR model/tuning controls, with live Apply and controller navigation.
-It remains separate from the normal Steam launch; physical-headset quality and
-performance checks are still needed. No frame generation is implemented.
+The regular Steam launch needs an explicit [addon installation and opt-in](neural/docs/STEAM.md).
+Physical-headset quality and performance checks are still needed. No frame generation is implemented.

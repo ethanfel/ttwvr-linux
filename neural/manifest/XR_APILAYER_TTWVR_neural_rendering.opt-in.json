@@ -1,0 +1,12 @@
+{
+  "file_format_version": "1.0.0",
+  "api_layer": {
+    "name": "XR_APILAYER_TTWVR_neural_rendering",
+    "library_path": ".\\TTWVRNeuralRenderingLayer.dll",
+    "api_version": "1.0",
+    "implementation_version": "1",
+    "description": "TTWVR experimental NR/DLAA with in-game controls; launch opt-in",
+    "disable_environment": "DISABLE_TTWVR_NEURAL_RENDERING",
+    "enable_environment": "ENABLE_TTWVR_NEURAL_RENDERING"
+  }
+}

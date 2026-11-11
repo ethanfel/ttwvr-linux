@@ -140,6 +140,7 @@ def main():
         compatibility.read(mo2.parent / "ttwvr-linux.ini")
         vr_wow64 = compatibility.getboolean("VR", "wow64", fallback=False)
         vr_compiler = compatibility.getboolean("VR", "native_d3dcompiler47", fallback=False)
+        vr_neural = compatibility.getboolean("VR", "neural_rendering", fallback=False)
         bridge_setting = compatibility.get("VR", "openxr_bridge", fallback="")
         bridge = args.openxr_bridge or (Path(bridge_setting) if bridge_setting else None)
         if bridge and not bridge.is_absolute():
@@ -202,7 +203,11 @@ def main():
         "PRESSURE_VESSEL_FILESYSTEMS_RW": ":".join(bindings),
         "PROTON_LOG": "1",
         "PROTON_LOG_DIR": str(state),
+        "ENABLE_TTWVR_NEURAL_RENDERING": "1" if vr and vr_neural else None,
     }
+    if vr and vr_neural:
+        changes["PROTON_ENABLE_NVAPI"] = "1"
+        changes["PROTON_HIDE_NVIDIA_GPU"] = "0"
     if args.wow64 or (vr and vr_wow64):
         changes["PROTON_USE_WOW64"] = "1"
     if vr and (args.native_d3dcompiler47 or vr_compiler):

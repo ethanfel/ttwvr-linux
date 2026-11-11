@@ -5,8 +5,8 @@ Both eyes were captured with DLAA alone, temporal NR alone and both combined
 in the loaded Vault 101 scene on consecutive frames,
 at the original **2944 × 2208 per eye**. The temporal motion path is experimental;
 see the exact tested modes in [the evidence record](docs/EVIDENCE.md).
-No frame generation or Super Resolution upscaling is implemented. The normal
-Steam installation is unchanged.
+No frame generation or Super Resolution upscaling is implemented. The regular Steam launch requires an explicit
+[addon installation and opt-in](docs/STEAM.md).
 
 This GPL-3.0-only port uses
 [TF2VRNeuralRendering](https://github.com/ethanfel/TF2VRNeuralRendering) as its
@@ -91,10 +91,10 @@ transport under Proton; they deliberately read pixels back for verification.
 `replay_probe.exe` processes captured stereo HDR outside the game. Its identity
 mode verifies the conversion route; it does not claim an NR evaluation.
 
-## Isolated installation only
+## Installation and testing
 
-Use a copied Proton prefix, game executables, MO2 configuration, profile and
-saves. Large immutable assets may be read-only links. ESM/ESP files must be copies:
+For development and validation, use a copied Proton prefix, game executables,
+MO2 configuration, profile and saves. Large immutable assets may be read-only links. ESM/ESP files must be copies:
 MO2 changes their timestamps. The test mount namespace must protect the originals.
 Keep WiVRn's default registration and Titanfall files unchanged.
 
@@ -111,6 +111,8 @@ native D3DCompiler 47. Register the manifest **only in the copied prefix's 32-bi
 OpenXR implicit-layer registry view**. Do not apply that manifest to the native
 Linux OpenXR loader. The existing private Wine OpenXR bridge is still required.
 See the repository's [simulated runtime notes](../docs/simulated-vr.md).
+To install a validated build into the regular VR profile, follow the
+[Steam opt-in steps](docs/STEAM.md); the test installation is not inherited automatically.
 
 Defaults leave both effects off. Configure the **private** INI or use the
 in-game menu. Feature combinations and tuning apply live:

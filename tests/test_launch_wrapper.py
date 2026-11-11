@@ -31,7 +31,10 @@ import json, os, sys
 print(json.dumps({'args': sys.argv[1:], 'xr': os.environ.get('XR_RUNTIME_JSON'),
                   'no_vr': os.environ.get('DXVK_NO_VR'),
                   'wow64': os.environ.get('PROTON_USE_WOW64'),
-                  'overrides': os.environ.get('WINEDLLOVERRIDES')}))
+                  'overrides': os.environ.get('WINEDLLOVERRIDES'),
+                  'neural': os.environ.get('ENABLE_TTWVR_NEURAL_RENDERING'),
+                  'nvapi': os.environ.get('PROTON_ENABLE_NVAPI'),
+                  'hide_nvidia': os.environ.get('PROTON_HIDE_NVIDIA_GPU')}))
 """)
         self.entry = self.script("_v2-entry-point", """
 import os, sys
@@ -118,6 +121,23 @@ os.execvpe(command[0], command, os.environ)
                 self.assertEqual(child['overrides'],
                                  'd3d9=n;d3dx9_43=b;mscoree=;d3dcompiler_47=n'
                                  if mode == 'vr' else inherited)
+
+    def test_neural_opt_in_is_vr_only_and_default_off(self):
+        for configured, mode in ((False, 'vr'), (True, 'vr'), (True, 'flat')):
+            with self.subTest(configured=configured, mode=mode):
+                (self.mo2.parent / 'ttwvr-linux.ini').write_text(
+                    '[VR]\nneural_rendering=' + str(configured).lower() + '\n')
+                result = self.launch([self.proton, 'waitforexitandrun', self.game],
+                                     '--mode', mode,
+                                     environment={'ENABLE_TTWVR_NEURAL_RENDERING': 'inherited',
+                                                  'PROTON_ENABLE_NVAPI': '0',
+                                                  'PROTON_HIDE_NVIDIA_GPU': '1'})
+                self.assertEqual(result.returncode, 0, result.stderr)
+                child = json.loads(result.stdout)
+                enabled = configured and mode == 'vr'
+                self.assertEqual(child['neural'], '1' if enabled else None)
+                self.assertEqual(child['nvapi'], '1' if enabled else '0')
+                self.assertEqual(child['hide_nvidia'], '0' if enabled else '1')
 
     def test_native_compiler_flag_is_vr_only(self):
         for mode in ('vr', 'flat'):

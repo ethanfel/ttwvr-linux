@@ -2,6 +2,11 @@
 
 ## 2026-11-11
 
+- **Connected the neural addon to regular Steam VR launches:** an opt-in manifest
+  and `neural_rendering=true` instance setting enable the layer/NVIDIA access
+  through the existing command. Added deployment and rollback instructions;
+  flat launches stay outside the opt-in. [Setup](neural/docs/STEAM.md)
+
 - **Added native in-game neural controls and live Apply:** separate NR/DLAA
   switches, model/scale/strength/tone/detail, controller navigation and keyboard
   fallback. Feature changes rebuild the helper on bypass between stereo frames,
