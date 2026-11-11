@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "SceneJitter.h"
 #include "NativeGuides.h"
+#include "SuperResolution.h"
 #include "Support.h"
 #include <array>
+#include <chrono>
 #include <cstring>
 #include <map>
 #include <vector>
@@ -10,6 +12,22 @@
 namespace ttwvrnr {
 namespace {
 using Microsoft::WRL::ComPtr;
+bool sampleTiming = false;
+int64_t cpuNanoseconds = 0;
+unsigned sampledDraws = 0;
+struct CpuTimer {
+  std::chrono::steady_clock::time_point start;
+  CpuTimer() {
+    if (sampleTiming)
+      start = std::chrono::steady_clock::now();
+  }
+  ~CpuTimer() {
+    if (sampleTiming)
+      cpuNanoseconds += std::chrono::duration_cast<std::chrono::nanoseconds>(
+                            std::chrono::steady_clock::now() - start)
+                            .count();
+  }
+};
 struct Binding {
   ComPtr<IDirect3DVertexShader9> shader;
   int reg = -1;
@@ -88,14 +106,30 @@ int FindBinding(IDirect3DVertexShader9 *shader) {
   return result;
 }
 } // namespace
+void SceneJitterFrame(uint64_t nextFrame) {
+  if (sampleTiming)
+    Log("scene_jitter_cpu frame=%llu draws=%u cpu_ms=%.3f",
+        (unsigned long long)(nextFrame - 1), sampledDraws,
+        double(cpuNanoseconds) / 1000000.0);
+  static const bool profile =
+      GetPrivateProfileIntW(
+          L"diagnostics", L"gpu_timing", 0,
+          (Directory() + L"\\TTWVRNeuralRendering.ini").c_str()) != 0;
+  sampleTiming = profile && nextFrame % 120 == 0;
+  cpuNanoseconds = 0;
+  sampledDraws = 0;
+}
 SceneJitter::SceneJitter(IDirect3DDevice9 *d, bool bypass) {
+  CpuTimer timer;
   float x = 0, y = 0;
   if (bypass || !NativeJitter(x, y))
     return;
   ComPtr<IDirect3DSurface9> rt, ds;
   D3DSURFACE_DESC r{}, z{};
   if (FAILED(d->GetRenderTarget(0, &rt)) || !rt || FAILED(rt->GetDesc(&r)) ||
-      r.Width != 2944 || r.Height != 2208 || r.Format != D3DFMT_A16B16G16R16F ||
+      r.Width != (SuperResolutionLow() ? InputWidth : OutputWidth) ||
+      r.Height != (SuperResolutionLow() ? InputHeight : OutputHeight) ||
+      r.Format != D3DFMT_A16B16G16R16F ||
       FAILED(d->GetDepthStencilSurface(&ds)) || !ds ||
       FAILED(ds->GetDesc(&z)) || z.Width != r.Width || z.Height != r.Height ||
       z.Format != D3DFMT_D24S8)
@@ -115,10 +149,14 @@ SceneJitter::SceneJitter(IDirect3DDevice9 *d, bool bypass) {
     jittered[i] -= 2 * x / float(r.Width) * saved[12 + i];
     jittered[4 + i] += 2 * y / float(r.Height) * saved[12 + i];
   }
-  if (SUCCEEDED(d->SetVertexShaderConstantF(first, jittered, 4)))
+  if (SUCCEEDED(d->SetVertexShaderConstantF(first, jittered, 4))) {
     device = d;
+    if (sampleTiming)
+      ++sampledDraws;
+  }
 }
 SceneJitter::~SceneJitter() {
+  CpuTimer timer;
   if (device)
     device->SetVertexShaderConstantF(first, saved, 4);
 }

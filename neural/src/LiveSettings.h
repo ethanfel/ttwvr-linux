@@ -4,18 +4,20 @@
 #include <tuple>
 namespace ttwvrnr {
 struct LiveSettings {
+  uint32_t sr = 0;
   uint32_t neural = 0, dlaa = 0, temporal = 0, identity = 1, profile = 0;
   uint32_t resolution = 100, preset = 2, strength = 50, tone = 100,
            detail = 100;
-  bool Active() const { return neural || dlaa; }
+  bool Active() const { return neural || dlaa || sr; }
   bool Valid() const {
-    return neural <= 1 && dlaa <= 1 && temporal <= 1 && identity <= 1 &&
+    return sr <= 1 && (!sr || (temporal && !neural && !dlaa && !identity)) &&
+           neural <= 1 && dlaa <= 1 && temporal <= 1 && identity <= 1 &&
            profile <= 1 && resolution >= 25 && resolution <= 100 &&
            preset >= 1 && preset <= 2 && strength <= 100 && tone <= 100 &&
            detail <= 100 && (!dlaa || temporal);
   }
   auto Values() const {
-    return std::tie(neural, dlaa, temporal, identity, profile, resolution,
+    return std::tie(sr, neural, dlaa, temporal, identity, profile, resolution,
                     preset, strength, tone, detail);
   }
   bool operator==(const LiveSettings &s) const {

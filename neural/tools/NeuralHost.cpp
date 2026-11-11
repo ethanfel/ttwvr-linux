@@ -4,10 +4,11 @@
 #include "../src/Support.h"
 #include "../src/backend/NeuralBackend.h"
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
-#include <d3d11.h>
+#include <d3d11_4.h>
 #include <d3dcompiler.h>
 #include <stdexcept>
 #include <wrl/client.h>
@@ -17,21 +18,87 @@ void Check(HRESULT hr) {
   if (FAILED(hr))
     throw std::runtime_error("host D3D operation");
 }
-void Wait(ID3D11Device *d, ID3D11DeviceContext *c) {
-  ComPtr<ID3D11Query> q;
-  D3D11_QUERY_DESC desc{D3D11_QUERY_EVENT, 0};
-  Check(d->CreateQuery(&desc, &q));
-  c->End(q.Get());
-  c->Flush();
-  auto start = GetTickCount64();
-  HRESULT r;
-  while ((r = c->GetData(q.Get(), nullptr, 0, 0)) == S_FALSE) {
-    if (GetTickCount64() - start > 5000)
-      throw std::runtime_error("host GPU timeout");
-    Sleep(0);
+// Completion stays inside the 64-bit helper. No cross-process Wine fence
+// import. Reuse a monotonic fence rather than creating and polling an event
+// query for every eye. The reply is still withheld until all output writes
+// complete.
+class Completion {
+  ComPtr<ID3D11DeviceContext4> context;
+  ComPtr<ID3D11Fence> fence;
+  HANDLE event = nullptr;
+  uint64_t serial = 0;
+
+public:
+  ~Completion() {
+    if (event)
+      CloseHandle(event);
   }
-  Check(r);
-}
+  void Init(ID3D11Device *d, ID3D11DeviceContext *c) {
+    ComPtr<ID3D11Device5> device;
+    Check(d->QueryInterface(IID_PPV_ARGS(&device)));
+    Check(c->QueryInterface(IID_PPV_ARGS(&context)));
+    Check(device->CreateFence(0, D3D11_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
+    event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+    if (!event)
+      throw std::runtime_error("host completion event");
+  }
+  void Wait() {
+    const auto value = ++serial;
+    Check(context->Signal(fence.Get(), value));
+    context->Flush();
+    if (fence->GetCompletedValue() < value) {
+      Check(fence->SetEventOnCompletion(value, event));
+      if (WaitForSingleObject(event, 5000) != WAIT_OBJECT_0)
+        throw std::runtime_error("host GPU timeout");
+    }
+  }
+};
+class HostGpuTiming {
+  ComPtr<ID3D11Query> disjoint, stamps[3];
+  bool sample = false;
+
+public:
+  void Init(ID3D11Device *d) {
+    D3D11_QUERY_DESC q{D3D11_QUERY_TIMESTAMP_DISJOINT, 0};
+    Check(d->CreateQuery(&q, &disjoint));
+    q.Query = D3D11_QUERY_TIMESTAMP;
+    for (auto &t : stamps)
+      Check(d->CreateQuery(&q, &t));
+  }
+  void Begin(ID3D11DeviceContext *c, bool enabled) {
+    sample = enabled;
+    if (sample) {
+      c->Begin(disjoint.Get());
+      c->End(stamps[0].Get());
+    }
+  }
+  void Mark(ID3D11DeviceContext *c, unsigned n) {
+    if (sample)
+      c->End(stamps[n].Get());
+    if (sample && n == 2)
+      c->End(disjoint.Get());
+  }
+  void Collect(ID3D11DeviceContext *c, uint64_t frame, unsigned eye) {
+    if (!sample)
+      return;
+    D3D11_QUERY_DATA_TIMESTAMP_DISJOINT data{};
+    UINT64 t[3]{};
+    if (c->GetData(disjoint.Get(), &data, sizeof(data),
+                   D3D11_ASYNC_GETDATA_DONOTFLUSH) != S_OK ||
+        data.Disjoint || !data.Frequency)
+      return;
+    for (unsigned i = 0; i < 3; ++i)
+      if (c->GetData(stamps[i].Get(), &t[i], sizeof(t[i]),
+                     D3D11_ASYNC_GETDATA_DONOTFLUSH) != S_OK)
+        return;
+    if (t[0] > t[1] || t[1] > t[2])
+      return;
+    Log("host_gpu_span frame=%llu eye=%u decode_ms=%.4f backend_ms=%.4f",
+        (unsigned long long)frame, eye,
+        double(t[1] - t[0]) * 1000 / data.Frequency,
+        double(t[2] - t[1]) * 1000 / data.Frequency);
+  }
+};
 int wmain(int argc, wchar_t **argv) {
   if (argc != 2)
     return 2;
@@ -42,7 +109,7 @@ int wmain(int argc, wchar_t **argv) {
     return 3;
   auto *p = static_cast<HostProtocol *>(
       MapViewOfFile(mapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(HostProtocol)));
-  if (!p || p->magic != 0x54544e52 || p->version != 3)
+  if (!p || p->magic != 0x54544e52 || p->version != 4)
     return 3;
   HANDLE request = OpenEventW(SYNCHRONIZE, FALSE, (name + L"-request").c_str());
   HANDLE reply =
@@ -54,17 +121,41 @@ int wmain(int argc, wchar_t **argv) {
     if (!p->width || !p->height || uint64_t(p->width) * p->height > 16000000)
       throw std::runtime_error("host dimensions");
     LiveSettings settings;
-    settings.neural = p->neural; settings.dlaa = p->dlaa;
-    settings.temporal = p->temporal; settings.identity = p->identity;
-    settings.profile = p->profile; settings.resolution = p->resolution;
-    settings.preset = p->preset; settings.strength = p->strength;
-    settings.tone = p->tone; settings.detail = p->detail;
-    if (!settings.Valid()) throw std::runtime_error("host invalid settings snapshot");
+    settings.sr = p->sr;
+    settings.neural = p->neural;
+    settings.dlaa = p->dlaa;
+    settings.temporal = p->temporal;
+    settings.identity = p->identity;
+    settings.profile = p->profile;
+    settings.resolution = p->resolution;
+    settings.preset = p->preset;
+    settings.strength = p->strength;
+    settings.tone = p->tone;
+    settings.detail = p->detail;
+    if (!settings.Valid())
+      throw std::runtime_error("host invalid settings snapshot");
     ComPtr<ID3D11Device> d;
     ComPtr<ID3D11DeviceContext> c;
     Check(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
                             nullptr, 0, D3D11_SDK_VERSION, &d, nullptr, &c));
-    ComPtr<ID3D11Texture2D> hdr, packed, bloom, objectMotion;
+    HostGpuTiming hostTiming;
+    if (settings.profile)
+      hostTiming.Init(d.Get());
+    Completion completion;
+    completion.Init(d.Get(), c.Get());
+    ComPtr<ID3D11Texture2D> hdr, packed, bloom, objectMotion, output;
+    if (p->sr) {
+      if (p->outputWidth != 2944 || p->outputHeight != 2208)
+        throw std::runtime_error("SR output dimensions");
+      Check(d->OpenSharedResource(
+          reinterpret_cast<HANDLE>(uintptr_t(p->outputHandle)),
+          IID_PPV_ARGS(&output)));
+      D3D11_TEXTURE2D_DESC od{};
+      output->GetDesc(&od);
+      if (od.Width != p->outputWidth || od.Height != p->outputHeight ||
+          od.Format != DXGI_FORMAT_R16G16B16A16_FLOAT)
+        throw std::runtime_error("SR output texture");
+    }
     Check(d->OpenSharedResource(
         reinterpret_cast<HANDLE>(uintptr_t(p->colorHandle)),
         IID_PPV_ARGS(&hdr)));
@@ -175,6 +266,9 @@ RWTexture2D<float2> motion:register(u2);
     options.passthrough = p->identity != 0;
     options.neural = p->neural != 0;
     options.dlaa = p->dlaa != 0;
+    options.sr = p->sr != 0;
+    options.outputWidth = p->outputWidth;
+    options.outputHeight = p->outputHeight;
     options.temporalGuides = p->temporal != 0;
 
     if (!backend.Init(d.Get(), p->width, p->height, Directory() + L"\\runtime",
@@ -182,9 +276,10 @@ RWTexture2D<float2> motion:register(u2);
       throw std::runtime_error("host NR initialization");
     p->result = 1;
     SetEvent(reply);
-    Log("host_ready native_resolution=1 neural=%u dlaa=%u temporal=%u "
-        "identity=%u",
-        p->neural, p->dlaa, p->temporal, p->identity);
+    Log("host_ready neural=%u dlaa=%u temporal=%u "
+        "identity=%u sr=%u input=%ux%u output=%ux%u",
+        p->neural, p->dlaa, p->temporal, p->identity, p->sr, p->width,
+        p->height, p->outputWidth, p->outputHeight);
     HANDLE waits[] = {parent, request};
     while (true) {
       auto status = WaitForMultipleObjects(2, waits, FALSE, 60000);
@@ -216,6 +311,7 @@ RWTexture2D<float2> motion:register(u2);
       if (!std::isfinite(p->jitterX) || !std::isfinite(p->jitterY) ||
           std::abs(p->jitterX) > .5f || std::abs(p->jitterY) > .5f)
         throw std::runtime_error("host invalid jitter");
+      hostTiming.Begin(c.Get(), settings.profile && p->frame % 120 == 0);
       c->UpdateSubresource(constants.Get(), 0, nullptr, &parameters, 0, 0);
       auto *cb = constants.Get();
       c->CSSetConstantBuffers(0, 1, &cb);
@@ -231,25 +327,36 @@ RWTexture2D<float2> motion:register(u2);
       uavs[0] = uavs[1] = uavs[2] = nullptr;
       c->CSSetShaderResources(0, 3, srvs);
       c->CSSetUnorderedAccessViews(0, 3, uavs, nullptr);
-      auto start = GetTickCount64();
+      hostTiming.Mark(c.Get(), 1);
+      const auto start = std::chrono::steady_clock::now();
       if (!backend.Render(hdr.Get(), depth.Get(), motion.Get(), exposure.Get(),
                           p->eye, p->frame, p->reset != 0, p->jitterX,
-                          p->jitterY))
+                          p->jitterY, output.Get()))
         throw std::runtime_error("host evaluate");
-      Wait(d.Get(), c.Get());
+      hostTiming.Mark(c.Get(), 2);
+      const auto submitted = std::chrono::steady_clock::now();
+      completion.Wait();
+      const auto completed = std::chrono::steady_clock::now();
+      hostTiming.Collect(c.Get(), p->frame, p->eye);
       backend.LogCompletedGpuTiming();
       // The client may overwrite the shared request as soon as reply is set.
       const auto completedFrame = p->frame;
       const auto completedEye = p->eye;
-      const auto elapsed = GetTickCount64() - start;
+      const auto elapsed =
+          std::chrono::duration<double, std::milli>(completed - start).count();
+      const auto recordMs =
+          std::chrono::duration<double, std::milli>(submitted - start).count();
+      const auto waitMs =
+          std::chrono::duration<double, std::milli>(completed - submitted)
+              .count();
       p->result = 1;
       SetEvent(reply);
       if (completedFrame % 120 == 0)
-        Log("host_completed frame=%llu eye=%u gpu_wait_included_ms=%llu "
+        Log("host_completed frame=%llu eye=%u gpu_wait_included_ms=%.3f "
+            "record_ms=%.3f completion_ms=%.3f "
             "temporal=%u dlaa=%u",
-            (unsigned long long)completedFrame, completedEye,
-            (unsigned long long)elapsed, options.temporalGuides,
-            options.dlaa);
+            (unsigned long long)completedFrame, completedEye, elapsed, recordMs,
+            waitMs, options.temporalGuides, options.dlaa);
     }
     backend.Shutdown();
   } catch (const std::exception &e) {

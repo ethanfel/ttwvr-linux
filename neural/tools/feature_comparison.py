@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw
 from prepare_replay import read_dds
+from scipy.ndimage import map_coordinates
 
 ap = argparse.ArgumentParser(description=__doc__)
 ap.add_argument('captures', type=Path)
@@ -22,11 +23,22 @@ metrics = []
 for eye in range(2):
     arrays = [read_dds(args.captures / f'feature-frame-{args.frame}-eye-{eye}-{kind}-hdr.dds')[1] for kind in ('input', 'output')]
     assert all(np.isfinite(a).all() for a in arrays)
-    assert arrays[0].shape == arrays[1].shape
-    alpha_equal = np.array_equal(arrays[0][:, :, 3], arrays[1][:, :, 3])
-    assert alpha_equal, 'Processing changed HDR alpha'
-    delta = np.abs(arrays[0][:, :, :3].astype('f4') - arrays[1][:, :, :3].astype('f4'))
-    metrics.append({'eye': eye, 'alpha_unchanged': alpha_equal, 'rgb_mean_absolute_change': float(delta.mean()),
+    reference = arrays[0].astype('f4')
+    upscaled = arrays[0].shape != arrays[1].shape
+    if upscaled:
+        ih, iw = reference.shape[:2]; oh, ow = arrays[1].shape[:2]
+        assert iw < ow and ih < oh
+        y, x = np.mgrid[:oh, :ow].astype('f4')
+        coords = [(y + .5) * ih / oh - .5, (x + .5) * iw / ow - .5]
+        reference = np.stack([map_coordinates(reference[:, :, k], coords, order=1, mode='nearest') for k in range(4)], -1)
+    alpha_error = float(np.abs(reference[:, :, 3] - arrays[1][:, :, 3]).max())
+    alpha_equal = np.array_equal(reference[:, :, 3], arrays[1][:, :, 3])
+    # Hardware bilinear weights have finite fractional precision; allow the
+    # two-axis 8-bit filtering bound plus half-float output rounding.
+    alpha_bound = 2 / 256 + .001 if upscaled else 0
+    assert alpha_error <= alpha_bound, 'Processing changed HDR alpha'
+    delta = np.abs(reference[:, :, :3] - arrays[1][:, :, :3].astype('f4'))
+    metrics.append({'eye': eye, 'input_size': list(arrays[0].shape[:2][::-1]), 'output_size': list(arrays[1].shape[:2][::-1]), 'comparison_reference': 'bilinear input' if upscaled else 'input', 'alpha_max_error': alpha_error, 'alpha_error_bound': alpha_bound, 'alpha_unchanged': alpha_equal, 'rgb_mean_absolute_change': float(delta.mean()),
                     'changed_pixel_fraction': float(np.any(delta > .0001, axis=-1).mean()),
                     'rgb_input_range': [float(arrays[0][:, :, :3].min()), float(arrays[0][:, :, :3].max())],
                     'rgb_output_range': [float(arrays[1][:, :, :3].min()), float(arrays[1][:, :, :3].max())]})

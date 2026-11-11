@@ -42,7 +42,7 @@ Proton files stay unchanged.
 
 ## Known limits
 
-- **DLSS is not working.** The successful setup preserves full resolution.
+- **The VR mod's built-in DLSS is not working.** The successful setup preserves full resolution.
 - **120 Hz is the headset refresh rate, not 120 game FPS.** At 90 Hz, current
   frame times may lead to about 45 FPS; a physical 90 Hz retest is still pending.
 - Other hardware, full controller coverage and long sessions remain unverified.
@@ -68,7 +68,9 @@ The optional audit and profile tools describe their inputs with `--help`.
 
 The separate [neural rendering prototype](neural/README.md) has processed both
 TTWVR eyes with temporal NR, native-resolution DLAA and both together in isolated
-simulated-headset tests. The in-game menu provides independent NR/DLAA toggles
+simulated-headset tests. An [experimental SR path](neural/docs/SUPER-RESOLUTION.md) now reconstructs lower-resolution
+scene rendering to native eye output, but currently adds frame time.
+The in-game menu provides independent NR/DLAA toggles
 and NR model/tuning controls, with live Apply and controller navigation.
 The regular Steam launch needs an explicit [addon installation and opt-in](neural/docs/STEAM.md).
 Physical-headset quality and performance checks are still needed. No frame generation is implemented.

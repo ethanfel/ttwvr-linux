@@ -304,3 +304,10 @@ off and the menu installed. No binaries were replaced while loaded. Source and
 documentation are published; game captures, saves and NVIDIA dependencies remain
 local. WiVRn streaming, physical-headset latency and longer-motion visual comfort
 were not validated by these simulated-headset checks.
+
+## Super Resolution follow-up (2026-11-12)
+
+The separate [SR record](SUPER-RESOLUTION.md) covers real lower-resolution
+scene rendering, native output reconstruction, both-eye captures, live-size
+changes, and the unresolved application-frame-time regression. It does not
+change the earlier NR/DLAA measurements into an SR performance claim.
