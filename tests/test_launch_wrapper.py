@@ -28,7 +28,8 @@ class LaunchWrapperTests(unittest.TestCase):
         self.game = str(self.root / "Fallout New Vegas" / "FalloutNVLauncher.exe")
         self.proton = self.script("proton", """
 import json, os, sys
-print(json.dumps({'args': sys.argv[1:], 'xr': os.environ.get('XR_RUNTIME_JSON')}))
+print(json.dumps({'args': sys.argv[1:], 'xr': os.environ.get('XR_RUNTIME_JSON'),
+                  'no_vr': os.environ.get('DXVK_NO_VR')}))
 """)
         self.entry = self.script("_v2-entry-point", """
 import os, sys
@@ -68,6 +69,26 @@ os.execvpe(command[0], command, os.environ)
         result = self.launch([self.proton, 'waitforexitandrun', self.game])
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout)['xr'], str(self.runtime))
+
+    def test_flat_profile_does_not_require_or_initialize_vr(self):
+        (self.mo2.parent / 'ModOrganizer.ini').write_text(
+            '[General]\nselected_profile=@ByteArray(TTW - Flat)\n')
+        self.runtime.unlink()
+        result = self.launch([self.proton, 'waitforexitandrun', self.game])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        child = json.loads(result.stdout)
+        self.assertIsNone(child['xr'])
+        self.assertEqual(child['no_vr'], '1')
+        registry = json.loads((self.state / 'openvrpaths.vrpath').read_text())
+        self.assertEqual(registry['runtime'], [])
+
+    def test_cli_profile_overrides_last_selected_profile(self):
+        (self.mo2.parent / 'ModOrganizer.ini').write_text(
+            '[General]\nselected_profile=@ByteArray(TTW - VR)\n')
+        result = self.launch([self.proton, 'waitforexitandrun', self.game,
+                              '-p', 'TTW - Flat'], '--dry-run')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)['mode'], 'flat')
 
     def test_dry_run_is_read_only_and_ambiguous_command_is_rejected(self):
         result = self.launch([self.proton, 'waitforexitandrun', self.game], '--dry-run')

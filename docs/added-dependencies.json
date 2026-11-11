@@ -1,0 +1,24 @@
+[
+  {
+    "mod": "ShowOff NVSE 1.84",
+    "source": "https://github.com/Demorome/ShowOff-NVSE/releases/tag/1.84",
+    "archive_sha256": "cbf42c1bb315dbdb0729fb88ed65dd1a3ea72a3347ef854d33afed7c8da6fdc5",
+    "plugin_sha256": "37cb22c5288fedd0d57196c8c2f6bbaba5a1dafd9ce58f14dac9410dbee7ef3e",
+    "enabled_profiles": [
+      "TTW - Flat",
+      "TTW - VR"
+    ],
+    "loaded_in_game": true
+  },
+  {
+    "mod": "Crash Logger 5.17",
+    "source": "https://github.com/yvileapsis/yUI-NVSE/releases/tag/5.17",
+    "archive_sha256": "3bc420b378b37af2ec09cc9499963d2c0d3858c2b701f703846b73be9629eb79",
+    "plugin_sha256": "9bab3bd4c6b3a5f985396f8ec7132cd104b0b7c9a60d835892a9ec012704680c",
+    "enabled_profiles": [
+      "TTW - Flat",
+      "TTW - VR"
+    ],
+    "loaded_in_game": true
+  }
+]

@@ -83,9 +83,11 @@ corrected. See the [upstream game plugin](https://github.com/ModOrganizer2/modor
 
 ## Remaining setup
 
-- Complete the official guide utility set; the ten-mod core profiles are ready.
+- The official guide utility set and presets have been staged and enabled in
+  both profiles. ML Utilities Checker is temporary and enabled only in Flat.
 - Root files are deployed and their backups and checksums are recorded locally.
-- Verify MO2 initializes archive invalidation and launch flat TTW first. The
+- MO2 initialized automatic archive invalidation in Flat. Complete the utility
+  checker and a flat TTW gameplay test. The
   copied guide custom INI includes TTW's starting quest and disables the NV intro.
 - Select the VR profile and test the WiVRn launch path. Keep results distinct
   from settings that have only been prepared on disk.

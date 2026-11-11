@@ -64,6 +64,17 @@ paths via `XDG_CONFIG_DIRS`. Direct Proton commands retain the original variable
 This correction has a controlled subprocess check; it still needs live runtime
 verification. The failing probe occurred before any TTWVR plugin was launched.
 
+After removing the stale manifest override, the flat launch waited on VR state
+while WiVRn had no connected headset. The wrapper now detects `TTW - Flat`
+(or accepts `--mode flat`), supplies an empty private OpenVR registry, removes
+inherited runtime overrides, and sets DXVK's `DXVK_NO_VR=1`. MO2 and the game
+subsequently opened. Restart MO2 when switching to VR so this flat-only
+environment does not carry into a VR game. The environment is process-local.
+
+The game log now confirms ShowOff 1.84 and Crash Logger 5.17 loaded successfully,
+alongside JIP LN 57.30, JohnnyGuitar 5.28, Stewie Tweaks 10.05, Engine
+Optimizations 1.0, and TTW NVSE 3.3.3b. Full utility validation is in progress.
+
 1. Complete TTW conversion and the official dependencies; verify TTW in flat mode.
 2. Add the supplied TTWVR as the final asset override in a dedicated MO2 profile.
 3. Start WiVRn and connect the headset. Launch through Steam's Proton environment.
@@ -104,6 +115,11 @@ this is not evidence of a TTWVR failure or of a broken host driver. Neither
 preflight reached a successful rendering session, and a host-side test remains
 necessary.
 
+After desktop restrictions were removed, the **original user-supplied runtime**
+passed the same native OpenXR preflight with `result=0`, a simulated HMD, and two
+640x720 views. This confirms native runtime/system initialization on the host;
+it does not establish a TTWVR frame submission or controller test.
+
 ## Primary references
 
 - [TTW official installation guide](https://thebestoftimes.moddinglinked.com/ttw.html)
@@ -114,6 +130,7 @@ necessary.
 - [Proton's OpenVR setup](https://github.com/ValveSoftware/Proton/blob/experimental_11.0/proton)
 - [Steam runtime OpenXR manifest discovery](https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/steam-runtime-tools/graphics-drivers-openxr-1.c)
 - [Steam container runtime imports](https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/pressure-vessel/runtime.c)
+- [DXVK's optional OpenVR initialization](https://github.com/doitsujin/dxvk/blob/master/src/dxvk/dxvk_openvr.cpp)
 
 The wrapper follows WiVRn's documented `PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES=1`
 approach and xrizer's `VR_OVERRIDE`. The locally installed Proton script also

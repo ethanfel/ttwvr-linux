@@ -45,6 +45,19 @@ Completed:
 - Fixed host `XR_RUNTIME_JSON` leaking into Steam's container and overriding
   its imported runtime manifest. The wrapper clears the variable only after
   the container entry point, before Proton. Live OpenXR validation is pending.
+- Added ShowOff 1.84 and Crash Logger 5.17 from their authors' GitHub releases,
+  checked release SHA-256 digests, and enabled both profiles. The next game log
+  confirmed both DLLs loaded successfully. [Checksums](docs/added-dependencies.json).
+- Staged and enabled the remaining user-downloaded guide utilities and presets.
+  ML Utilities Checker is temporarily enabled in Flat only for validation.
+  [Archive manifest](docs/guide-dependencies.json).
+- Fixed the flat-profile startup waiting for a disconnected VR runtime. Auto
+  mode now selects an empty private OpenVR registry and `DXVK_NO_VR=1` for
+  `TTW - Flat`; game and MO2 startup were subsequently observed. Five launcher
+  subprocess tests pass, including profile selection and no VR requirement.
+- Retested the user's original Monado runtime after unrestricted desktop access
+  became available: native OpenXR initialization passed, reporting the simulated
+  HMD, two 640x720 views, and result 0. No rebuild or global runtime change needed.
 - Added optional Proton 11 WoW64 selection to the launch wrapper; this remains
   an unverified VR compatibility candidate.
 - Located the user's existing simulated Monado runtime. Recorded the restricted
@@ -58,8 +71,7 @@ Completed:
 
 Not yet done:
 
-- Installation of the remaining guide dependencies.
-- First-run MO2 initialization and archive-invalidation verification.
+- Complete in-game utility-checker and TTW gameplay validation.
 - Live Proton/WiVRn test, headset rendering, controls, and save/load verification.
 - Any binary or source compatibility patch to TTWVR/DXVK/Proton/xrizer.
 

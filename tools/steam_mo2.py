@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Experimental Steam launch wrapper; use --dry-run to inspect without writing."""
 import argparse
+import configparser
 import json
 import os
 from pathlib import Path
@@ -22,6 +23,26 @@ def replace_game(command, mo2):
 def container_path(path):
     value = str(path)
     return "/run/host" + value if value == "/usr" or value.startswith("/usr/") else value
+
+
+def wants_vr(mode, command, mo2):
+    if mode != "auto":
+        return mode == "vr"
+    # Prefer MO2's explicit CLI profile over the last selected profile.
+    profile = None
+    arguments = command[command.index(str(mo2)) + 1:]
+    for i, arg in enumerate(arguments):
+        if arg in ("-p", "--profile") and i + 1 < len(arguments):
+            profile = arguments[i + 1]
+        elif arg.startswith("--profile="):
+            profile = arg.partition("=")[2]
+    if profile is None:
+        config = configparser.RawConfigParser()
+        config.read(mo2.parent / "ModOrganizer.ini")
+        profile = config.get("General", "selected_profile", fallback="")
+        if profile.startswith("@ByteArray(") and profile.endswith(")"):
+            profile = profile[len("@ByteArray("):-1]
+    return profile != "TTW - Flat"
 
 
 def use_imported_openxr(command):
@@ -50,6 +71,8 @@ def main():
     parser.add_argument("--xr-runtime", type=Path,
                         default=Path("/usr/share/openxr/1/openxr_wivrn.json"))
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--mode", choices=("auto", "flat", "vr"), default="auto",
+                        help="auto disables VR for the TTW - Flat profile; restart MO2 when changing mode")
     parser.add_argument("--wow64", action="store_true",
                         help="test Proton 11's WoW64 mode with the 64-bit native VR bridge")
     parser.add_argument("command", nargs=argparse.REMAINDER)
@@ -61,40 +84,48 @@ def main():
     state = args.state_dir.expanduser().resolve()
     xrizer = args.xrizer.expanduser().resolve()
     runtime = args.xr_runtime.expanduser().resolve()
-    for path in (mo2, runtime):
+    try:
+        command = replace_game(command, mo2)
+        vr = wants_vr(args.mode, command, mo2)
+    except (ValueError, configparser.Error) as exc:
+        parser.error(str(exc))
+    for path in ((mo2, runtime) if vr else (mo2,)):
         if not path.is_file():
             parser.error(f"required file not found: {path}")
-    if not any((xrizer / "bin" / arch / "vrclient.so").is_file()
+    if vr and not any((xrizer / "bin" / arch / "vrclient.so").is_file()
                for arch in ("linux64", "linux32")):
         parser.error("xrizer directory contains no native vrclient.so")
     if any(":" in str(p) or "\n" in str(p) for p in (state, xrizer)):
         parser.error("state and xrizer paths cannot contain colon or newline")
     try:
-        runtime_manifest = json.loads(runtime.read_text())
-        if not runtime_manifest["runtime"]["library_path"]:
-            raise ValueError("missing runtime library")
-        command = use_imported_openxr(replace_game(command, mo2))
+        if vr:
+            runtime_manifest = json.loads(runtime.read_text())
+            if not runtime_manifest["runtime"]["library_path"]:
+                raise ValueError("missing runtime library")
+            command = use_imported_openxr(command)
     except (KeyError, ValueError) as exc:
         parser.error(str(exc))
 
     bindings = [p for p in os.environ.get("PRESSURE_VESSEL_FILESYSTEMS_RW", "").split(":") if p]
-    for path in (str(state), str(xrizer), str(mo2.parent)):
+    for path in [str(state), str(mo2.parent)] + ([str(xrizer)] if vr else []):
         if path not in bindings:
             bindings.append(path)
     changes = {
         "VR_PATHREG_OVERRIDE": str(state / "openvrpaths.vrpath"),
-        "VR_OVERRIDE": container_path(xrizer),
-        "XR_RUNTIME_JSON": str(runtime),
-        "PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES": "1",
+        "VR_OVERRIDE": container_path(xrizer) if vr else None,
+        "PROTON_VR_RUNTIME": None,
+        "XR_RUNTIME_JSON": str(runtime) if vr else None,
+        "PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES": "1" if vr else "0",
+        "DXVK_NO_VR": None if vr else "1",
         "PRESSURE_VESSEL_FILESYSTEMS_RW": ":".join(bindings),
         "PROTON_LOG": "1",
         "PROTON_LOG_DIR": str(state),
     }
     if args.wow64:
         changes["PROTON_USE_WOW64"] = "1"
-    registry = {"version": 1, "runtime": [container_path(xrizer)]}
+    registry = {"version": 1, "runtime": [container_path(xrizer)] if vr else []}
     if args.dry_run:
-        print(json.dumps({"environment": changes, "openvr_registry": registry,
+        print(json.dumps({"mode": "vr" if vr else "flat", "environment": changes, "openvr_registry": registry,
                           "command": command, "shell_preview": shlex.join(command)}, indent=2))
         return 0
     state.mkdir(parents=True, exist_ok=True)
@@ -103,7 +134,11 @@ def main():
         parser.error("refusing to overwrite a symlinked OpenVR registry")
     registry_file.write_text(json.dumps(registry, indent=2) + "\n")
     environment = os.environ.copy()
-    environment.update(changes)
+    for key, value in changes.items():
+        if value is None:
+            environment.pop(key, None)
+        else:
+            environment[key] = value
     os.execvpe(command[0], command, environment)
 
 

@@ -43,6 +43,12 @@ executable argument with a portable Mod Organizer 2 executable. It writes its
 own OpenVR path registry, sets WiVRn/xrizer environment variables for that launch,
 and does not edit the user's global OpenVR configuration or game files.
 
+Mode defaults to `auto`: the `TTW - Flat` profile disables the VR probe and
+does not require WiVRn or xrizer. Other profiles use VR. MO2's `-p`/`--profile`
+argument takes precedence over the last selected profile. `--mode flat` or
+`--mode vr` overrides detection. Restart MO2 through the wrapper after changing
+between flat and VR profiles so the launch environment matches the profile.
+
 Preview it before configuring Steam (use actual paths):
 
 ```sh
