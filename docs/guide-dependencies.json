@@ -8,7 +8,9 @@
       "TTW - Flat",
       "TTW - VR"
     ],
-    "loaded_in_game": false
+    "loaded_in_game": false,
+    "utility_checker_passed": true,
+    "verification": "User screenshot: All utilities installed! after launching the full Flat profile on 2026-11-11."
   },
   {
     "mod": "JohnnyGuitar All Tweaks 5.28",
@@ -19,7 +21,9 @@
       "TTW - Flat",
       "TTW - VR"
     ],
-    "loaded_in_game": false
+    "loaded_in_game": false,
+    "utility_checker_passed": true,
+    "verification": "User screenshot: All utilities installed! after launching the full Flat profile on 2026-11-11."
   },
   {
     "mod": "NVTF 10.61",
@@ -36,7 +40,9 @@
         "path": "NVSE/Plugins/NVTF.dll",
         "sha256": "b642ef95ff76fbc5265cf413a647d8017a617c5914a8f5697047a6320b54c45e"
       }
-    ]
+    ],
+    "utility_checker_passed": true,
+    "verification": "User screenshot: All utilities installed! after launching the full Flat profile on 2026-11-11."
   },
   {
     "mod": "NVTF INI 1.06",
@@ -47,7 +53,9 @@
       "TTW - Flat",
       "TTW - VR"
     ],
-    "loaded_in_game": false
+    "loaded_in_game": false,
+    "utility_checker_passed": true,
+    "verification": "User screenshot: All utilities installed! after launching the full Flat profile on 2026-11-11."
   },
   {
     "mod": "kNVSE 37",
@@ -64,7 +72,9 @@
         "path": "nvse/plugins/kNVSE.dll",
         "sha256": "90b7f3ed995ccd76027fa2ba4f594ad20c6e09334b4071da2534a90d079bea55"
       }
-    ]
+    ],
+    "utility_checker_passed": true,
+    "verification": "User screenshot: All utilities installed! after launching the full Flat profile on 2026-11-11."
   },
   {
     "mod": "UIO 2.30",
@@ -81,7 +91,9 @@
         "path": "nvse/plugins/ui_organizer.dll",
         "sha256": "ae11f6cddf899c66740bd95b34407d79412982f51cbd9ea6c0b2018d0df948cf"
       }
-    ]
+    ],
+    "utility_checker_passed": true,
+    "verification": "User screenshot: All utilities installed! after launching the full Flat profile on 2026-11-11."
   },
   {
     "mod": "Fast Weapon Lag Fix 1.0",
@@ -98,7 +110,9 @@
         "path": "nvse/plugins/weapon_lag_fix.dll",
         "sha256": "b115ad3f20f1bd4280358668d0e190f764e1846cb2ec39ff6638e55d84688e00"
       }
-    ]
+    ],
+    "utility_checker_passed": true,
+    "verification": "User screenshot: All utilities installed! after launching the full Flat profile on 2026-11-11."
   },
   {
     "mod": "VATS Lag Fix 1.0",
@@ -115,7 +129,9 @@
         "path": "NVSE/Plugins/VATSLagFix.dll",
         "sha256": "153f3b059707a4babf631e1ed736ecd04864e42bc5ad668fa974968a695409cb"
       }
-    ]
+    ],
+    "utility_checker_passed": true,
+    "verification": "User screenshot: All utilities installed! after launching the full Flat profile on 2026-11-11."
   },
   {
     "mod": "ActorCause Save Bloat Fix 1.0",
@@ -132,7 +148,9 @@
         "path": "nvse/plugins/ActorCauseSaveBloatFix.dll",
         "sha256": "4e1f472d49a8e2f395dae9114a328b5f75ef9d4a4e23190afdb018f7583c415f"
       }
-    ]
+    ],
+    "utility_checker_passed": true,
+    "verification": "User screenshot: All utilities installed! after launching the full Flat profile on 2026-11-11."
   },
   {
     "mod": "Mod Limit Fix 7",
@@ -149,7 +167,9 @@
         "path": "NVSE/Plugins/mlf.dll",
         "sha256": "d06cbb289f61bb3525710633a497746e0a46f7d3abd1571b0c6bdd0c9baf1974"
       }
-    ]
+    ],
+    "utility_checker_passed": true,
+    "verification": "User screenshot: All utilities installed! after launching the full Flat profile on 2026-11-11."
   },
   {
     "mod": "Improved Console 3",
@@ -166,7 +186,9 @@
         "path": "nvse/plugins/improved_console.dll",
         "sha256": "e46cbe7f106fdb3b143ddbb1f41ebef4529e4699fb9a71a89179c81696fce360"
       }
-    ]
+    ],
+    "utility_checker_passed": true,
+    "verification": "User screenshot: All utilities installed! after launching the full Flat profile on 2026-11-11."
   },
   {
     "mod": "Console Paste 2.3",
@@ -183,16 +205,19 @@
         "path": "NVSE/Plugins/nvse_console_clipboard.dll",
         "sha256": "31f5d1dfde57b190c55b6105400c410f5395de4a7bababe4cd5aa3dba09ae010"
       }
-    ]
+    ],
+    "utility_checker_passed": true,
+    "verification": "User screenshot: All utilities installed! after launching the full Flat profile on 2026-11-11."
   },
   {
     "mod": "ML Utilities Checker",
     "archive": "ML Utilities Checker-79358-1-0-1754707617.7z",
     "archive_sha256": "c92df01a81583b48018ecb2b45d7601404888cb38c1003cd73aeb00a849dc67a",
     "source": "https://www.nexusmods.com/newvegas/mods/79358?tab=files",
-    "enabled_profiles": [
-      "TTW - Flat"
-    ],
-    "loaded_in_game": false
+    "enabled_profiles": [],
+    "loaded_in_game": false,
+    "utility_checker_passed": true,
+    "verification": "User screenshot: All utilities installed! after launching the full Flat profile on 2026-11-11.",
+    "disabled_after_validation": true
   }
 ]

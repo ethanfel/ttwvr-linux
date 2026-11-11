@@ -49,8 +49,11 @@ Completed:
   checked release SHA-256 digests, and enabled both profiles. The next game log
   confirmed both DLLs loaded successfully. [Checksums](docs/added-dependencies.json).
 - Staged and enabled the remaining user-downloaded guide utilities and presets.
-  ML Utilities Checker is temporarily enabled in Flat only for validation.
+  ML Utilities Checker was enabled in Flat only for validation.
   [Archive manifest](docs/guide-dependencies.json).
+- The user confirmed the in-game **All utilities installed!** message. This
+  validates the checker-covered plugins, LAA patch and custom INI setting.
+  Disabled the checker in both profiles after the game and MO2 closed.
 - Fixed the flat-profile startup waiting for a disconnected VR runtime. Auto
   mode now selects an empty private OpenVR registry and `DXVK_NO_VR=1` for
   `TTW - Flat`; game and MO2 startup were subsequently observed. Five launcher
@@ -58,6 +61,9 @@ Completed:
 - Retested the user's original Monado runtime after unrestricted desktop access
   became available: native OpenXR initialization passed, reporting the simulated
   HMD, two 640x720 views, and result 0. No rebuild or global runtime change needed.
+- The same native preflight also passed inside Steam Linux Runtime 4 using the
+  imported OpenXR manifest, including a run with simulated left/right WMR
+  controllers. TTWVR frame submission is still untested.
 - Added optional Proton 11 WoW64 selection to the launch wrapper; this remains
   an unverified VR compatibility candidate.
 - Located the user's existing simulated Monado runtime. Recorded the restricted
@@ -71,7 +77,7 @@ Completed:
 
 Not yet done:
 
-- Complete in-game utility-checker and TTW gameplay validation.
+- Complete TTW gameplay validation.
 - Live Proton/WiVRn test, headset rendering, controls, and save/load verification.
 - Any binary or source compatibility patch to TTWVR/DXVK/Proton/xrizer.
 

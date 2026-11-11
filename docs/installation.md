@@ -84,10 +84,10 @@ corrected. See the [upstream game plugin](https://github.com/ModOrganizer2/modor
 ## Remaining setup
 
 - The official guide utility set and presets have been staged and enabled in
-  both profiles. ML Utilities Checker is temporary and enabled only in Flat.
+  both profiles. ML Utilities Checker passed in game and is now disabled.
 - Root files are deployed and their backups and checksums are recorded locally.
-- MO2 initialized automatic archive invalidation in Flat. Complete the utility
-  checker and a flat TTW gameplay test. The
+- MO2 initialized automatic archive invalidation in Flat. Complete a flat TTW
+  gameplay test. The
   copied guide custom INI includes TTW's starting quest and disables the NV intro.
 - Select the VR profile and test the WiVRn launch path. Keep results distinct
   from settings that have only been prepared on disk.

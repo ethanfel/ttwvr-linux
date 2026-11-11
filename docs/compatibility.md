@@ -73,7 +73,11 @@ environment does not carry into a VR game. The environment is process-local.
 
 The game log now confirms ShowOff 1.84 and Crash Logger 5.17 loaded successfully,
 alongside JIP LN 57.30, JohnnyGuitar 5.28, Stewie Tweaks 10.05, Engine
-Optimizations 1.0, and TTW NVSE 3.3.3b. Full utility validation is in progress.
+Optimizations 1.0, and TTW NVSE 3.3.3b. After adding the remaining guide files,
+all 16 utility DLLs reported successful loading. The user supplied a screenshot
+of ML Utilities Checker's **All utilities installed!** result, confirming its
+plugin checks, the LAA patch, and the custom INI's `iNumHWThreads=3` value.
+The temporary checker was disabled after that successful test.
 
 1. Complete TTW conversion and the official dependencies; verify TTW in flat mode.
 2. Add the supplied TTWVR as the final asset override in a dedicated MO2 profile.
@@ -118,7 +122,13 @@ necessary.
 After desktop restrictions were removed, the **original user-supplied runtime**
 passed the same native OpenXR preflight with `result=0`, a simulated HMD, and two
 640x720 views. This confirms native runtime/system initialization on the host;
-it does not establish a TTWVR frame submission or controller test.
+it does not establish a TTWVR frame submission or controller test. Repeating
+that native preflight inside Steam Linux Runtime 4, with runtime import enabled
+and the host override cleared inside the container, also returned `result=0`.
+With `SIMULATED_LEFT=wmr SIMULATED_RIGHT=wmr`, it also selected both simulated
+WMR controllers. A local game-test launcher is prepared with a separate
+controller input file, the `TTW - VR` profile, and optional Proton WoW64 mode;
+the TTWVR plugin has not yet been exercised by that launcher.
 
 ## Primary references
 
