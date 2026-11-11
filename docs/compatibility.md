@@ -42,8 +42,10 @@ The installed Proton 11 script accepts `PROTON_USE_WOW64=1` and selects Wine's
 WoW64 architecture for that launch. Its x86_64 Unix VR bridges contain the
 `/linux64` runtime path. This is a candidate way to use the installed 64-bit
 xrizer with 32-bit New Vegas; it is exposed by the wrapper's `--wow64` option.
-It has not yet been validated with TTWVR. No existing prefix is deleted or
-recreated by the wrapper, and no global Steam compatibility setting is changed.
+It subsequently initialized TTWVR's direct OpenXR backend with the simulated
+headset and rendered a loaded save after the compiler workaround below. No
+existing prefix is deleted or recreated by the wrapper, and no global Steam
+compatibility setting is changed.
 
 ## First launch sequence
 
@@ -61,8 +63,9 @@ The wrapper now supplies the host selection to pressure-vessel, then removes
 `XR_RUNTIME_JSON` immediately before the nested Proton command. This allows the
 OpenXR loader to use pressure-vessel's imported manifest with rewritten library
 paths via `XDG_CONFIG_DIRS`. Direct Proton commands retain the original variable.
-This correction has a controlled subprocess check; it still needs live runtime
-verification. The failing probe occurred before any TTWVR plugin was launched.
+This correction has a controlled subprocess check and was subsequently verified
+with native and TTWVR simulated OpenXR launches. The failing probe occurred
+before any TTWVR plugin was launched.
 
 After removing the stale manifest override, the flat launch waited on VR state
 while WiVRn had no connected headset. The wrapper now detects `TTW - Flat`
@@ -130,8 +133,22 @@ that native preflight inside Steam Linux Runtime 4, with runtime import enabled
 and the host override cleared inside the container, also returned `result=0`.
 With `SIMULATED_LEFT=wmr SIMULATED_RIGHT=wmr`, it also selected both simulated
 WMR controllers. A local game-test launcher is prepared with a separate
-controller input file, the `TTW - VR` profile, and optional Proton WoW64 mode;
-the TTWVR plugin has not yet been exercised by that launcher.
+controller input file, the `TTW - VR` profile, and optional Proton WoW64 mode.
+
+## TTWVR simulated save-load result
+
+The launcher subsequently initialized TTWVR's **direct OpenXR** backend,
+reported active head tracking, and rendered its main menu. A copied Vault 101
+save then exposed a crash in Wine's built-in D3DCompiler 47 / libvkd3d shader
+compiler. Native D3DCompiler 47 resolved that observed crash: the save loaded,
+the spectator view rendered the room, and the game later exited normally.
+
+See [the detailed test, workaround, hashes, and rollback](simulated-vr.md).
+Proton's stock DXVK is still in use; the supplied custom DXVK is bypassed by a
+DXVK-detection guard. DLSS/FSR initialization remains unavailable, and the mod
+reported failed depth copies for its blood effect. The simulated WMR trigger
+test did not establish working input. Physical WiVRn display, stereo
+correctness, controllers, calibration, and sustained gameplay remain unverified.
 
 ## Primary references
 

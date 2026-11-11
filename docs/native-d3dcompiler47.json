@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-11",
+  "purpose": "Avoid the observed TTWVR save-load crash in Wine builtin D3DCompiler 47 / libvkd3d-shader.",
+  "source_recipe": "https://github.com/Winetricks/winetricks/blob/master/src/winetricks",
+  "files": [
+    {
+      "arch": "32",
+      "prefix_path": "drive_c/windows/syswow64/d3dcompiler_47.dll",
+      "before_sha256": "81b07eebd2f0b42efd6b879230cb77c8ca24b94236c5b4f372844363632376d3",
+      "after_sha256": "2ad0d4987fc4624566b190e747c9d95038443956ed816abfd1e2d389b5ec0851",
+      "source": "https://raw.githubusercontent.com/mozilla/fxc2/master/dll/d3dcompiler_47_32.dll"
+    },
+    {
+      "arch": "64",
+      "prefix_path": "drive_c/windows/system32/d3dcompiler_47.dll",
+      "before_sha256": "227315cde4807f3941039867dea4dca9d79a45eb89d136ef4d321743c706e99f",
+      "after_sha256": "4432bbd1a390874f3f0a503d45cc48d346abc3a8c0213c289f4b615bf0ee84f3",
+      "source": "https://raw.githubusercontent.com/mozilla/fxc2/master/dll/d3dcompiler_47.dll"
+    }
+  ],
+  "validation": {
+    "native_i386_loaded": true,
+    "copied_vault101_save_loaded": true,
+    "spectator_world_view_observed": true,
+    "physical_headset_tested": false,
+    "registry_override_added": false
+  }
+}

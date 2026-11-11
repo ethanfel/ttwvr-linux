@@ -3,10 +3,11 @@
 Work in progress: installation tooling and compatibility investigation for
 KUPOkinz's **Tale of Two Realities (TTWVR)** with Tale of Two Wastelands.
 
-**No working Linux VR session has been demonstrated yet.** This repository is
-not a release of TTWVR, TTW, or a replacement VR mod. A configuration helper is
-not evidence that the graphics interop works. Confirmed observations and
-unresolved work are recorded in [docs/compatibility.md](docs/compatibility.md).
+**TTWVR loads a Vault 101 save and renders its VR spectator view with simulated
+Monado under Proton 11 WoW64. Physical WiVRn gameplay is not yet verified.** This repository contains
+installation tooling and compatibility findings, not TTWVR or TTW binaries.
+Confirmed observations and unresolved work are recorded in
+[docs/compatibility.md](docs/compatibility.md).
 
 ## Inputs
 
@@ -37,7 +38,7 @@ python3 tools/audit.py --fnv '/path/to/Fallout New Vegas' \
   --fo3 '/path/to/Fallout 3 goty' --ttwvr '/path/to/TTWVR.zip'
 ```
 
-`tools/steam_mo2.py` is an **untested in-game** Steam launch wrapper. It preserves
+`tools/steam_mo2.py` is an experimental Steam launch wrapper. It preserves
 Steam's supplied Proton/container command and replaces only the New Vegas
 executable argument with a portable Mod Organizer 2 executable. It writes its
 own OpenVR path registry, sets WiVRn/xrizer environment variables for that launch,
@@ -61,8 +62,13 @@ python3 tools/steam_mo2.py --dry-run \
 The eventual Steam launch option has the same arguments, without `--dry-run`,
 and ends in `-- %command%` rather than the example Proton command. Start WiVRn
 and connect the headset first. MO2 and the prerequisites must be configured
-before this wrapper can launch the modded game. The wrapper has opened MO2
-through Steam successfully; a game launch from MO2 remains unverified.
+before this wrapper can launch the modded game. The wrapper has launched both
+flat TTW gameplay and a TTWVR save with the simulated headset through MO2.
+
+Loading a save in TTWVR exposed a crash in Wine's shader compiler. Installing
+native D3DCompiler 47 and enabling it for VR launches passed that same save-load
+check. See the [compiler workaround and rollback](docs/simulated-vr.md), including
+the optional `ttwvr-linux.ini` beside MO2. The wrapper does not install DLLs.
 
 For Steam's container command, the wrapper gives the selected OpenXR manifest
 to pressure-vessel's importer, then clears the host override before Proton so
@@ -73,8 +79,8 @@ python3 -m unittest discover -s tests -v
 ```
 
 With Proton 11, `--wow64` enables the optional 64-bit host-side Wine/VR path
-for the 32-bit game. This is a compatibility experiment, not yet verified in
-game. For Monado simulation, supply its manifest through `--xr-runtime` and set
+for the 32-bit game. TTWVR's OpenXR initialization and head tracking have been
+observed with this mode. For Monado simulation, supply its manifest through `--xr-runtime` and set
 `SIMULATED_ENABLE=1 XRT_COMPOSITOR_NULL=1 XRT_COMPOSITOR_NULL_FPS=90` in the
 launch environment. The user's system-wide runtime selection is not modified.
 

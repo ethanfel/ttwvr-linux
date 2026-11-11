@@ -63,6 +63,22 @@ def use_imported_openxr(command):
     return command[:index] + ["/usr/bin/env", "-u", "XR_RUNTIME_JSON"] + command[index:]
 
 
+def native_compiler_override(value):
+    """Replace only D3DCompiler 47's rule, preserving other DLL selections."""
+    rules = []
+    for rule in value.split(";"):
+        names, separator, order = rule.partition("=")
+        if not separator:
+            if rule.strip():
+                rules.append(rule)
+            continue
+        names = [name.strip() for name in names.split(",")
+                 if name.strip().lower().lstrip("*") != "d3dcompiler_47"]
+        if names:
+            rules.append(",".join(names) + "=" + order)
+    return ";".join(rules + ["d3dcompiler_47=n"])
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mo2", type=Path, required=True)
@@ -75,6 +91,8 @@ def main():
                         help="auto disables VR for the TTW - Flat profile; restart MO2 when changing mode")
     parser.add_argument("--wow64", action="store_true",
                         help="test Proton 11's WoW64 mode with the 64-bit native VR bridge")
+    parser.add_argument("--native-d3dcompiler47", action="store_true",
+                        help="use an installed native D3DCompiler 47 for VR launches")
     parser.add_argument("command", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command[1:] if args.command[:1] == ["--"] else args.command
@@ -87,6 +105,10 @@ def main():
     try:
         command = replace_game(command, mo2)
         vr = wants_vr(args.mode, command, mo2)
+        compatibility = configparser.RawConfigParser()
+        compatibility.read(mo2.parent / "ttwvr-linux.ini")
+        vr_wow64 = compatibility.getboolean("VR", "wow64", fallback=False)
+        vr_compiler = compatibility.getboolean("VR", "native_d3dcompiler47", fallback=False)
     except (ValueError, configparser.Error) as exc:
         parser.error(str(exc))
     for path in ((mo2, runtime) if vr else (mo2,)):
@@ -121,8 +143,11 @@ def main():
         "PROTON_LOG": "1",
         "PROTON_LOG_DIR": str(state),
     }
-    if args.wow64:
+    if args.wow64 or (vr and vr_wow64):
         changes["PROTON_USE_WOW64"] = "1"
+    if vr and (args.native_d3dcompiler47 or vr_compiler):
+        changes["WINEDLLOVERRIDES"] = native_compiler_override(
+            os.environ.get("WINEDLLOVERRIDES", ""))
     registry = {"version": 1, "runtime": [container_path(xrizer)] if vr else []}
     if args.dry_run:
         print(json.dumps({"mode": "vr" if vr else "flat", "environment": changes, "openvr_registry": registry,

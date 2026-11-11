@@ -1,5 +1,24 @@
 # Change log
 
+## 2026-11-11 — Simulated VR save load and shader compiler workaround
+
+- Backed up the user's flat save and copied it into the separate VR profile.
+- Initialized TTWVR 1.1.0's direct OpenXR backend under Proton 11 WoW64 with
+  the original Monado simulated HMD; observed active head tracking and its menu.
+- Reproduced a save-load crash in Wine's built-in D3DCompiler 47 / libvkd3d.
+  Installed checksum-verified native D3DCompiler 47 in this game's prefix,
+  retaining original DLL backups. With a process-local native override, that
+  save loaded and the VR spectator view rendered Vault 101. The game later
+  logged a normal player-requested exit.
+- Added optional per-instance `ttwvr-linux.ini` settings for WoW64 and native
+  D3DCompiler 47 in VR mode. Seven wrapper tests pass, including preservation
+  of other DLL overrides and leaving flat launch settings alone.
+- Recorded the remaining custom-DXVK, DLSS, and blood-depth-copy limitations.
+  An explicit `bUseDXVK=1` experiment did not change renderer selection and was
+  reverted. No TTWVR binary patch or NVTF change was applied.
+- [Evidence, download hashes, application and rollback](docs/simulated-vr.md).
+  Physical WiVRn headset output and controls remain untested.
+
 ## 2026-11-11 — Initial investigation
 
 Completed:
