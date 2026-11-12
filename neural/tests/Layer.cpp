@@ -103,6 +103,8 @@ struct FakeImage : CapturedImage {
 };
 }
 namespace ttwvrnr {
+void StopSceneProcessing() {}
+bool DrainPresentation(ID3D11Device*) { return true; }
 std::wstring Directory() { return L"C:\\nonexistent-neural-test"; }
 Config ReadConfig() { Config c; c.captureFirst = captureFirst; return c; }
 bool IsTarget() { return target; }
@@ -115,6 +117,13 @@ bool QueueCaptureWrite(std::function<void()> work) {
  if (deferWrites) queuedWrite = std::move(work); else work();
  return true;
 }
+bool FrameGenerationRequested(){return false;}
+bool GenerateFrameEye(ID3D11Device*,ID3D11Texture2D*,uint64_t,unsigned){return false;}
+StereoFrameTextures GeneratedFrame(uint64_t){return {};}
+bool SetPresentationThreading(ID3D11Device*,bool,bool&){return false;}
+StereoFrameTextures CopyFrameTextures(ID3D11Device*,const StereoFrameTextures&){return {};}
+bool CopyPresentationImage(ID3D11Device*,ID3D11Texture2D*,ID3D11Texture2D*){return false;}
+bool SrApplied(uint64_t){return false;}
 bool SpatialApplied(uint64_t){return false;}
 bool DlaaApplied(uint64_t){return false;}
 bool TemporalNRApplied(uint64_t){return false;}

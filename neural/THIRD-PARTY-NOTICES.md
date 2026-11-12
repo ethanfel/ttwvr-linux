@@ -5,7 +5,9 @@ GPL-3.0-only, copyright 2026 Ethanfel and contributors. Reference revision: 7e8c
 
 MinHook retains its upstream BSD license in third_party/minhook/LICENSE.txt.
 NVIDIA SDKs and runtime DLLs are external dependencies under NVIDIA's terms;
-none are redistributed here. No frame generation is included in this port.
+none are redistributed here. The SR/FG backend and camera math retain the same
+reference attribution; TTWVR guide decoding and queued OpenXR delivery are adapted
+for this renderer.
 
 DXVK interop declarations retain the zlib license in licenses/DXVK.txt.
 

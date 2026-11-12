@@ -138,7 +138,7 @@ public:
   }
   uint64_t InputHandle() const { return uintptr_t(inputHandle); }
   uint64_t OutputHandle() const { return uintptr_t(outputHandle); }
-  void SignalInput(uint64_t value) { Submit(input, value, true, false); }
+  void SignalInput(uint64_t value, bool flush = false) { Submit(input, value, true, flush); }
   void WaitInput(uint64_t value) { Submit(input, value, false, true); }
   void SignalOutput(uint64_t value) { Submit(output, value, true, true); }
   void WaitOutput(uint64_t value) { Submit(output, value, false, true); }

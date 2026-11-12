@@ -1,5 +1,14 @@
 # Changes
 
+## Optional DLSS Quality and queued stereo frame generation — 2026-11-12
+
+- Add independent live SR and FG rows inside native VR Settings; preserve existing feature preferences and default both new features off.
+- Reconstruct verified 1963×1472 scene inputs to 2944×2208 per eye using per-eye NGX SR state, while retaining native-size tone mapping and HUD.
+- Adapt the FG backend to TTWVR camera and pixel-motion conventions, share final eye textures through separate GPU timelines, and queue private generated/real stereo pairs with tracked OpenXR ownership.
+- Protect the D3D11 context during queued delivery; drain queued GPU copies, renew presentation swapchains after menus, and stop the helper before runtime teardown. Preserve bypass and ordinary pacing when disabled. Layer/helper protocol is now 6.
+- Add stereo delivery/camera tests and native/SR-guide moving-object probes. Record actual consecutive-eye captures and distinct/generated/repeated presentation counts.
+- Publish [120 Hz measurements and limits](docs/sr-frame-generation.md): SR alone did not improve the measured corridor; generated frames add buffering and need headset validation. DLAA haze remains unresolved.
+
 ## Neural GPU handoff and Proton research — 2026-11-12
 
 - Add an opt-in opaque Vulkan timeline handoff between the 32-bit game and 64-bit NGX helper, preserving GPU ordering without CPU completion waits. Matching protocol-4 layer/helper required; distributed default remains off.

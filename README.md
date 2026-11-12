@@ -55,9 +55,11 @@ main/pause menu; 1.1.0 uses **Settings → VR**. The addon rows follow Resolutio
 
 - **Anti-aliasing:** Off, native-resolution DLAA, MSAA 2×/4×/8×.
 - **Neural Rendering:** enable, model A/B, processing scale, strength, tone and detail.
+- **DLSS Super Resolution:** Off / Quality, with native-size output.
+- **Frame generation:** Off / experimental stereo 2×.
 
-NR/DLAA changes apply live. MSAA changes require a game restart and currently
-exclude NR/DLAA. The addon hides and disables the original upscaler controls.
+NR/DLAA/SR/FG changes apply live. MSAA changes require a game restart and
+exclude neural processing. SR owns temporal reconstruction and excludes NR/DLAA. The addon hides and disables the original upscaler controls.
 All effects default off; final eye resolution is unchanged.
 
 [Upgrade to TTWVR 1.1.3](docs/ttwvr-1.1.3.md) ·
@@ -67,8 +69,8 @@ All effects default off; final eye resolution is unchanged.
 
 NVIDIA NR and DLAA remain experimental. Both eyes and consecutive gameplay
 frames have been verified in isolated GPU tests. Reported DLAA softness/haze at
-distance remains under investigation. **No Super Resolution upscaling or
-frame generation is implemented.** NVIDIA SDKs and runtime DLLs are separate
+distance remains under investigation. **SR and FG are experimental and default off.**
+NVIDIA SDKs and runtime DLLs are separate
 dependencies under NVIDIA's terms; original addon code is GPL-3.0-only.
 
 ## Neural performance update
@@ -79,8 +81,15 @@ In one matched simulated corridor test, NR rose from **23.5 to 38.6 FPS** and
 NR + DLAA from **16.0 to 39.2 FPS** at 2944×2208 per eye. These are not headset
 FPS predictions. See the [measurements, Proton research, setup and rollback](docs/proton-neural-performance.md).
 The setting is experimental and defaults off pending headset validation.
-A standalone frame-generation backend test passed under Proton; generated
-frames are **not integrated into TTWVR**.
+
+**DLSS Quality and stereo frame generation are now integrated** into the addon.
+Both eyes and consecutive generated submissions were verified in the isolated
+120 Hz runtime. In the matched corridor, native rendering was **58 FPS**, SR
+alone **48 FPS**, and SR + FG **38 real + 38 generated pairs/s**. About 17 further
+submissions per second were repeats. SR has not demonstrated a performance win
+over native rendering here; headset latency and moving-head quality are untested.
+[Measurements and limitations](docs/sr-frame-generation.md) ·
+[Implementation, dependencies and controls](neural/docs/SR-FRAME-GENERATION.md).
 
 ## Tested status
 

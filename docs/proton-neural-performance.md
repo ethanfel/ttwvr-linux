@@ -1,5 +1,11 @@
 # Proton neural rendering investigation — 12 November 2026
 
+> This records the earlier GPU-handoff experiment. The later
+> [SR/FG integration and 120 Hz measurements](sr-frame-generation.md) supersede
+> its statements about absent SR/FG integration. Current layer/helper protocol
+> is 6; protocol 4 below identifies the earlier tested build.
+
+
 This investigation uses TTWVR 1.1.3 and the Fluorine-compatible rendering addon.
 The private automated harness still uses an archived MO2 instance; it does not
 change the production Fluorine instance, Titanfall, or WiVRn registration.

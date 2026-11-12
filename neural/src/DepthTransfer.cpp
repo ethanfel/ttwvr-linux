@@ -3,6 +3,7 @@
 #include "DxvkInterfaces.h"
 #include "Support.h"
 #include <memory>
+#include <map>
 #include <stdexcept>
 #include <utility>
 #include <wrl/client.h>
@@ -213,7 +214,7 @@ struct Transfer {
 };
 // Lifetime is deliberately process-bound for this experimental adapter. The
 // game device can outlive OpenXR sessions; never destroy in-flight Vulkan work.
-Transfer *transfer = nullptr;
+std::map<std::pair<unsigned, unsigned>, Transfer *> transfers;
 bool failed = false;
 } // namespace
 bool TransferDepthBits(IDirect3DDevice9 *d, IDirect3DSurface9 *depth,
@@ -221,10 +222,12 @@ bool TransferDepthBits(IDirect3DDevice9 *d, IDirect3DSurface9 *depth,
   if (failed || !d || !depth || !packed)
     return false;
   try {
+    D3DSURFACE_DESC desc{};
+    if (FAILED(depth->GetDesc(&desc))) return false;
+    // Native DLAA/NR and SR use different grids. Retain both completed
+    // transfer contexts so live switches never reuse an undersized buffer.
+    auto &transfer = transfers[{desc.Width, desc.Height}];
     if (!transfer) {
-      D3DSURFACE_DESC desc{};
-      if (FAILED(depth->GetDesc(&desc)))
-        return false;
       transfer = new Transfer;
       transfer->Init(d, desc.Width, desc.Height);
     }

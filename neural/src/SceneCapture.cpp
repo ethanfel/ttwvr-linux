@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "SceneCapture.h"
+#include "SuperResolution.h"
 #include "DxvkInterfaces.h"
 #include "Support.h"
 #include <cmath>
@@ -347,6 +348,7 @@ void CaptureSceneBeforeTone(IDirect3DDevice9 *d, uint64_t frame,
   CopyTexture(d, 2, prefix + L"-luminance-candidate.dds");
   ComPtr<IDirect3DSurface9> depth;
   d->GetDepthStencilSurface(&depth);
+  if (SuperResolutionDepth()) depth = SuperResolutionDepth();
   CopyDepth(d, depth.Get(), prefix + L"-depth-raw.dds");
   float constants[32][4]{};
   d->GetPixelShaderConstantF(0, &constants[0][0], 32);

@@ -15,19 +15,23 @@ steps are in [the README](../README.md#in-game-controls) and [Steam setup](STEAM
 | NR model | A/B |
 | NR processing scale | 25/50/75/100% per dimension; final eye size unchanged |
 | NR strength/tone/detail | 0–100%, in 10% steps |
+| DLSS Super Resolution | Off / Quality; owns temporal AA, excludes NR/DLAA |
+| Frame gen. | Off / 2x (experimental); independent of SR |
 
-Rows save immediately. NR/DLAA settings apply live at a stereo frame boundary.
+Rows save immediately. NR/DLAA/SR/FG settings apply live at a stereo frame boundary.
 MSAA changes require restarting Fallout; the menu marks pending choices with
 `(restart)`, including a return from MSAA to Off/DLAA. MSAA currently excludes
-NR/DLAA because their GPU depth transport requires single-sampled depth.
-Selecting MSAA disables both neural features. Enabling NR clears requested MSAA
+NR/DLAA/SR/FG because their GPU depth transport requires single-sampled depth.
+Selecting MSAA disables neural processing. Enabling NR clears requested MSAA
 for the next launch; active MSAA still prevents neural evaluation until restart.
 
 The unavailable original Upscaler, Upscaler Level and Sharpness rows are hidden.
 All other VR rows remain. Navigation uses the game engine's own option handling;
 the older X/F10 input reader is inactive while the native menu is installed.
-Disable the addon and restart to restore the original VR menu. Both neural
+Disable the addon and restart to restore the original VR menu. All neural
 features and MSAA default off in the distributed configuration.
+
+See [SR/FG contracts and validation](SR-FRAME-GENERATION.md) for the new controls.
 
 ## Compatibility and implementation
 

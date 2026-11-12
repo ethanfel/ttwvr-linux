@@ -48,6 +48,8 @@ bool Save(const LiveSettings &s) {
                                   s.preset == 1 ? L"A" : L"B", tmp.c_str()) &&
        ok;
   put(L"dlaa", L"enabled", s.dlaa);
+  put(L"super_resolution", L"enabled", s.sr);
+  put(L"frame_generation", L"enabled", s.fg);
   Flush(tmp);
   if (ok)
     ok = MoveFileExW(tmp.c_str(), ini.c_str(),
@@ -85,6 +87,13 @@ LiveSettings ReadLiveSettings() {
   GetPrivateProfileStringW(L"neural_rendering", L"model", L"B", model, 16,
                            p.c_str());
   s.preset = !_wcsicmp(model, L"A") ? 1 : 2;
+  s.sr = get(L"super_resolution", L"enabled", 0) != 0;
+  s.fg = get(L"frame_generation", L"enabled", 0) != 0;
+  if (s.fg) { s.temporal = 1; s.identity = 0; }
+  if (s.sr) {
+    s.neural = s.dlaa = s.identity = 0;
+    s.temporal = 1;
+  }
   return s;
 }
 bool ReadMenuRequest(uint32_t revision, LiveSettings &s) {
@@ -95,6 +104,8 @@ bool ReadMenuRequest(uint32_t revision, LiveSettings &s) {
   if (!seq || seq == consumed)
     return false;
   LiveSettings next = s;
+  next.sr = get(L"sr");
+  next.fg = Read(p, L"request", L"fg", s.fg);
   next.neural = get(L"neural");
   next.dlaa = get(L"dlaa");
   next.temporal = 1;
@@ -123,8 +134,9 @@ bool ReadMenuRequest(uint32_t revision, LiveSettings &s) {
   }
   notice.clear();
   s = next;
-  Log("menu_apply sequence=%u base_revision=%u nr=%u dlaa=%u model=%u scale=%u",
-      seq, revision, s.neural, s.dlaa, s.preset, s.resolution);
+  Log("menu_apply sequence=%u base_revision=%u nr=%u dlaa=%u sr=%u model=%u "
+      "scale=%u",
+      seq, revision, s.neural, s.dlaa, s.sr, s.preset, s.resolution);
   return true;
 }
 void PublishMenuState(const ReloadState &r, bool applied) {
@@ -140,8 +152,12 @@ void PublishMenuState(const ReloadState &r, bool applied) {
       status = "Diagnostic bypass - no effects applied";
     else if (!applied)
       status = "Ready - waiting for a scene";
+    else if (r.requested.sr)
+      status = "Active: DLSS Quality (Super Resolution)";
     else if (r.requested.neural && r.requested.dlaa)
       status = "Active: NR + DLAA";
+    else if(r.requested.fg && !r.requested.neural && !r.requested.dlaa)
+      status="Active: frame generation (experimental)";
     else
       status = r.requested.neural ? "Active: NR" : "Active: DLAA";
   }
@@ -151,9 +167,9 @@ void PublishMenuState(const ReloadState &r, bool applied) {
   std::snprintf(
       data, sizeof(data),
       "[state]\nnative_menu=%u\nmsaa_samples=%u\nsession=%u\nrevision=%u\nsequence=%u\nneural=%u\ndlaa=%"
-      "u\npreset=%u\n"
+      "u\nsr=%u\nfg=%u\npreset=%u\n"
       "resolution=%u\nstrength=%u\ntone=%u\ndetail=%u\nstatus=%s\nnotice=%s\n",
-      unsigned(NativeVRSettingsInstalled()), CurrentMsaaSamples(), session, r.revision, consumed, s.neural, s.dlaa, s.preset, s.resolution,
+      unsigned(NativeVRSettingsInstalled()), CurrentMsaaSamples(), session, r.revision, consumed, s.neural, s.dlaa, s.sr, s.fg, s.preset, s.resolution,
       s.strength, s.tone, s.detail, status, notice.c_str());
   static std::string previous;
   if (data == previous)

@@ -1,0 +1,1925 @@
+{
+  "schema": 1,
+  "date": "2026-11-12",
+  "build_parent": "12deafc5f5c5f9db20ed0baa9d1f94fec9513769",
+  "environment": {
+    "runtime": "Monado simulated/null",
+    "runtime_hz": 120,
+    "gpu": "NVIDIA RTX 5090",
+    "driver": "615.78.08",
+    "cpu": "Ryzen 9 5950X",
+    "proton": "experimental-11.0-20261105c-x86_64",
+    "ttwvr": "1.1.3",
+    "output_eye_size": [
+      2944,
+      2208
+    ],
+    "sr_eye_input": [
+      1963,
+      1472
+    ],
+    "scene": "loaded indoor corridor, fixed pose, no menu",
+    "gpu_handoff": true,
+    "captures_during_timing": false,
+    "warmup_seconds": 5,
+    "requested_sample_seconds": 30,
+    "headset_test": false
+  },
+  "runs": [
+    {
+      "mode": "off",
+      "seconds": 30.897945643999265,
+      "frame_samples": 30,
+      "fps": 58.03288568561019,
+      "mean_frame_ms": 17.231609081399853,
+      "median_window_frame_ms": 17.16666618982951,
+      "gpu": {
+        "gpu_utilization_percent": {
+          "mean": 51.766666666666666,
+          "min": 45.0,
+          "max": 55.0
+        },
+        "memory_utilization_percent": {
+          "mean": 2.9,
+          "min": 2.0,
+          "max": 3.0
+        },
+        "power_watts": {
+          "mean": 104.57133333333333,
+          "min": 102.28,
+          "max": 109.32
+        },
+        "gpu_clock_mhz": {
+          "mean": 2910.7,
+          "min": 2910.0,
+          "max": 2917.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 4846.233333333334,
+          "min": 4845.0,
+          "max": 4858.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 4.948733333333333,
+        "app_ms": 10.853933333333334,
+        "end_ms": 0.6669,
+        "display_period_ms": 16.667
+      },
+      "log_sha256": "5bebc7bc6946ccd4f38479607cda188c4a29640d0bdf490a22d62c196b5c0618"
+    },
+    {
+      "mode": "dlaa",
+      "seconds": 30.906305966003856,
+      "frame_samples": 25,
+      "fps": 48.52242469854836,
+      "mean_frame_ms": 20.60902780956692,
+      "median_window_frame_ms": 19.458331664403282,
+      "depth_ms": {
+        "median": 0.157,
+        "count": 25
+      },
+      "helper_wait_ms": {
+        "median": 0.8795,
+        "count": 26
+      },
+      "copies_ms": {
+        "median": 0.005,
+        "count": 25
+      },
+      "output_ms": {
+        "median": 0.002,
+        "count": 26
+      },
+      "dlaa_ms": {
+        "median": 0.71915,
+        "count": 98
+      },
+      "nr_ms": {
+        "median": 0.0,
+        "count": 98
+      },
+      "camera_ms": {
+        "median": 0.066,
+        "count": 26
+      },
+      "motion_submit_ms": {
+        "median": 0.185,
+        "count": 26
+      },
+      "sr_ms": {
+        "median": 0.0,
+        "count": 98
+      },
+      "gpu": {
+        "gpu_utilization_percent": {
+          "mean": 58.833333333333336,
+          "min": 35.0,
+          "max": 74.0
+        },
+        "memory_utilization_percent": {
+          "mean": 8.433333333333334,
+          "min": 5.0,
+          "max": 11.0
+        },
+        "power_watts": {
+          "mean": 153.51566666666668,
+          "min": 127.04,
+          "max": 165.32
+        },
+        "gpu_clock_mhz": {
+          "mean": 2893.2,
+          "min": 2887.0,
+          "max": 2902.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 6934.266666666666,
+          "min": 6931.0,
+          "max": 6952.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 4.27828,
+        "app_ms": 14.94836,
+        "end_ms": 0.70084,
+        "display_period_ms": 17.333640000000003
+      },
+      "log_sha256": "3bc78df1f8aad5cf471f953df2aaca83798001e15df4b7aca9bf29e2bf96700d"
+    },
+    {
+      "mode": "sr",
+      "seconds": 30.884640869000577,
+      "frame_samples": 24,
+      "fps": 47.891722965803005,
+      "mean_frame_ms": 20.880434824072797,
+      "median_window_frame_ms": 19.983335336049397,
+      "depth_ms": {
+        "median": 0.155,
+        "count": 23
+      },
+      "helper_wait_ms": {
+        "median": 0.8725,
+        "count": 24
+      },
+      "copies_ms": {
+        "median": 0.004,
+        "count": 23
+      },
+      "output_ms": {
+        "median": 0.002,
+        "count": 24
+      },
+      "dlaa_ms": {
+        "median": 0.0,
+        "count": 98
+      },
+      "nr_ms": {
+        "median": 0.0,
+        "count": 98
+      },
+      "camera_ms": {
+        "median": 0.065,
+        "count": 24
+      },
+      "motion_submit_ms": {
+        "median": 0.1845,
+        "count": 24
+      },
+      "sr_ms": {
+        "median": 0.6847,
+        "count": 98
+      },
+      "gpu": {
+        "gpu_utilization_percent": {
+          "mean": 52.266666666666666,
+          "min": 34.0,
+          "max": 67.0
+        },
+        "memory_utilization_percent": {
+          "mean": 6.266666666666667,
+          "min": 4.0,
+          "max": 8.0
+        },
+        "power_watts": {
+          "mean": 141.321,
+          "min": 121.54,
+          "max": 152.12
+        },
+        "gpu_clock_mhz": {
+          "mean": 2894.3,
+          "min": 2887.0,
+          "max": 2902.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 6495.966666666666,
+          "min": 6491.0,
+          "max": 6511.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 4.12175,
+        "app_ms": 15.184541666666666,
+        "end_ms": 0.7637916666666666,
+        "display_period_ms": 17.014208333333336
+      },
+      "log_sha256": "65aaea10ecd72c9f578604b9b6ed56af5dc8031dd3897bf5896f847a0068fd38"
+    },
+    {
+      "mode": "fg",
+      "seconds": 30.868569373000355,
+      "frame_samples": 18,
+      "fps": 35.53883143030571,
+      "mean_frame_ms": 28.138235269808302,
+      "median_window_frame_ms": 27.966666221618652,
+      "depth_ms": {
+        "median": 0.164,
+        "count": 18
+      },
+      "helper_wait_ms": {
+        "median": 0.3495,
+        "count": 18
+      },
+      "copies_ms": {
+        "median": 0.0045000000000000005,
+        "count": 18
+      },
+      "output_ms": {
+        "median": 0.0,
+        "count": 18
+      },
+      "camera_ms": {
+        "median": 0.065,
+        "count": 18
+      },
+      "motion_submit_ms": {
+        "median": 0.253,
+        "count": 18
+      },
+      "fg_ms": {
+        "median": 2.15365,
+        "count": 36
+      },
+      "presentation": {
+        "runtime_fps": 75.16180688662502,
+        "generated_fps": 35.42348120860383,
+        "real_fps": 35.388684075785946,
+        "repeated_fps": 4.349641602235244
+      },
+      "gpu": {
+        "gpu_utilization_percent": {
+          "mean": 50.13333333333333,
+          "min": 35.0,
+          "max": 77.0
+        },
+        "memory_utilization_percent": {
+          "mean": 7.333333333333333,
+          "min": 5.0,
+          "max": 12.0
+        },
+        "power_watts": {
+          "mean": 136.429,
+          "min": 128.37,
+          "max": 145.6
+        },
+        "gpu_clock_mhz": {
+          "mean": 2909.733333333333,
+          "min": 2902.0,
+          "max": 2910.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 7665.833333333333,
+          "min": 7657.0,
+          "max": 7678.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 9.87,
+        "app_ms": 17.214055555555557,
+        "end_ms": 0.06305555555555556,
+        "display_period_ms": 27.777666666666665
+      },
+      "log_sha256": "8662cac4f33afe342b6ade796257497d54a4feee290bf7b02470f2b5436bfc9f"
+    },
+    {
+      "mode": "sr_fg",
+      "seconds": 30.923688654002035,
+      "frame_samples": 19,
+      "fps": 37.66084312431647,
+      "mean_frame_ms": 26.552777820163303,
+      "median_window_frame_ms": 26.74166758855184,
+      "depth_ms": {
+        "median": 0.176,
+        "count": 20
+      },
+      "helper_wait_ms": {
+        "median": 0.895,
+        "count": 20
+      },
+      "copies_ms": {
+        "median": 0.005,
+        "count": 20
+      },
+      "output_ms": {
+        "median": 0.002,
+        "count": 20
+      },
+      "dlaa_ms": {
+        "median": 0.0,
+        "count": 77
+      },
+      "nr_ms": {
+        "median": 0.0,
+        "count": 77
+      },
+      "camera_ms": {
+        "median": 0.0665,
+        "count": 20
+      },
+      "motion_submit_ms": {
+        "median": 0.246,
+        "count": 20
+      },
+      "sr_ms": {
+        "median": 0.6863,
+        "count": 77
+      },
+      "fg_ms": {
+        "median": 2.266,
+        "count": 39
+      },
+      "presentation": {
+        "runtime_fps": 91.99386752000842,
+        "generated_fps": 37.697487016351275,
+        "real_fps": 37.697487016351275,
+        "repeated_fps": 16.59889348730587
+      },
+      "gpu": {
+        "gpu_utilization_percent": {
+          "mean": 57.266666666666666,
+          "min": 43.0,
+          "max": 67.0
+        },
+        "memory_utilization_percent": {
+          "mean": 10.366666666666667,
+          "min": 7.0,
+          "max": 12.0
+        },
+        "power_watts": {
+          "mean": 164.867,
+          "min": 155.95,
+          "max": 172.12
+        },
+        "gpu_clock_mhz": {
+          "mean": 2891.0333333333333,
+          "min": 2872.0,
+          "max": 2895.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 8386.933333333332,
+          "min": 8343.0,
+          "max": 8604.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 6.469947368421052,
+        "app_ms": 18.881473684210526,
+        "end_ms": 0.29905263157894735,
+        "display_period_ms": 21.929947368421054
+      },
+      "log_sha256": "0ce706d99cb631f664a83d2cd01e95d11131d67723725071363b1dd49f5ec0f9"
+    },
+    {
+      "mode": "dlaa_fg",
+      "seconds": 30.87892156399903,
+      "frame_samples": 17,
+      "fps": 32.96250506835951,
+      "mean_frame_ms": 30.337500075499218,
+      "median_window_frame_ms": 30.89999953905741,
+      "depth_ms": {
+        "median": 0.166,
+        "count": 16
+      },
+      "helper_wait_ms": {
+        "median": 0.8915,
+        "count": 16
+      },
+      "copies_ms": {
+        "median": 0.005,
+        "count": 16
+      },
+      "output_ms": {
+        "median": 0.002,
+        "count": 16
+      },
+      "dlaa_ms": {
+        "median": 0.7201500000000001,
+        "count": 68
+      },
+      "nr_ms": {
+        "median": 0.0,
+        "count": 68
+      },
+      "camera_ms": {
+        "median": 0.066,
+        "count": 16
+      },
+      "motion_submit_ms": {
+        "median": 0.2655,
+        "count": 16
+      },
+      "sr_ms": {
+        "median": 0.0,
+        "count": 68
+      },
+      "fg_ms": {
+        "median": 2.199,
+        "count": 34
+      },
+      "presentation": {
+        "runtime_fps": 70.15130692407566,
+        "generated_fps": 33.012379728976775,
+        "real_fps": 33.012379728976775,
+        "repeated_fps": 4.126547466122097
+      },
+      "gpu": {
+        "gpu_utilization_percent": {
+          "mean": 52.6,
+          "min": 35.0,
+          "max": 69.0
+        },
+        "memory_utilization_percent": {
+          "mean": 10.133333333333333,
+          "min": 7.0,
+          "max": 14.0
+        },
+        "power_watts": {
+          "mean": 162.27066666666667,
+          "min": 154.38,
+          "max": 182.0
+        },
+        "gpu_clock_mhz": {
+          "mean": 2893.866666666667,
+          "min": 2880.0,
+          "max": 2902.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 8909.033333333333,
+          "min": 8895.0,
+          "max": 8920.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 10.438588235294118,
+        "app_ms": 18.96035294117647,
+        "end_ms": 0.07023529411764706,
+        "display_period_ms": 25.490176470588235
+      },
+      "log_sha256": "b03ef57002b23b98002393514721ced253a9fb86d33adc2107f64b2ded29b6a9"
+    },
+    {
+      "mode": "both",
+      "seconds": 30.910851890999766,
+      "frame_samples": 17,
+      "fps": 33.70313162100904,
+      "mean_frame_ms": 29.67083329955737,
+      "median_window_frame_ms": 29.316667715708412,
+      "depth_ms": {
+        "median": 0.147,
+        "count": 16
+      },
+      "helper_wait_ms": {
+        "median": 0.9770000000000001,
+        "count": 16
+      },
+      "copies_ms": {
+        "median": 0.005,
+        "count": 16
+      },
+      "output_ms": {
+        "median": 0.002,
+        "count": 16
+      },
+      "dlaa_ms": {
+        "median": 0.7233,
+        "count": 36
+      },
+      "nr_ms": {
+        "median": 3.5467,
+        "count": 36
+      },
+      "camera_ms": {
+        "median": 0.066,
+        "count": 16
+      },
+      "motion_submit_ms": {
+        "median": 0.27,
+        "count": 16
+      },
+      "sr_ms": {
+        "median": 0.0,
+        "count": 36
+      },
+      "gpu": {
+        "gpu_utilization_percent": {
+          "mean": 67.8,
+          "min": 59.0,
+          "max": 80.0
+        },
+        "memory_utilization_percent": {
+          "mean": 16.066666666666666,
+          "min": 13.0,
+          "max": 20.0
+        },
+        "power_watts": {
+          "mean": 275.462,
+          "min": 261.2,
+          "max": 289.61
+        },
+        "gpu_clock_mhz": {
+          "mean": 2822.266666666667,
+          "min": 2805.0,
+          "max": 2835.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 8457.7,
+          "min": 8328.0,
+          "max": 8810.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 10.885823529411764,
+        "app_ms": 17.025058823529413,
+        "end_ms": 0.8230588235294117,
+        "display_period_ms": 23.03929411764706
+      },
+      "log_sha256": "bbe34196b289afed7c86b3198acbfa968cb1a191f8a9f9c4909006ef37166bb6"
+    },
+    {
+      "mode": "both_fg",
+      "seconds": 30.886685646000842,
+      "frame_samples": 12,
+      "fps": 23.94688136847437,
+      "mean_frame_ms": 41.75909107381647,
+      "median_window_frame_ms": 42.13333527247111,
+      "depth_ms": {
+        "median": 0.163,
+        "count": 12
+      },
+      "helper_wait_ms": {
+        "median": 1.2255,
+        "count": 12
+      },
+      "copies_ms": {
+        "median": 0.005,
+        "count": 12
+      },
+      "output_ms": {
+        "median": 0.0015,
+        "count": 12
+      },
+      "dlaa_ms": {
+        "median": 0.7211,
+        "count": 29
+      },
+      "nr_ms": {
+        "median": 3.4721,
+        "count": 29
+      },
+      "camera_ms": {
+        "median": 0.065,
+        "count": 12
+      },
+      "motion_submit_ms": {
+        "median": 0.268,
+        "count": 12
+      },
+      "sr_ms": {
+        "median": 0.0,
+        "count": 29
+      },
+      "fg_ms": {
+        "median": 2.0803,
+        "count": 25
+      },
+      "presentation": {
+        "runtime_fps": 48.62400808834325,
+        "generated_fps": 24.00810399361948,
+        "real_fps": 24.00810399361948,
+        "repeated_fps": 0.6078001011042906
+      },
+      "gpu": {
+        "gpu_utilization_percent": {
+          "mean": 56.1,
+          "min": 41.0,
+          "max": 77.0
+        },
+        "memory_utilization_percent": {
+          "mean": 14.3,
+          "min": 11.0,
+          "max": 18.0
+        },
+        "power_watts": {
+          "mean": 246.07433333333333,
+          "min": 219.77,
+          "max": 273.02
+        },
+        "gpu_clock_mhz": {
+          "mean": 2844.9,
+          "min": 2827.0,
+          "max": 2857.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 10202.166666666666,
+          "min": 10166.0,
+          "max": 10383.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 17.35575,
+        "app_ms": 23.00325,
+        "end_ms": 0.06041666666666667,
+        "display_period_ms": 37.49975
+      },
+      "log_sha256": "653d77fd22f54c0c1c4f6a160f34a989d30df0305a967d3e5136a3d0390a0dbb"
+    },
+    {
+      "mode": "off",
+      "seconds": 30.900850609999907,
+      "frame_samples": 29,
+      "fps": 57.666563894534484,
+      "mean_frame_ms": 17.341071367263794,
+      "median_window_frame_ms": 17.24999745686849,
+      "gpu": {
+        "gpu_utilization_percent": {
+          "mean": 50.9,
+          "min": 44.0,
+          "max": 55.0
+        },
+        "memory_utilization_percent": {
+          "mean": 2.7666666666666666,
+          "min": 2.0,
+          "max": 3.0
+        },
+        "power_watts": {
+          "mean": 109.24966666666667,
+          "min": 107.02,
+          "max": 110.68
+        },
+        "gpu_clock_mhz": {
+          "mean": 2901.5,
+          "min": 2895.0,
+          "max": 2917.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 5295.033333333334,
+          "min": 5165.0,
+          "max": 5434.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 4.613551724137931,
+        "app_ms": 11.269620689655172,
+        "end_ms": 0.6867931034482758,
+        "display_period_ms": 16.667
+      },
+      "log_sha256": "3d2bfe7070f5fd44ce790eb8afa8b3a772081413cfb97a92a68fd1ce166ef4a9"
+    }
+  ],
+  "limitations": [
+    "One fixed indoor scene; no headset streaming or comfort test.",
+    "Global GPU utilization/power are not process-isolated GPU frame time.",
+    "Runtime submission rate includes repeats, separately counted.",
+    "SR alone was slower than native in this scene.",
+    "GPU timings are per-eye evaluation only; copies/preparation/pacing are additional.",
+    "No fix demonstrated for distant DLAA softness."
+  ],
+  "captures": {
+    "off": {
+      "views": [
+        {
+          "mode": "capture_only",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            0,
+            0
+          ],
+          "fg_interpolated": false,
+          "fg_presented": false,
+          "fg_format": 29,
+          "frame": 17790,
+          "display_time": 425910222857,
+          "layer": 0,
+          "eye": 0,
+          "burst_index": 0,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 0,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            -0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63809408-frame17790-layer0-eye0.json",
+          "metadata_sha256": "c0f9e511dbcdb1c27fd0ddeee23d0d41e0954866ab2a235c52919332afe37a8a"
+        },
+        {
+          "mode": "capture_only",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            0,
+            0
+          ],
+          "fg_interpolated": false,
+          "fg_presented": false,
+          "fg_format": 29,
+          "frame": 17790,
+          "display_time": 425910222857,
+          "layer": 0,
+          "eye": 1,
+          "burst_index": 0,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 0,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63809408-frame17790-layer0-eye1.json",
+          "metadata_sha256": "55f5b881967ad785312c218b5336e6cbc8ae3da0ed769f25ddaf542414e53fba"
+        },
+        {
+          "mode": "capture_only",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            0,
+            0
+          ],
+          "fg_interpolated": false,
+          "fg_presented": false,
+          "fg_format": 29,
+          "frame": 17791,
+          "display_time": 425993556187,
+          "layer": 0,
+          "eye": 0,
+          "burst_index": 1,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 1,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            -0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63809408-frame17791-layer0-eye0.json",
+          "metadata_sha256": "3c137de783bc7e5584dda81008d1a38464b1b9bf451950bcb2bdef7279cc83d1"
+        },
+        {
+          "mode": "capture_only",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            0,
+            0
+          ],
+          "fg_interpolated": false,
+          "fg_presented": false,
+          "fg_format": 29,
+          "frame": 17791,
+          "display_time": 425993556187,
+          "layer": 0,
+          "eye": 1,
+          "burst_index": 1,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 1,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63809408-frame17791-layer0-eye1.json",
+          "metadata_sha256": "da6656dc0821bd37435a953d66d7b606bda33073a85ff64eaa487d7015d1577d"
+        }
+      ]
+    },
+    "sr": {
+      "views": [
+        {
+          "mode": "super_resolution",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            0.375,
+            0.0555556
+          ],
+          "fg_interpolated": false,
+          "fg_presented": false,
+          "fg_format": 29,
+          "frame": 18870,
+          "display_time": 449476888581,
+          "layer": 0,
+          "eye": 0,
+          "burst_index": 0,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 0,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            -0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63832968-frame18870-layer0-eye0.json",
+          "metadata_sha256": "d3856d8ac3c86ab9bdf1d5ce4246d01182fb617829248956ed66f7a9976644f6"
+        },
+        {
+          "mode": "super_resolution",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            0.375,
+            0.0555556
+          ],
+          "fg_interpolated": false,
+          "fg_presented": false,
+          "fg_format": 29,
+          "frame": 18870,
+          "display_time": 449476888581,
+          "layer": 0,
+          "eye": 1,
+          "burst_index": 0,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 0,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63832968-frame18870-layer0-eye1.json",
+          "metadata_sha256": "aabb059b954847f61833238a79c599958b59c0b6fc7898548ee14430f13097c9"
+        },
+        {
+          "mode": "super_resolution",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            -0.4375,
+            0.388889
+          ],
+          "fg_interpolated": false,
+          "fg_presented": false,
+          "fg_format": 29,
+          "frame": 18871,
+          "display_time": 449535221912,
+          "layer": 0,
+          "eye": 0,
+          "burst_index": 1,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 1,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            -0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63832968-frame18871-layer0-eye0.json",
+          "metadata_sha256": "03013d5b18eb85d5d2e80c798a38b09cf2286d9d9b3e5ed6c4300546f979819f"
+        },
+        {
+          "mode": "super_resolution",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            -0.4375,
+            0.388889
+          ],
+          "fg_interpolated": false,
+          "fg_presented": false,
+          "fg_format": 29,
+          "frame": 18871,
+          "display_time": 449535221912,
+          "layer": 0,
+          "eye": 1,
+          "burst_index": 1,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 1,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63832968-frame18871-layer0-eye1.json",
+          "metadata_sha256": "983635e714ca5fa841f95b5e876ef4993a38d46397d9ce6aae3a35621b407648"
+        }
+      ],
+      "hdr": {
+        "frame": 18870,
+        "same_input": true,
+        "preview": "HDR display proxy; not game tone mapping",
+        "eyes": [
+          {
+            "eye": 0,
+            "input_size": [
+              1963,
+              1472
+            ],
+            "output_size": [
+              2944,
+              2208
+            ],
+            "comparison_reference": "bilinear input",
+            "alpha_max_error": 0.004780888557434082,
+            "alpha_error_bound": 0.008812500000000001,
+            "alpha_unchanged": false,
+            "rgb_mean_absolute_change": 0.006747418083250523,
+            "changed_pixel_fraction": 0.9953222533179742,
+            "rgb_input_range": [
+              -0.10540771484375,
+              5.16015625
+            ],
+            "rgb_output_range": [
+              -1.722574234008789e-05,
+              5.18359375
+            ]
+          },
+          {
+            "eye": 1,
+            "input_size": [
+              1963,
+              1472
+            ],
+            "output_size": [
+              2944,
+              2208
+            ],
+            "comparison_reference": "bilinear input",
+            "alpha_max_error": 0.004780888557434082,
+            "alpha_error_bound": 0.008812500000000001,
+            "alpha_unchanged": false,
+            "rgb_mean_absolute_change": 0.0066634612157940865,
+            "changed_pixel_fraction": 0.994993963403828,
+            "rgb_input_range": [
+              -0.1087646484375,
+              5.140625
+            ],
+            "rgb_output_range": [
+              -2.5391578674316406e-05,
+              5.1796875
+            ]
+          }
+        ]
+      }
+    },
+    "fg": {
+      "views": [
+        {
+          "mode": "capture_only",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            0,
+            0
+          ],
+          "fg_interpolated": true,
+          "fg_presented": true,
+          "fg_format": 29,
+          "frame": 21630,
+          "display_time": 514543552645,
+          "layer": 0,
+          "eye": 0,
+          "burst_index": 0,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 0,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            -0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63898285-frame21630-layer0-eye0.json",
+          "metadata_sha256": "6f8ca1f3932d7ca05499562130e765c09c789958b4841d451f27d94af145d0e3"
+        },
+        {
+          "mode": "capture_only",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            0,
+            0
+          ],
+          "fg_interpolated": true,
+          "fg_presented": true,
+          "fg_format": 29,
+          "frame": 21630,
+          "display_time": 514543552645,
+          "layer": 0,
+          "eye": 1,
+          "burst_index": 0,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 0,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63898285-frame21630-layer0-eye1.json",
+          "metadata_sha256": "72f86c66c4a91b10faf54a4040da599137f7cefd40fe37dbbf92345a6ecbfb02"
+        },
+        {
+          "mode": "capture_only",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            0,
+            0
+          ],
+          "fg_interpolated": true,
+          "fg_presented": true,
+          "fg_format": 29,
+          "frame": 21631,
+          "display_time": 514685219306,
+          "layer": 0,
+          "eye": 0,
+          "burst_index": 1,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 1,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            -0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63898285-frame21631-layer0-eye0.json",
+          "metadata_sha256": "2effad3701b55eb7907d6de13de0d1c73224537c088dce05b44c0d943e15618a"
+        },
+        {
+          "mode": "capture_only",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            0,
+            0
+          ],
+          "fg_interpolated": true,
+          "fg_presented": true,
+          "fg_format": 29,
+          "frame": 21631,
+          "display_time": 514685219306,
+          "layer": 0,
+          "eye": 1,
+          "burst_index": 1,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 1,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63898285-frame21631-layer0-eye1.json",
+          "metadata_sha256": "263ad3f546fcaeb0e86f9b2636bbca0419b24a86054126908b59d57eacb62e96"
+        }
+      ],
+      "fg_pixel_checks": [
+        {
+          "frame": 21630,
+          "eye": 0,
+          "real": {
+            "max_rgb_change": 0,
+            "mean_rgb_change": 0.0,
+            "changed_pixels": 0
+          },
+          "generated": {
+            "max_rgb_change": 9,
+            "mean_rgb_change": 0.024775171149705944,
+            "changed_pixels": 293035
+          }
+        },
+        {
+          "frame": 21630,
+          "eye": 1,
+          "real": {
+            "max_rgb_change": 0,
+            "mean_rgb_change": 0.0,
+            "changed_pixels": 0
+          },
+          "generated": {
+            "max_rgb_change": 10,
+            "mean_rgb_change": 0.025613894960354967,
+            "changed_pixels": 297444
+          }
+        },
+        {
+          "frame": 21631,
+          "eye": 0,
+          "real": {
+            "max_rgb_change": 0,
+            "mean_rgb_change": 0.0,
+            "changed_pixels": 0
+          },
+          "generated": {
+            "max_rgb_change": 9,
+            "mean_rgb_change": 0.022249154097090947,
+            "changed_pixels": 248990
+          }
+        },
+        {
+          "frame": 21631,
+          "eye": 1,
+          "real": {
+            "max_rgb_change": 0,
+            "mean_rgb_change": 0.0,
+            "changed_pixels": 0
+          },
+          "generated": {
+            "max_rgb_change": 10,
+            "mean_rgb_change": 0.02314402871311174,
+            "changed_pixels": 254574
+          }
+        }
+      ]
+    },
+    "sr_fg": {
+      "views": [
+        {
+          "mode": "super_resolution",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            0.375,
+            0.0555556
+          ],
+          "fg_interpolated": true,
+          "fg_presented": true,
+          "fg_format": 29,
+          "frame": 22740,
+          "display_time": 549151884594,
+          "layer": 0,
+          "eye": 0,
+          "burst_index": 0,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 0,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            -0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63932852-frame22740-layer0-eye0.json",
+          "metadata_sha256": "1c8b6da3e571d6660e8c2579ee8dea16e363bde07cff6080144611c2176bccef"
+        },
+        {
+          "mode": "super_resolution",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            0.375,
+            0.0555556
+          ],
+          "fg_interpolated": true,
+          "fg_presented": true,
+          "fg_format": 29,
+          "frame": 22740,
+          "display_time": 549151884594,
+          "layer": 0,
+          "eye": 1,
+          "burst_index": 0,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 0,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63932852-frame22740-layer0-eye1.json",
+          "metadata_sha256": "3a150b8fbdb59dde2bc81c89b3ea1c8d03e894aff0350f2aaefce1788e23c07d"
+        },
+        {
+          "mode": "super_resolution",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            -0.4375,
+            0.388889
+          ],
+          "fg_interpolated": true,
+          "fg_presented": true,
+          "fg_format": 29,
+          "frame": 22741,
+          "display_time": 549251884590,
+          "layer": 0,
+          "eye": 0,
+          "burst_index": 1,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 1,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            -0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63932852-frame22741-layer0-eye0.json",
+          "metadata_sha256": "fd504bc39befe949088c6c0393798163b6419ea7d6580094658f9ec897880ad0"
+        },
+        {
+          "mode": "super_resolution",
+          "neural_rendering": false,
+          "dlaa": false,
+          "jitter_pixels": [
+            -0.4375,
+            0.388889
+          ],
+          "fg_interpolated": true,
+          "fg_presented": true,
+          "fg_format": 29,
+          "frame": 22741,
+          "display_time": 549251884590,
+          "layer": 0,
+          "eye": 1,
+          "burst_index": 1,
+          "burst_frames": 2,
+          "readback_after_burst": true,
+          "file_write_async": true,
+          "image_index": 1,
+          "array_slice": 0,
+          "format": 91,
+          "rect": [
+            0,
+            0,
+            2944,
+            2208
+          ],
+          "position": [
+            0.0315,
+            1.6,
+            -0.5
+          ],
+          "orientation": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "fov": [
+            -0.920914,
+            0.920914,
+            0.778764,
+            -0.778764
+          ],
+          "depth_submitted": false,
+          "motion_submitted": false,
+          "synthesis_submitted": false,
+          "capture_id": "capture-552-63932852-frame22741-layer0-eye1.json",
+          "metadata_sha256": "18ad31b280f4361d546f255dcdac9429ee3fcc1cc49a34d44e50eef7866f9163"
+        }
+      ],
+      "hdr": {
+        "frame": 22740,
+        "same_input": true,
+        "preview": "HDR display proxy; not game tone mapping",
+        "eyes": [
+          {
+            "eye": 0,
+            "input_size": [
+              1963,
+              1472
+            ],
+            "output_size": [
+              2944,
+              2208
+            ],
+            "comparison_reference": "bilinear input",
+            "alpha_max_error": 0.004780888557434082,
+            "alpha_error_bound": 0.008812500000000001,
+            "alpha_unchanged": false,
+            "rgb_mean_absolute_change": 0.006685699336230755,
+            "changed_pixel_fraction": 0.9953084079139098,
+            "rgb_input_range": [
+              -0.10943603515625,
+              5.109375
+            ],
+            "rgb_output_range": [
+              -2.5391578674316406e-05,
+              5.09375
+            ]
+          },
+          {
+            "eye": 1,
+            "input_size": [
+              1963,
+              1472
+            ],
+            "output_size": [
+              2944,
+              2208
+            ],
+            "comparison_reference": "bilinear input",
+            "alpha_max_error": 0.004780888557434082,
+            "alpha_error_bound": 0.008812500000000001,
+            "alpha_unchanged": false,
+            "rgb_mean_absolute_change": 0.00660367077216506,
+            "changed_pixel_fraction": 0.9949018145478891,
+            "rgb_input_range": [
+              -0.11273193359375,
+              5.10546875
+            ],
+            "rgb_output_range": [
+              -1.9669532775878906e-05,
+              5.08203125
+            ]
+          }
+        ]
+      },
+      "fg_pixel_checks": [
+        {
+          "frame": 22740,
+          "eye": 0,
+          "real": {
+            "max_rgb_change": 0,
+            "mean_rgb_change": 0.0,
+            "changed_pixels": 0
+          },
+          "generated": {
+            "max_rgb_change": 48,
+            "mean_rgb_change": 0.054621144619040114,
+            "changed_pixels": 609060
+          }
+        },
+        {
+          "frame": 22740,
+          "eye": 1,
+          "real": {
+            "max_rgb_change": 0,
+            "mean_rgb_change": 0.0,
+            "changed_pixels": 0
+          },
+          "generated": {
+            "max_rgb_change": 23,
+            "mean_rgb_change": 0.049316970322017435,
+            "changed_pixels": 604710
+          }
+        },
+        {
+          "frame": 22741,
+          "eye": 0,
+          "real": {
+            "max_rgb_change": 0,
+            "mean_rgb_change": 0.0,
+            "changed_pixels": 0
+          },
+          "generated": {
+            "max_rgb_change": 35,
+            "mean_rgb_change": 0.05032589004410838,
+            "changed_pixels": 600779
+          }
+        },
+        {
+          "frame": 22741,
+          "eye": 1,
+          "real": {
+            "max_rgb_change": 0,
+            "mean_rgb_change": 0.0,
+            "changed_pixels": 0
+          },
+          "generated": {
+            "max_rgb_change": 39,
+            "mean_rgb_change": 0.048309383861058604,
+            "changed_pixels": 585225
+          }
+        }
+      ]
+    }
+  },
+  "validation": {
+    "native_ctest": {
+      "passed": 5,
+      "failed": 0
+    },
+    "thread_sanitizer": {
+      "checks_passed": 406,
+      "race_reports": 0
+    },
+    "native_and_sr_guide_fg_probe": "both eyes, eight frames each, generated centroid at halfway position; local probe log retained",
+    "physical_headset": "pending",
+    "native_menu": "Nine rows reachable with gamepad; FG and SR changed live, Back/resume successful, off restored full-size native targets and ordinary pacing. Final shortened FG label inspected in-game.",
+    "shutdown": {
+      "initial_problem": "Active-FG quit stalled in Monado Vulkan teardown; drains fixed direct quit but menu/resume also required fresh owned swapchains.",
+      "final_checks": [
+        "Direct active-FG quit after GPU/helper drains: passed",
+        "SR+FG VR Settings/Back/resume with fresh swapchains: generated pairs continued",
+        "Second pause/resume followed by quit: passed, process exited before first post-command poll"
+      ],
+      "gpu_drain": "success=1 on each stop",
+      "helper_shutdown": "helper_exit=1",
+      "final_log_sha256": "2bf5c707f8c10a28f8af571201b78702103cc3613bfddb83176b2a0f63bd15e7"
+    }
+  },
+  "binaries": {
+    "layer_final": "1ad6cc28388ade374b345b38cebd234c7c12b25ba7c7ef5cc6d9891c31a91ba3",
+    "layer_measured": "1e1b2a47a62cad1a8827693a9de9417a86b09c2ab841fe7c0f0f87d88ff29e41",
+    "helper": "397809ca257d34ce5d46b1ec42c0fd956dbcc4817b61d1b5e2aae762da1a328b"
+  },
+  "binaries_note": "Steady-state measured rendering path unchanged. Final layer adds bounded GPU/helper teardown drains, releases owned presentation chains on worker stop so restarts use fresh images, and shortens the Frame gen. label. Final build passed native/TSan tests and the reproduced menu/resume/quit scenario."
+}

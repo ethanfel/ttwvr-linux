@@ -7,7 +7,7 @@ namespace ttwvrnr {
 // publish this single-writer control block; only one request may be
 // outstanding.
 struct HostProtocol {
-  uint32_t magic = 0x54544e52, version = 4, width = 0, height = 0;
+  uint32_t magic = 0x54544e52, version = 6, width = 0, height = 0;
   uint64_t colorHandle = 0, depthHandle = 0, bloomHandle = 0, motionHandle = 0,
            frame = 0;
   uint32_t eye = 0, command = 0, result = 0, parentPid = 0;
@@ -16,10 +16,19 @@ struct HostProtocol {
   float clipToPrevious[16]{};
   float jitterX = 0, jitterY = 0;
   uint32_t neural = 1, dlaa = 0, temporal = 0, reset = 1;
-  uint32_t resolution = 100, preset = 2, strength = 50, tone = 100, detail = 100;
+  uint32_t resolution = 100, preset = 2, strength = 50, tone = 100,
+           detail = 100;
   uint32_t profile = 0, revision = 0, padding = 0;
   uint64_t inputTimeline = 0, outputTimeline = 0, serial = 0;
+  uint32_t sr = 0, outputWidth = 0, outputHeight = 0, padding2 = 0;
+  uint64_t outputHandle = 0;
+  uint32_t fg = 0, fgInterpolated = 0;
+  uint64_t fgColorHandle = 0, fgRealHandle = 0, fgGeneratedHandle = 0;
+  float view[16]{}, projection[16]{};
+  uint64_t fgInputTimeline = 0, fgOutputTimeline = 0, fgSerial = 0;
+
 };
-static_assert(sizeof(HostProtocol) == 232);
+static_assert(sizeof(HostProtocol) == 440);
 static_assert(offsetof(HostProtocol, inputTimeline) == 208);
+static_assert(offsetof(HostProtocol, outputHandle) == 248);
 } // namespace ttwvrnr

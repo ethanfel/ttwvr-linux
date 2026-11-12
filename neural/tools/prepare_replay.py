@@ -20,7 +20,7 @@ def read_dds(path):
     height, width = struct.unpack_from('<II', data, 12)
     fmt = struct.unpack_from('<I', data, 128)[0]
     dtype, channels = {10: ('<f2', 4), 42: ('<u4', 1), 41: ('<f4', 1),
-                       34: ('<f2', 2), 54: ('<f2', 1), 88: ('u1', 4), 91: ('u1', 4)}[fmt]
+                       34: ('<f2', 2), 54: ('<f2', 1), 28: ('u1', 4), 29: ('u1', 4), 88: ('u1', 4), 91: ('u1', 4)}[fmt]
     pixels = np.frombuffer(data, dtype, offset=148).reshape(height, width, channels)
     return data[:148], pixels
 

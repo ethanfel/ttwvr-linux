@@ -72,7 +72,8 @@ stock row labels as well as flags before hiding Upscaler, Upscaler Level and
 Sharpness. This avoids hiding an adjacent stock option if a layout is wrong.
 Full Body and the other original VR options remain available. No TTWVR binary is
 patched on disk. NR, DLAA, exposure, motion conventions and jitter algorithms are
-unchanged by this compatibility port. Frame generation remains absent.
+unchanged by this compatibility port. The later [SR/FG update](sr-frame-generation.md)
+adds separate optional reconstruction and stereo presentation paths.
 
 ## Validation
 

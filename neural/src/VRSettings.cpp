@@ -33,7 +33,7 @@ unsigned char *ttwvr = nullptr;
 const TTWVRBuild *layout = nullptr;
 std::atomic<bool> installed{false};
 std::atomic<unsigned> actualSamples{0};
-std::array<Option *, 7> rows{};
+std::array<Option *, 9> rows{};
 const unsigned samples[] = {0, 0, 2, 4, 8};
 const char *aaNames[] = {"Off", "DLAA", "MSAA 2x (restart)",
                          "MSAA 4x (restart)", "MSAA 8x (restart)"};
@@ -83,6 +83,13 @@ void Sync(Option *row) {
     row->value = s.tone / 10;
   else if (row == rows[6])
     row->value = s.detail / 10;
+  else if (row == rows[7]) {
+    row->value = s.sr;
+    row->names[1] = actualSamples ? "Quality (restart)" : "Quality";
+  } else if (row == rows[8]) {
+    row->value = s.fg;
+    row->names[1] = actualSamples ? "2x (restart)" : "2x (experimental)";
+  }
 }
 bool SaveMsaa(unsigned value) {
   wchar_t personal[MAX_PATH]{};
@@ -155,11 +162,14 @@ void __cdecl Selected(Option *row) {
   if (row == rows[0]) {
     msaa = samples[row->value];
     s.dlaa = row->value == 1;
+    s.sr = 0;
     if (msaa)
-      s.neural = 0;
+      s.neural = s.fg = 0;
     changedAa = true;
   } else if (row == rows[1]) {
     s.neural = row->value;
+    if (s.neural)
+      s.sr = 0;
     if (s.neural && msaa) {
       msaa = 0;
       changedAa = true;
@@ -174,7 +184,22 @@ void __cdecl Selected(Option *row) {
     s.tone = row->value * 10;
   else if (row == rows[6])
     s.detail = row->value * 10;
-  else
+  else if (row == rows[7]) {
+    s.sr = row->value;
+    if (s.sr) {
+      s.neural = s.dlaa = 0;
+      if (msaa) {
+        msaa = 0;
+        changedAa = true;
+      }
+    }
+  } else if (row == rows[8]) {
+    s.fg = row->value;
+    if (s.fg && msaa) {
+      msaa = 0;
+      changedAa = true;
+    }
+  } else
     return;
   s.temporal = 1;
   s.identity = 0;
@@ -250,7 +275,9 @@ void Extend() {
           Add("NR processing scale", 4, scaleNames),
           Add("NR strength", 11, percentNames),
           Add("NR tone", 11, percentNames),
-          Add("NR detail", 11, percentNames)};
+          Add("NR detail", 11, percentNames),
+          Add("DLSS Super Resolution", 2, toggleNames),
+          Add("Frame gen.", 2, toggleNames)};
   for (auto *p : rows)
     if (!p) {
       for (auto *allocated : rows)
@@ -280,7 +307,7 @@ void Extend() {
   for (auto *p : rows)
     Sync(p);
   installed = true;
-  Log("native_vr_menu_registered rows=7 controller_navigation=engine "
+  Log("native_vr_menu_registered rows=9 controller_navigation=engine "
       "msaa_actual=%u",
       actualSamples.load());
 }

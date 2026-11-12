@@ -36,9 +36,11 @@ patches do require the matching Proton files.
 | Earlier full-resolution performance | 59.8 FPS capture at 120 Hz with Windows MO2; user reported clear, very smooth gameplay. Not a Fluorine benchmark. |
 | Capture resolution | 2944×2208 per eye, `Resolution=150%` in isolated tests; the upgrade preserves the regular profile's chosen resolution |
 | TTWVR built-in DLSS / FSR upscaler | Disabled in this addon setup; original path not revalidated on 1.1.3 |
-| Rendering Addon in Fluorine | Installed; native VR Settings rows, gamepad navigation, live NR/DLAA, restart for MSAA |
+| Rendering Addon in Fluorine | Installed; native VR Settings rows, gamepad navigation, live NR/DLAA/SR/FG, restart for MSAA |
 | Scene MSAA 2×/4×/8× | Matching full-size color/depth sample counts verified in isolated GPU runs |
 | NR and native-resolution DLAA | Both eyes/consecutive frames verified in isolated gameplay captures; DLAA softness/haze at distance remains under investigation |
+| DLSS Quality SR | Both eyes/consecutive frames reconstructed 1963×1472 → 2944×2208; slower than native rendering in the measured corridor |
+| Stereo FG | Actual generated/real stereo delivery verified under simulated Monado 120 Hz; repeats counted separately; headset quality/latency untested |
 | Blood-effect depth copy | Warnings remain |
 | Complete controls / calibration / Pip-Boy checks | Pending |
 | Long sessions, outdoor benchmarks, other hardware | Pending |
@@ -49,6 +51,7 @@ probe. No global OpenXR/OpenVR runtime change is required by the launcher.
 
 ## Evidence
 
+- [DLSS SR and queued stereo FG evidence](sr-frame-generation.md)
 - [TTWVR 1.1.3 compatibility and menu update](ttwvr-1.1.3.md)
 - [Native Fluorine configuration, save mount and migration validation](native-fluorine.md)
 - [Rendering Addon controls, jitter correction and stereo tests](../neural/docs/VR-SETTINGS.md)

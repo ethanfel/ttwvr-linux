@@ -15,10 +15,10 @@ right = left.with_name(left.name.replace('-eye0.dds', '-eye1.dds'))
 metadata = [json.loads(p.with_suffix('.json').read_text()) for p in (left, right)]
 assert [m['eye'] for m in metadata] == [0, 1]
 assert metadata[0]['frame'] == metadata[1]['frame']
-assert all(m['neural_rendering'] or m['dlaa'] or m['mode'] == 'capture_only' for m in metadata)
+assert all(m['neural_rendering'] or m['dlaa'] or m['mode'] in ('capture_only', 'super_resolution') for m in metadata)
 assert metadata[0]['mode'] == metadata[1]['mode']
 feature = 'nr' if metadata[0]['mode'] == 'spatial_nr_reset_every_frame' else metadata[0]['mode']
-assert feature in ('nr', 'dlaa', 'temporal_nr', 'temporal_nr_dlaa', 'capture_only')
+assert feature in ('nr', 'dlaa', 'temporal_nr', 'temporal_nr_dlaa', 'capture_only', 'super_resolution')
 args.output.mkdir(parents=True, exist_ok=True)
 frame = metadata[0]['frame']
 images = []

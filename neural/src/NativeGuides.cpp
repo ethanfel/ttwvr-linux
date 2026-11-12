@@ -5,6 +5,7 @@
 #include "GuideMath.h"
 #include "SceneCapture.h"
 #include "SpatialNR.h"
+#include "SuperResolution.h"
 #include "Support.h"
 #include "TTWVRBuild.h"
 #include "VRSettings.h"
@@ -79,8 +80,8 @@ IDirect3DSurface9 *__cdecl HookDepth() {
 }
 void __cdecl HookSize(unsigned w, unsigned h, unsigned *outW, unsigned *outH) {
   if (preparing) {
-    *outW = w;
-    *outH = h;
+    *outW = Width;
+    *outH = Height;
   } else
     size(w, h, outW, outH);
 }
@@ -91,6 +92,8 @@ bool __cdecl HookPrepare(IDirect3DDevice9 *d, const unsigned *eyes,
   ++attempts;
   ComPtr<IDirect3DSurface9> current;
   d->GetDepthStencilSurface(&current);
+  if (SuperResolutionDepth())
+    current = SuperResolutionDepth();
   D3DSURFACE_DESC desc{};
   if (current && SUCCEEDED(current->GetDesc(&desc)) && desc.Width == Width &&
       desc.Height == Height && desc.Format == D3DFMT_D24S8)
@@ -156,13 +159,23 @@ bool NativeGuidesEnabled() {
   return enabled && !CurrentMsaaSamples() && (captureProbe || SceneProcessingEnabled());
 }
 void NativeGuidesFrame(uint64_t frame) {
+  const auto nextWidth = SuperResolutionLow() ? InputWidth : OutputWidth;
+  if (Width != nextWidth) {
+    Width = nextWidth;
+    Height = SuperResolutionLow() ? InputHeight : OutputHeight;
+    sceneDepth.Reset();
+    previous[0] = Camera{};
+    previous[1] = Camera{};
+  }
   const bool camerasReady = previous[0].verified && !previous[0].rejected &&
                             previous[1].verified && !previous[1].rejected &&
                             previous[0].frame + 1 == frame &&
                             previous[1].frame + 1 == frame;
   applyJitter = jitterProbe || (DlaaJitterReady() && camerasReady);
-  jitterX = applyJitter ? Halton(unsigned(frame % 8) + 1, 2) - .5f : 0;
-  jitterY = applyJitter ? Halton(unsigned(frame % 8) + 1, 3) - .5f : 0;
+  // Scale temporal coverage with the output/input pixel ratio (Quality ~18).
+  const unsigned phases = SuperResolutionLow() ? 18 : 8;
+  jitterX = applyJitter ? Halton(unsigned(frame % phases) + 1, 2) - .5f : 0;
+  jitterY = applyJitter ? Halton(unsigned(frame % phases) + 1, 3) - .5f : 0;
 }
 bool GetTemporalGuides(uint64_t frame, unsigned eye, TemporalGuides &out) {
   if (eye > 1 || guideFrames[eye] != frame || !guides[eye].motion)
@@ -258,6 +271,8 @@ void NativeGuidesBeforeTone(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
     return;
   ComPtr<IDirect3DSurface9> current;
   d->GetDepthStencilSurface(&current);
+  if (SuperResolutionDepth())
+    current = SuperResolutionDepth();
   D3DSURFACE_DESC currentDesc{};
   if (current && SUCCEEDED(current->GetDesc(&currentDesc)) &&
       currentDesc.Width == Width && currentDesc.Height == Height &&
@@ -293,6 +308,8 @@ void NativeGuidesBeforeTone(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
     auto &g = guides[eye];
     g = TemporalGuides{};
     g.motion = surface;
+    std::memcpy(g.view, camera.view, sizeof(g.view));
+    std::memcpy(g.projection, camera.projection, sizeof(g.projection));
     g.jitterX = jitterX;
     g.jitterY = jitterY;
     const auto now = GetTickCount64();

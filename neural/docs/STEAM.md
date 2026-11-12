@@ -9,7 +9,7 @@ The Steam entry point remains `tools/launch_fluorine.py`; no new Steam command
 is needed. The isolated development setup is separate and does not enable the
 addon in a regular installation automatically.
 
-The addon provides **VR Settings** controls for DLAA, MSAA and NR. It requires
+The addon provides **VR Settings** controls for DLAA, MSAA, NR, DLSS SR and experimental stereo FG. It requires
 the matching x86 OpenXR layer and x64 helper even if you start by selecting MSAA.
 Obtain NVIDIA SDKs/runtime DLLs separately for neural processing; they are not
 bundled with this GPL-3.0-only addon.
@@ -24,7 +24,7 @@ bundled with this GPL-3.0-only addon.
    directory such as `ttwvr/neural-runtime`. Follow the
    [file layout and registration notes](../README.md#installation-and-testing).
    Disable captures/probes, set `transport_identity=0` and
-   `experimental_temporal=1`, and leave NR/DLAA `enabled=0` initially.
+   `experimental_temporal=1`, and leave NR/DLAA/SR/FG `enabled=0` initially.
 3. Build the x86 `rendering_addon` target:
 
    ```sh
@@ -61,14 +61,16 @@ does not launch Windows MO2. Flat launches do not enable this opt-in manifest.
 ## Use the controls
 
 Launch from Steam as usual and open **VR Settings**. The new rows follow
-Resolution. Each row saves immediately; NR/DLAA and tuning apply live during
+Resolution. Each row saves immediately; NR/DLAA/SR/FG and tuning apply live during
 a brief bypass while the helper rebuilds. **MSAA requires restarting Fallout**;
 pending selections say `(restart)`, including switching back to Off/DLAA.
-MSAA currently excludes NR/DLAA. Final eye resolution remains unchanged.
+MSAA currently excludes neural processing. Final eye resolution remains unchanged.
 
 Enabling `neural_rendering=true` loads the addon; it does not automatically
 turn NR or DLAA on. Select the desired AA mode and NR settings in the game.
 See [the exact controls, compatibility and test evidence](VR-SETTINGS.md).
+
+See [SR/FG dependencies, controls and limits](SR-FRAME-GENERATION.md).
 
 ## Rollback
 

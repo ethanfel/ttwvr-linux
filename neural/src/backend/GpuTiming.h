@@ -13,10 +13,12 @@ class GpuTiming {
   Microsoft::WRL::ComPtr<ID3D12Resource> readback_;
   uint64_t frequency_ = 0, frame_ = 0;
   unsigned eye_ = 0, mask_ = 0;
-  bool sample_ = false;
+  bool sample_ = false, sr_ = false, fg_ = false;
 
 public:
-  void Init(GpuInterop &gpu) {
+  void Init(GpuInterop &gpu, bool sr = false, bool fg = false) {
+    sr_ = sr;
+    fg_ = fg;
     frequency_ = gpu.TimestampFrequency();
     D3D12_QUERY_HEAP_DESC q{};
     q.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
@@ -78,11 +80,15 @@ public:
       }
       D3D12_RANGE written{0, 0};
       readback_->Unmap(0, &written);
-      if (valid)
+      if (valid && fg_)
+        Log("fg_gpu_timing frame=%llu eye=%u fg_ms=%.4f",
+            (unsigned long long)frame_, eye_, ms[0]);
+      if (valid && !fg_)
         Log("neural_gpu_timing frame=%llu eye=%u dlaa_active=%u nr_active=%u "
-            "dlaa_ms=%.4f nr_ms=%.4f",
-            (unsigned long long)frame_, eye_, mask_ & 1u, (mask_ >> 1) & 1u,
-            ms[0], ms[1]);
+            "dlaa_ms=%.4f nr_ms=%.4f sr_active=%u sr_ms=%.4f",
+            (unsigned long long)frame_, eye_, sr_ ? 0u : (mask_ & 1u),
+            (mask_ >> 1) & 1u, sr_ ? 0.0 : ms[0], ms[1],
+            sr_ ? (mask_ & 1u) : 0u, sr_ ? ms[0] : 0.0);
     }
     mask_ = 0;
     sample_ = false;

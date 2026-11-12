@@ -31,6 +31,16 @@ def validate(captures, frame, output):
         current = scene(frame, 'ldr')[:, :, :3].astype('f4')
         previous = scene(frame - 1, 'ldr')[:, :, :3].astype('f4')
         h, w = depth.shape
+        image_space = 'ldr'
+        if current.shape[:2] != (h, w):
+            # SR's tone-mapped output is larger and already unjittered. Validate
+            # low-grid motion against the matching pre-feature HDR instead.
+            image_space = 'scene_hdr_proxy'
+            def proxy(f):
+                hdr = np.maximum(read_dds(captures / f'feature-frame-{f}-eye-{eye}-input-hdr.dds')[1][:, :, :3].astype('f4'), 0)
+                assert hdr.shape[:2] == (h, w) and np.isfinite(hdr).all()
+                return hdr / (1 + hdr.max(axis=-1, keepdims=True)) * 255
+            current, previous = proxy(frame), proxy(frame - 1)
         # D3D9 pixel centres are integer coordinates. Its clip-to-window map
         # is x=(ndc.x+1)*w/2, y=(1-ndc.y)*h/2.
         y, x = np.mgrid[:h:2, :w:2]
@@ -56,7 +66,7 @@ def validate(captures, frame, output):
         metrics = {}
         for region, mask in [('all', valid), ('background', valid & ~objects), ('objects', valid & objects)]:
             metrics[region] = {name: float(np.abs(cur - image).mean(axis=-1)[mask].mean()) for name, image in images.items()} if mask.any() else None
-        report['eyes'].append({'eye': eye, 'verified_draws': camera['verified_draws'], 'relative_wvp_error': camera['relative_error'],
+        report['eyes'].append({'eye': eye, 'image_space': image_space, 'width': w, 'height': h, 'verified_draws': camera['verified_draws'], 'relative_wvp_error': camera['relative_error'],
                                'motion_valid_fraction': float(objects.mean()), 'pixel_mae': metrics,
                                'motion_percentiles': np.percentile(vectors, [1, 50, 99], axis=(0, 1)).tolist()})
         for row, (name, image) in enumerate([('Current', cur), ('Previous warped to current', images['reprojected']), ('Absolute difference x4', np.abs(cur - images['reprojected']) * 4)]):

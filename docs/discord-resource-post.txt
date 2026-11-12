@@ -1,9 +1,9 @@
 DISCORD RESOURCE POST — TTWVR ON LINUX
-Updated for TTWVR 1.1.3 and the neural GPU handoff, 2026-11-12.
+Updated for TTWVR 1.1.3, GPU handoff, DLSS SR and stereo FG, 2026-11-12.
 
 Suggested forum title: TTWVR on Linux — Fluorine + WiVRn setup and rendering addon
 
-Copy the four messages below separately, without the separator labels.
+Copy the five messages below separately, without the separator labels.
 Each message is under 2,000 UTF-16 code units. Paths in the Steam command are
 examples to replace; the linked guide contains the full configuration.
 
@@ -20,7 +20,7 @@ A Linux guide and compatibility patches for **Tale of Two Wastelands** in VR, us
 • Fluorine/FUSE launch integration with separate flat and VR profiles.
 • Fixes for the observed save-loading crash and black headset image after the menu.
 • A DXVK memory-pool patch for performance at the original eye resolution.
-• Optional MSAA, DLAA and Neural Rendering controls in **VR Settings**.
+• Optional AA, NR, DLSS Quality and stereo FG controls in **VR Settings**.
 
 **Requirements / tested versions**
 • English New Vegas Ultimate Edition and Fallout 3 GOTY, with all DLC.
@@ -76,11 +76,11 @@ In **1.1.3**, open **VR Settings** directly from the main/pause menu, beside Set
 • **Anti-aliasing:** Off, native-resolution DLAA, MSAA 2×/4×/8×.
 • **Neural Rendering:** on/off, model A/B, processing scale, strength, tone and detail.
 
-NR/DLAA apply live. **MSAA needs a restart**, including switching back to Off/DLAA, and currently excludes NR/DLAA. Distributed defaults leave effects off. NR processing scale preserves final eye resolution.
+NR/DLAA/SR/FG apply live. **MSAA needs a restart** and excludes neural processing. Distributed defaults leave effects off. NR processing scale preserves final eye resolution.
 
 **Validation and limits**
 • 1.1.3: gamepad menu/Back/resume, both eyes on consecutive NR/DLAA frames, and MSAA 4× after restart passed isolated Monado GPU tests. Physical-headset confirmation of this update is pending.
-• The addon hides/disables the stock DLSS/FSR path; the updated upstream host has not been revalidated. No Super Resolution or frame generation is implemented.
+• Stock DLSS/FSR stays disabled. Separate experimental **DLSS Quality** and **Frame gen.** rows are now available; details in message 5.
 • DLAA softness/haze at distance remains under investigation; 1.1.3 is not a demonstrated fix.
 • Earlier headset testing used RTX 5090, Ryzen 9 5950X and Quest 3. Other hardware and sustained performance need testing.
 
@@ -97,7 +97,7 @@ Credits: KUPOkinz, the TTW team, Fluorine and WiVRn. Neural addon reference: TF2
 
 The addon now offers a GPU handoff between the 32-bit game and 64-bit neural helper. It replaces CPU completion waits with GPU dependencies while retaining full eye resolution and the chosen NR/DLAA settings.
 
-Matched simulated corridor test: NR **23.5 → 38.6 FPS**, NR + DLAA **16.0 → 39.2 FPS**, DLAA **35.8 → 38.6 FPS**. Headset gains still need checking.
+Earlier matched 90 Hz simulated corridor test: NR **23.5 → 38.6 FPS**, NR + DLAA **16.0 → 39.2 FPS**, DLAA **35.8 → 38.6 FPS**. Headset gains still need checking.
 
 **Measurements, Proton research and rollback:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/proton-neural-performance.md>
 
@@ -112,6 +112,29 @@ Set it to `0` and restart to restore CPU completion waits. The distributed defau
 
 **Evidence:** 32 asynchronous HDR/depth round trips passed 393,216 pixel checks with zero mismatches. In-game comparisons use the same corridor and full 2944×2208 eye targets on simulated Monado; they do not predict WiVRn/Quest FPS or comfort. Both eyes and consecutive frames are checked separately from timing.
 
-**Frame generation:** the reference backend works in a synthetic Proton test, but TTWVR still has no generated stereo-frame delivery. FG remains disabled. This update also does not enable the stock upscaler or establish a fix for DLAA's distant haze.
+The newer SR/FG integration uses the same GPU handoff, with matching **protocol-6** layer/helper files. See message 5 for its separate 120 Hz measurements. The stock upscaler stays disabled and DLAA's distant haze remains unresolved.
 
 ===== END MESSAGE 4 =====
+
+===== MESSAGE 5 — COPY BELOW =====
+
+**Experimental DLSS Quality + stereo frame generation**
+
+The addon now has live **DLSS Super Resolution → Quality** and **Frame gen. → 2x (experimental)** controls inside VR Settings. Both default off. SR reconstructs a 1963×1472 scene to **2944×2208 per eye**; final HUD/output size stays native. This initial adapter supports that output size only.
+
+SR uses its own temporal reconstruction and excludes NR/DLAA. FG is independent and can run with SR. Active MSAA excludes neural processing. Turning the new features off restores native rendering and ordinary runtime pacing.
+
+**Actual 120 Hz simulated corridor results (RTX 5090)**
+• Effects off: **58 app FPS**.
+• DLSS Quality: **48 app FPS**; no performance gain over native in this scene.
+• SR + FG: **38 real + 38 generated stereo pairs/s**. About **17 extra repeats/s** made the compositor report roughly 92 submissions/s. Repeats are not generated frames.
+• SR used less GPU power than native DLAA in this test, but more than effects off.
+
+Both eyes and consecutive frames were captured. Generated submissions are verified; the real-image color round trip is pixel-identical. This is a headset-free GPU test. **Moving-head quality, added latency, WiVRn streaming and comfort still need headset validation.** FG is not a demonstrated fix for low base FPS or DLAA haze.
+
+Close the game before updating the matched layer/helper. Preserve your runtime INI and add the separately obtained **`nvngx_dlssg.dll`** for FG; **`nvngx_dlss.dll`** supplies SR/DLAA. Keep the same Steam command. No NVIDIA/game binaries are distributed.
+
+**Measurements:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/sr-frame-generation.md>
+**Dependencies, build and controls:** <https://github.com/ethanfel/ttwvr-linux/blob/main/neural/docs/SR-FRAME-GENERATION.md>
+
+===== END MESSAGE 5 =====

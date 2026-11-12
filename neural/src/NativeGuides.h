@@ -10,6 +10,7 @@ bool InstallNativeGuides(HMODULE verifiedModule, const TTWVRBuild &layout);
 bool NativeGuidesEnabled();
 struct TemporalGuides {
   float clipToPrevious[16]{};
+  float view[16]{}, projection[16]{};
   float jitterX = 0, jitterY = 0;
   bool reset = true;
   IDirect3DSurface9 *motion =

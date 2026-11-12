@@ -1,9 +1,13 @@
 # TTWVR Rendering Addon for Fluorine
 
+DLSS Quality reconstruction and experimental queued stereo frame generation
+are implemented as separate, live VR Settings controls. See
+[contracts, dependencies and validation](docs/SR-FRAME-GENERATION.md).
+
 The optional addon for the [native Fluorine setup](../docs/installation.md) adds
 **Off/DLAA/MSAA 2×/4×/8× and NR controls directly to VR Settings**. Install it
 as a mod in the VR profile with the matching OpenXR layer and helper. NR/DLAA
-changes apply live; MSAA needs a restart and currently excludes NR/DLAA.
+and SR/FG changes apply live; MSAA needs a restart and excludes neural processing.
 [Install in Fluorine](docs/STEAM.md) · [Controls and latest validation](docs/VR-SETTINGS.md).
 
 **Native-resolution DLAA, spatial NR and temporal NR have processed both eyes in the isolated Linux test game.**
@@ -11,7 +15,8 @@ Both eyes were captured with DLAA alone, temporal NR alone and both combined
 in the loaded Vault 101 scene on consecutive frames,
 at the original **2944 × 2208 per eye**. The temporal motion path is experimental;
 see the exact tested modes in [the evidence record](docs/EVIDENCE.md).
-No frame generation or Super Resolution upscaling is implemented. The regular Steam launch requires an explicit
+DLSS Quality and stereo frame generation are covered in the newer
+[SR/FG implementation and evidence](docs/SR-FRAME-GENERATION.md). The regular Steam launch requires an explicit
 [addon installation and opt-in](docs/STEAM.md).
 
 This GPL-3.0-only port uses
@@ -71,7 +76,7 @@ the broken cross-bitness Wine D3D12-fence experiment is not used.
 ## Build
 
 Linux tools: CMake, Ninja, MinGW x86/x64, clang-cl, OpenXR headers and external
-Vulkan headers. The x64 backend additionally needs NVIDIA common and NR headers.
+Vulkan headers. The x64 backend additionally needs NVIDIA common, NR and frame-generation headers.
 
 ```sh
 cmake -S neural -B /path/to/build32 -G Ninja \
@@ -84,6 +89,7 @@ cmake -S neural -B /path/to/build64 -G Ninja \
   -DCMAKE_TOOLCHAIN_FILE=cmake/mingw64.cmake -DCMAKE_BUILD_TYPE=Release \
   -DNGX_COMMON_INCLUDE=/path/to/nvidia-common/include \
   -DNGX_NR_INCLUDE=/path/to/nvidia-nr/include \
+  -DNGX_FG_INCLUDE=/path/to/nvidia-frame-generation/include \
   -DVULKAN_INCLUDE_DIR=/path/to/Vulkan-Headers/include
 cmake --build /path/to/build64
 
@@ -120,7 +126,8 @@ Place these together in the private layer directory:
 - `neural_host.exe` from the x64 build;
 - the manifest and INI in this directory;
 - your separately obtained `runtime/nvngx_dlssnr.dll` for NR;
-- your separately obtained `runtime/nvngx_dlss.dll` for DLAA.
+- your separately obtained `runtime/nvngx_dlss.dll` for DLAA/SR;
+- your separately obtained `runtime/nvngx_dlssg.dll` for optional FG.
 
 The helper requires the driver NGX core, working D3D12, NVIDIA GPU visibility and
 native D3DCompiler 47. Register the manifest **only in the copied prefix's 32-bit
@@ -300,7 +307,7 @@ gpu_handoff=1
 ```
 
 Restart the game after changing this setting. Install the matching layer/helper
-pair: protocol 4 is 232 bytes and refuses older helpers. Set `gpu_handoff=0`
+pair: protocol 6 is 440 bytes and refuses older helpers. Set `gpu_handoff=0`
 and restart to restore CPU completion waits. Distributed defaults keep it off.
 This changes synchronization, not NR/DLAA quality or rendering dimensions.
 Do not combine it with the historical monotonic-D3D12-fence binary patch.
