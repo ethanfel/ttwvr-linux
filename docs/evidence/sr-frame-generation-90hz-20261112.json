@@ -1,0 +1,995 @@
+{
+  "schema": 1,
+  "date": "2026-11-12",
+  "source_commit": "e32453eb5764fcefa2c3480babd6a339a0e00c23",
+  "binary_hashes": {
+    "layer": "1ad6cc28388ade374b345b38cebd234c7c12b25ba7c7ef5cc6d9891c31a91ba3",
+    "helper": "397809ca257d34ce5d46b1ec42c0fd956dbcc4817b61d1b5e2aae762da1a328b"
+  },
+  "environment": {
+    "runtime": "Monado simulated/null",
+    "runtime_hz": 90,
+    "runtime_verified_from_process": true,
+    "gpu": "RTX 5090",
+    "driver": "615.78.08",
+    "cpu": "Ryzen 9 5950X",
+    "proton": "experimental-11.0-20261105c-x86_64",
+    "ttwvr": "1.1.3",
+    "scene": "Same fixed-pose indoor corridor as 120 Hz test; Full Body off",
+    "output_eye_size": [
+      2944,
+      2208
+    ],
+    "sr_input_eye_size": [
+      1963,
+      1472
+    ],
+    "sr_mode": "Quality, not Performance",
+    "gpu_handoff": true,
+    "warmup_seconds": 5,
+    "requested_measurement_seconds": 30,
+    "captures_during_timing": false,
+    "headset_test": false
+  },
+  "runs": [
+    {
+      "mode": "off",
+      "seconds": 30.848598557990044,
+      "frame_samples": 20,
+      "fps": 39.47505114556953,
+      "mean_frame_ms": 25.33245609517683,
+      "median_window_frame_ms": 25.150001049041748,
+      "pass": "final-90",
+      "gpu": {
+        "utilization_percent": {
+          "mean": 34.93333333333333,
+          "min": 27.0,
+          "max": 43.0
+        },
+        "memory_utilization_percent": {
+          "mean": 2.0,
+          "min": 2.0,
+          "max": 2.0
+        },
+        "power_watts": {
+          "mean": 96.54766666666667,
+          "min": 91.37,
+          "max": 101.04
+        },
+        "gpu_clock_mhz": {
+          "mean": 2784.5333333333333,
+          "min": 2647.0,
+          "max": 2902.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 4619.8,
+          "min": 4614.0,
+          "max": 4637.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 12.40555,
+        "app_ms": 11.23855,
+        "end_ms": 0.73285,
+        "display_period_ms": 22.222
+      },
+      "feature_eye_samples": {
+        "0": {
+          "sr": 0,
+          "fg_output_ready": 0
+        },
+        "1": {
+          "sr": 0,
+          "fg_output_ready": 0
+        }
+      },
+      "log_sha256": "c33f1ddbc889aefe26f3b234902702e1bc4ed1eb27e182ce0d4373f18c9bec65"
+    },
+    {
+      "mode": "sr",
+      "seconds": 30.85461894099717,
+      "frame_samples": 19,
+      "fps": 38.61418017458081,
+      "mean_frame_ms": 25.897222095065647,
+      "median_window_frame_ms": 25.9416659673055,
+      "depth_ms": {
+        "median": 0.168,
+        "count": 20
+      },
+      "helper_wait_ms": {
+        "median": 0.851,
+        "count": 20
+      },
+      "copies_ms": {
+        "median": 0.004,
+        "count": 20
+      },
+      "output_ms": {
+        "median": 0.002,
+        "count": 20
+      },
+      "dlaa_ms": {
+        "median": 0.0,
+        "count": 78
+      },
+      "nr_ms": {
+        "median": 0.0,
+        "count": 78
+      },
+      "camera_ms": {
+        "median": 0.065,
+        "count": 20
+      },
+      "motion_submit_ms": {
+        "median": 0.183,
+        "count": 20
+      },
+      "sr_ms": {
+        "median": 0.68675,
+        "count": 78
+      },
+      "pass": "final-90",
+      "gpu": {
+        "utilization_percent": {
+          "mean": 41.9,
+          "min": 31.0,
+          "max": 52.0
+        },
+        "memory_utilization_percent": {
+          "mean": 5.233333333333333,
+          "min": 4.0,
+          "max": 6.0
+        },
+        "power_watts": {
+          "mean": 135.36333333333334,
+          "min": 132.02,
+          "max": 137.4
+        },
+        "gpu_clock_mhz": {
+          "mean": 2882.7,
+          "min": 2872.0,
+          "max": 2887.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 6239.033333333334,
+          "min": 6235.0,
+          "max": 6250.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 8.977368421052631,
+        "app_ms": 15.16721052631579,
+        "end_ms": 0.7957368421052632,
+        "display_period_ms": 22.222
+      },
+      "feature_eye_samples": {
+        "0": {
+          "sr": 39,
+          "fg_output_ready": 0
+        },
+        "1": {
+          "sr": 39,
+          "fg_output_ready": 0
+        }
+      },
+      "log_sha256": "48f502346d481ad90b67c0caf30aac6f3dd7dd994ff7724e74145d9b4eaf59eb"
+    },
+    {
+      "mode": "dlaa",
+      "seconds": 30.86359636799898,
+      "frame_samples": 20,
+      "fps": 39.24133404562638,
+      "mean_frame_ms": 25.483333437066328,
+      "median_window_frame_ms": 25.466664632161457,
+      "depth_ms": {
+        "median": 0.147,
+        "count": 20
+      },
+      "helper_wait_ms": {
+        "median": 0.8245,
+        "count": 20
+      },
+      "copies_ms": {
+        "median": 0.004,
+        "count": 20
+      },
+      "output_ms": {
+        "median": 0.002,
+        "count": 20
+      },
+      "dlaa_ms": {
+        "median": 0.7293499999999999,
+        "count": 80
+      },
+      "nr_ms": {
+        "median": 0.0,
+        "count": 80
+      },
+      "camera_ms": {
+        "median": 0.065,
+        "count": 20
+      },
+      "motion_submit_ms": {
+        "median": 0.167,
+        "count": 20
+      },
+      "sr_ms": {
+        "median": 0.0,
+        "count": 80
+      },
+      "pass": "final-90",
+      "gpu": {
+        "utilization_percent": {
+          "mean": 46.56666666666667,
+          "min": 36.0,
+          "max": 62.0
+        },
+        "memory_utilization_percent": {
+          "mean": 7.133333333333334,
+          "min": 6.0,
+          "max": 9.0
+        },
+        "power_watts": {
+          "mean": 144.51066666666668,
+          "min": 140.36,
+          "max": 148.43
+        },
+        "gpu_clock_mhz": {
+          "mean": 2883.266666666667,
+          "min": 2880.0,
+          "max": 2887.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 6723.166666666667,
+          "min": 6722.0,
+          "max": 6736.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 9.433300000000001,
+        "app_ms": 14.4353,
+        "end_ms": 0.713,
+        "display_period_ms": 22.222
+      },
+      "feature_eye_samples": {
+        "0": {
+          "sr": 0,
+          "fg_output_ready": 0
+        },
+        "1": {
+          "sr": 0,
+          "fg_output_ready": 0
+        }
+      },
+      "log_sha256": "6c8f645782a12f5eb07cfc5f8d540401702d93411071ed1866749bccf3419812"
+    },
+    {
+      "mode": "fg",
+      "seconds": 30.916435519000515,
+      "frame_samples": 21,
+      "fps": 41.717364700979466,
+      "mean_frame_ms": 23.97083342075348,
+      "median_window_frame_ms": 23.241666952768963,
+      "depth_ms": {
+        "median": 0.1595,
+        "count": 20
+      },
+      "helper_wait_ms": {
+        "median": 0.331,
+        "count": 20
+      },
+      "copies_ms": {
+        "median": 0.004,
+        "count": 20
+      },
+      "output_ms": {
+        "median": 0.0,
+        "count": 20
+      },
+      "camera_ms": {
+        "median": 0.065,
+        "count": 20
+      },
+      "motion_submit_ms": {
+        "median": 0.2655,
+        "count": 20
+      },
+      "fg_ms": {
+        "median": 2.3651,
+        "count": 43
+      },
+      "presentation": {
+        "runtime_fps": 84.88564007558111,
+        "generated_fps": 41.769124481635146,
+        "real_fps": 41.80280925944292,
+        "repeated_fps": 1.3137063345030409
+      },
+      "pass": "final-90",
+      "gpu": {
+        "utilization_percent": {
+          "mean": 55.13333333333333,
+          "min": 28.0,
+          "max": 70.0
+        },
+        "memory_utilization_percent": {
+          "mean": 8.066666666666666,
+          "min": 4.0,
+          "max": 10.0
+        },
+        "power_watts": {
+          "mean": 150.36233333333334,
+          "min": 135.64,
+          "max": 156.49
+        },
+        "gpu_clock_mhz": {
+          "mean": 2895.4666666666667,
+          "min": 2895.0,
+          "max": 2902.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 7440.0,
+          "min": 7324.0,
+          "max": 7466.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 5.775476190476191,
+        "app_ms": 17.178190476190476,
+        "end_ms": 0.058761904761904765,
+        "display_period_ms": 22.222
+      },
+      "feature_eye_samples": {
+        "0": {
+          "sr": 0,
+          "fg_output_ready": 10
+        },
+        "1": {
+          "sr": 0,
+          "fg_output_ready": 10
+        }
+      },
+      "log_sha256": "9f32817a0cd46e5851d99f58f2f377c5d12686bd21fbd4816c265380a4595b8c"
+    },
+    {
+      "mode": "sr_fg",
+      "seconds": 30.89099579799222,
+      "frame_samples": 22,
+      "fps": 42.772760953495606,
+      "mean_frame_ms": 23.37936522468688,
+      "median_window_frame_ms": 23.216664791107178,
+      "depth_ms": {
+        "median": 0.162,
+        "count": 22
+      },
+      "helper_wait_ms": {
+        "median": 0.9395,
+        "count": 22
+      },
+      "copies_ms": {
+        "median": 0.005,
+        "count": 22
+      },
+      "output_ms": {
+        "median": 0.002,
+        "count": 22
+      },
+      "dlaa_ms": {
+        "median": 0.0,
+        "count": 87
+      },
+      "nr_ms": {
+        "median": 0.0,
+        "count": 87
+      },
+      "camera_ms": {
+        "median": 0.0645,
+        "count": 22
+      },
+      "motion_submit_ms": {
+        "median": 0.2715,
+        "count": 22
+      },
+      "sr_ms": {
+        "median": 0.6884,
+        "count": 87
+      },
+      "fg_ms": {
+        "median": 2.36175,
+        "count": 44
+      },
+      "presentation": {
+        "runtime_fps": 86.27182460489527,
+        "generated_fps": 42.656624387975995,
+        "real_fps": 42.656624387975995,
+        "repeated_fps": 0.9585758289432809
+      },
+      "pass": "final-90",
+      "gpu": {
+        "utilization_percent": {
+          "mean": 63.36666666666667,
+          "min": 56.0,
+          "max": 69.0
+        },
+        "memory_utilization_percent": {
+          "mean": 11.466666666666667,
+          "min": 10.0,
+          "max": 13.0
+        },
+        "power_watts": {
+          "mean": 180.434,
+          "min": 174.36,
+          "max": 186.22
+        },
+        "gpu_clock_mhz": {
+          "mean": 2874.9333333333334,
+          "min": 2872.0,
+          "max": 2880.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 8201.533333333333,
+          "min": 8130.0,
+          "max": 8400.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 4.753818181818182,
+        "app_ms": 17.72490909090909,
+        "end_ms": 0.06231818181818182,
+        "display_period_ms": 22.222
+      },
+      "feature_eye_samples": {
+        "0": {
+          "sr": 44,
+          "fg_output_ready": 11
+        },
+        "1": {
+          "sr": 43,
+          "fg_output_ready": 11
+        }
+      },
+      "log_sha256": "e09ed86cce6cfdbfce85bd072d637d04c87b8002f7a0ede07de0aa150001ab65"
+    },
+    {
+      "mode": "sr",
+      "seconds": 30.862470199004747,
+      "frame_samples": 21,
+      "fps": 39.206717273431835,
+      "mean_frame_ms": 25.50583342711131,
+      "median_window_frame_ms": 25.64166784286499,
+      "depth_ms": {
+        "median": 0.17,
+        "count": 21
+      },
+      "helper_wait_ms": {
+        "median": 0.8835,
+        "count": 22
+      },
+      "copies_ms": {
+        "median": 0.004,
+        "count": 21
+      },
+      "output_ms": {
+        "median": 0.002,
+        "count": 22
+      },
+      "dlaa_ms": {
+        "median": 0.0,
+        "count": 82
+      },
+      "nr_ms": {
+        "median": 0.0,
+        "count": 82
+      },
+      "camera_ms": {
+        "median": 0.065,
+        "count": 22
+      },
+      "motion_submit_ms": {
+        "median": 0.259,
+        "count": 22
+      },
+      "sr_ms": {
+        "median": 0.6863,
+        "count": 82
+      },
+      "pass": "final-90",
+      "gpu": {
+        "utilization_percent": {
+          "mean": 43.53333333333333,
+          "min": 31.0,
+          "max": 53.0
+        },
+        "memory_utilization_percent": {
+          "mean": 5.466666666666667,
+          "min": 4.0,
+          "max": 6.0
+        },
+        "power_watts": {
+          "mean": 132.74533333333332,
+          "min": 129.38,
+          "max": 135.81
+        },
+        "gpu_clock_mhz": {
+          "mean": 2884.6666666666665,
+          "min": 2880.0,
+          "max": 2887.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 6449.766666666666,
+          "min": 6278.0,
+          "max": 6542.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 8.180523809523809,
+        "app_ms": 15.590095238095238,
+        "end_ms": 0.8015714285714286,
+        "display_period_ms": 22.222
+      },
+      "feature_eye_samples": {
+        "0": {
+          "sr": 41,
+          "fg_output_ready": 0
+        },
+        "1": {
+          "sr": 41,
+          "fg_output_ready": 0
+        }
+      },
+      "log_sha256": "26965c1a5ef7a2033e36903c1cfafe64c39b7f48752e7ce1a504c17235510d7e"
+    },
+    {
+      "mode": "off",
+      "seconds": 30.827018094991217,
+      "frame_samples": 20,
+      "fps": 39.35920454790437,
+      "mean_frame_ms": 25.407017532147858,
+      "median_window_frame_ms": 25.41666825612386,
+      "pass": "final-90",
+      "gpu": {
+        "utilization_percent": {
+          "mean": 36.53333333333333,
+          "min": 25.0,
+          "max": 45.0
+        },
+        "memory_utilization_percent": {
+          "mean": 1.9666666666666666,
+          "min": 1.0,
+          "max": 2.0
+        },
+        "power_watts": {
+          "mean": 95.20833333333333,
+          "min": 90.25,
+          "max": 99.77
+        },
+        "gpu_clock_mhz": {
+          "mean": 2783.733333333333,
+          "min": 2692.0,
+          "max": 2857.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 4743.033333333334,
+          "min": 4736.0,
+          "max": 4754.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 12.57365,
+        "app_ms": 11.2464,
+        "end_ms": 0.74,
+        "display_period_ms": 22.222
+      },
+      "feature_eye_samples": {
+        "0": {
+          "sr": 0,
+          "fg_output_ready": 0
+        },
+        "1": {
+          "sr": 0,
+          "fg_output_ready": 0
+        }
+      },
+      "log_sha256": "ba77373c0218af43bdbb36769a857e2efd26cdc3d97719cb8a4add681ecd568c"
+    },
+    {
+      "mode": "fg",
+      "seconds": 30.91683174499485,
+      "frame_samples": 22,
+      "fps": 43.67417692080049,
+      "mean_frame_ms": 22.89682532113696,
+      "median_window_frame_ms": 22.633334000905354,
+      "depth_ms": {
+        "median": 0.1655,
+        "count": 22
+      },
+      "helper_wait_ms": {
+        "median": 0.34299999999999997,
+        "count": 22
+      },
+      "copies_ms": {
+        "median": 0.005,
+        "count": 22
+      },
+      "output_ms": {
+        "median": 0.0,
+        "count": 22
+      },
+      "camera_ms": {
+        "median": 0.0665,
+        "count": 22
+      },
+      "motion_submit_ms": {
+        "median": 0.2625,
+        "count": 22
+      },
+      "fg_ms": {
+        "median": 2.3589,
+        "count": 45
+      },
+      "presentation": {
+        "runtime_fps": 88.43628568165211,
+        "generated_fps": 43.68216535184634,
+        "real_fps": 43.68216535184634,
+        "repeated_fps": 1.0719549779594195
+      },
+      "pass": "confirm-90",
+      "gpu": {
+        "utilization_percent": {
+          "mean": 61.43333333333333,
+          "min": 37.0,
+          "max": 66.0
+        },
+        "memory_utilization_percent": {
+          "mean": 9.133333333333333,
+          "min": 5.0,
+          "max": 10.0
+        },
+        "power_watts": {
+          "mean": 150.833,
+          "min": 140.2,
+          "max": 154.09
+        },
+        "gpu_clock_mhz": {
+          "mean": 2895.233333333333,
+          "min": 2887.0,
+          "max": 2910.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 7446.4,
+          "min": 7444.0,
+          "max": 7459.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 5.371045454545454,
+        "app_ms": 16.574136363636363,
+        "end_ms": 0.053409090909090906,
+        "display_period_ms": 22.222
+      },
+      "feature_eye_samples": {
+        "0": {
+          "sr": 0,
+          "fg_output_ready": 11
+        },
+        "1": {
+          "sr": 0,
+          "fg_output_ready": 11
+        }
+      },
+      "log_sha256": "73799cde9dba50565887aeb36d7b19fb5415ed642e8ae245e85e7ce9f74afd7c"
+    },
+    {
+      "mode": "sr_fg",
+      "seconds": 30.931137004998163,
+      "frame_samples": 21,
+      "fps": 41.51100042606558,
+      "mean_frame_ms": 24.08999999364217,
+      "median_window_frame_ms": 23.999998966852825,
+      "depth_ms": {
+        "median": 0.166,
+        "count": 19
+      },
+      "helper_wait_ms": {
+        "median": 0.982,
+        "count": 20
+      },
+      "copies_ms": {
+        "median": 0.005,
+        "count": 19
+      },
+      "output_ms": {
+        "median": 0.002,
+        "count": 20
+      },
+      "dlaa_ms": {
+        "median": 0.0,
+        "count": 84
+      },
+      "nr_ms": {
+        "median": 0.0,
+        "count": 84
+      },
+      "camera_ms": {
+        "median": 0.065,
+        "count": 20
+      },
+      "motion_submit_ms": {
+        "median": 0.266,
+        "count": 20
+      },
+      "sr_ms": {
+        "median": 0.68845,
+        "count": 84
+      },
+      "fg_ms": {
+        "median": 2.3589,
+        "count": 42
+      },
+      "presentation": {
+        "runtime_fps": 85.26476111103591,
+        "generated_fps": 41.51581820763534,
+        "real_fps": 41.54965343029845,
+        "repeated_fps": 2.199289473102117
+      },
+      "pass": "confirm-90",
+      "gpu": {
+        "utilization_percent": {
+          "mean": 62.733333333333334,
+          "min": 46.0,
+          "max": 70.0
+        },
+        "memory_utilization_percent": {
+          "mean": 11.166666666666666,
+          "min": 8.0,
+          "max": 13.0
+        },
+        "power_watts": {
+          "mean": 174.772,
+          "min": 160.26,
+          "max": 182.36
+        },
+        "gpu_clock_mhz": {
+          "mean": 2875.4,
+          "min": 2872.0,
+          "max": 2887.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 8268.7,
+          "min": 8258.0,
+          "max": 8294.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 4.727333333333333,
+        "app_ms": 18.598523809523808,
+        "end_ms": 0.05723809523809524,
+        "display_period_ms": 22.222
+      },
+      "feature_eye_samples": {
+        "0": {
+          "sr": 42,
+          "fg_output_ready": 10
+        },
+        "1": {
+          "sr": 42,
+          "fg_output_ready": 10
+        }
+      },
+      "log_sha256": "cff22311e37ddc4a477f466dd7740935f85beffa63d74355c4073cd565db55a4"
+    },
+    {
+      "mode": "off",
+      "seconds": 30.857703900997876,
+      "frame_samples": 20,
+      "fps": 38.80718963823243,
+      "mean_frame_ms": 25.76842098905329,
+      "median_window_frame_ms": 25.65000057220459,
+      "pass": "confirm-90",
+      "gpu": {
+        "utilization_percent": {
+          "mean": 34.03333333333333,
+          "min": 27.0,
+          "max": 42.0
+        },
+        "memory_utilization_percent": {
+          "mean": 2.0,
+          "min": 2.0,
+          "max": 2.0
+        },
+        "power_watts": {
+          "mean": 91.219,
+          "min": 87.79,
+          "max": 97.59
+        },
+        "gpu_clock_mhz": {
+          "mean": 2725.0666666666666,
+          "min": 2647.0,
+          "max": 2850.0
+        },
+        "memory_clock_mhz": {
+          "mean": 14001.0,
+          "min": 14001.0,
+          "max": 14001.0
+        },
+        "total_gpu_memory_used_mib": {
+          "mean": 4869.166666666667,
+          "min": 4740.0,
+          "max": 4996.0
+        },
+        "pcie_generation": {
+          "mean": 4.0,
+          "min": 4.0,
+          "max": 4.0
+        },
+        "pcie_width": {
+          "mean": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        }
+      },
+      "cpu_spans_ms": {
+        "wait_ms": 12.7905,
+        "app_ms": 11.33295,
+        "end_ms": 0.74585,
+        "display_period_ms": 22.222
+      },
+      "feature_eye_samples": {
+        "0": {
+          "sr": 0,
+          "fg_output_ready": 0
+        },
+        "1": {
+          "sr": 0,
+          "fg_output_ready": 0
+        }
+      },
+      "log_sha256": "8e7efcc2e4e169265437d5fa0ee4a808a0ce57abe3a37aa2c0ae4ece707864ed"
+    }
+  ],
+  "limitations": [
+    "Global GPU use/power includes desktop and compositor.",
+    "Runtime submission rate includes repeats, separately counted.",
+    "VR streaming, latency and comfort untested.",
+    "No new pixel captures were needed for this refresh-rate-only comparison; existing SR/FG stereo validation applies to this binary."
+  ],
+  "cleanup": {
+    "game_closed_cleanly": true,
+    "private_files_restored": 6,
+    "regular_files_unchanged": 64
+  }
+}

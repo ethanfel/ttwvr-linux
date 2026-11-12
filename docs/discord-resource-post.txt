@@ -130,6 +130,8 @@ SR uses its own temporal reconstruction and excludes NR/DLAA. FG is independent 
 • SR + FG: **38 real + 38 generated stereo pairs/s**. About **17 extra repeats/s** made the compositor report roughly 92 submissions/s. Repeats are not generated frames.
 • SR used less GPU power than native DLAA in this test, but more than effects off.
 
+**90 Hz repeat:** native/SR both ≈39 FPS; SR+FG ≈42 real + 42 generated pairs/s, with 1–2 repeats/s. SR still uses more GPU power than effects off.
+
 Both eyes and consecutive frames were captured. Generated submissions are verified; the real-image color round trip is pixel-identical. This is a headset-free GPU test. **Moving-head quality, added latency, WiVRn streaming and comfort still need headset validation.** FG is not a demonstrated fix for low base FPS or DLAA haze.
 
 Close the game before updating the matched layer/helper. Preserve your runtime INI and add the separately obtained **`nvngx_dlssg.dll`** for FG; **`nvngx_dlss.dll`** supplies SR/DLAA. Keep the same Steam command. No NVIDIA/game binaries are distributed.

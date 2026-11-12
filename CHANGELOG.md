@@ -1,5 +1,11 @@
 # Changes
 
+## 90 Hz DLSS/FG comparison — 2026-11-12
+
+- Record matched and repeated 90 Hz simulated measurements for native, DLAA, SR Quality, FG and SR+FG, including GPU power and distinct/repeated submissions.
+- SR roughly matches native FPS at 90 Hz while costing more GPU power; SR+FG presents about 84 distinct stereo pairs/s with 1–2 repeats/s. The DLSS Performance preset was not tested.
+- Preserve the regular setup and restore the private test baseline; update the measurement record and Discord resource guide.
+
 ## Optional DLSS Quality and queued stereo frame generation — 2026-11-12
 
 - Add independent live SR and FG rows inside native VR Settings; preserve existing feature preferences and default both new features off.

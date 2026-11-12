@@ -3,7 +3,8 @@
 The addon now implements **DLSS Quality** and **experimental stereo frame generation**
 as separate live controls in TTWVR's native VR Settings. Both default off.
 This is a working integration with measured costs, not a claim that DLSS fixes
-TTWVR's performance. SR alone was slower than native in the tested corridor.
+TTWVR's performance. SR alone was slower than native at 120 Hz; at 90 Hz it
+roughly matched native FPS while using more GPU power.
 
 [Implementation and installation](../neural/docs/SR-FRAME-GENERATION.md) ·
 [Machine-readable evidence](evidence/sr-frame-generation-20261112.json)
@@ -58,6 +59,45 @@ SR + FG it was about 18.88 ms plus 6.47 ms waiting and 0.30 ms in the intercepte
 end call. These wall-clock spans contain GPU dependencies; they do not identify
 a pure CPU or GPU bottleneck. More overlap and presentation work remain to be
 optimized.
+
+## Follow-up at 90 Hz
+
+The user-requested repeat used the same fixed-pose corridor, 2944×2208 output,
+DLSS **Quality**, GPU handoff and final build `e32453e`. Only the simulated
+runtime rate changed to 90 Hz. The actual process environment and loaded private
+runtime/prefix were checked. Each sample again used five seconds of settling
+and 30 seconds of measurement, without captures or concurrent builds/probes.
+The stronger FG result prompted a second FG/SR+FG pass; effects-off was checked
+three times. These are measured ranges across runs, not frame-time percentiles.
+
+| Mode | Game FPS range | Generated pairs/s | Repeats/s | GPU use | Power |
+|---|---:|---:|---:|---:|---:|
+| Off (3 runs) | 38.8–39.5 | — | — | 35.2% | 94.3 W |
+| DLAA | 39.2 | — | — | 46.6% | 144.5 W |
+| SR Quality (2 runs) | 38.6–39.2 | — | — | 42.7% | 134.1 W |
+| FG (2 runs) | 41.7–43.7 | 42.7 | 1.2 | 58.3% | 150.6 W |
+| SR + FG (2 runs) | 41.5–42.8 | 42.1 | 1.6 | 63.0% | 177.6 W |
+
+GPU use and power are whole-GPU sample means, including the desktop/compositor.
+The similar native/SR/DLAA FPS is consistent with the 90 Hz runtime pacing
+masking additional processing work. It is **not a demonstrated SR performance
+gain**: Quality used about 134 W versus 94 W off, although it was cheaper than
+DLAA's 145 W. The Performance preset remains unimplemented and was not tested.
+
+SR + FG averaged about **42 real + 42 generated stereo pairs/s**, with only
+1.6 repeats/s: roughly **84 distinct pairs/s** and 86 total submissions/s.
+FG alone averaged about 43 real + 43 generated pairs/s and 1.2 repeats/s.
+This is better pacing than the earlier 120 Hz SR+FG sample's roughly 75 distinct
+pairs/s and 17 repeats/s. The gain with FG includes its different presentation
+scheduling; it does not show that adding NGX makes the scene renderer itself
+faster. It also does not establish WiVRn streaming latency or headset comfort.
+
+Both runs recorded per-eye SR GPU evaluations, matching FG output-ready records
+and actual generated submissions, with no helper or presentation failures.
+Existing stereo pixel validation covers this binary; no new captures were taken
+during this refresh-rate measurement. The private game closed cleanly, its six
+backed-up files were restored and all 64 checked regular-installation files
+remained unchanged. [90 Hz data](evidence/sr-frame-generation-90hz-20261112.json).
 
 ## Actual output checks
 
