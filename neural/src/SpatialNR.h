@@ -12,8 +12,8 @@ bool GenerateFrameEye(ID3D11Device*, ID3D11Texture2D*, uint64_t frame, unsigned 
 StereoFrameTextures GeneratedFrame(uint64_t frame);
 
 bool SpatialApplied(uint64_t frame);
-bool SrApplied(uint64_t frame);
-bool SuperResolutionReady();
+unsigned SrApplied(uint64_t frame);
+unsigned SuperResolutionReady();
 bool DlaaApplied(uint64_t frame);
 bool TemporalNRApplied(uint64_t frame);
 bool DlaaJitterReady();

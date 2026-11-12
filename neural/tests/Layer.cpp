@@ -123,7 +123,7 @@ StereoFrameTextures GeneratedFrame(uint64_t){return {};}
 bool SetPresentationThreading(ID3D11Device*,bool,bool&){return false;}
 StereoFrameTextures CopyFrameTextures(ID3D11Device*,const StereoFrameTextures&){return {};}
 bool CopyPresentationImage(ID3D11Device*,ID3D11Texture2D*,ID3D11Texture2D*){return false;}
-bool SrApplied(uint64_t){return false;}
+unsigned SrApplied(uint64_t){return false;}
 bool SpatialApplied(uint64_t){return false;}
 bool DlaaApplied(uint64_t){return false;}
 bool TemporalNRApplied(uint64_t){return false;}

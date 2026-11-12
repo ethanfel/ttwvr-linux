@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #pragma once
-#include <cstdint>
+#include "SRMode.h"
 #include <d3d9.h>
 namespace ttwvrnr {
-constexpr unsigned OutputWidth = 2944, OutputHeight = 2208;
-constexpr unsigned InputWidth = 1963, InputHeight = 1472;
+unsigned SuperResolutionWidth();
+unsigned SuperResolutionHeight();
+unsigned SuperResolutionMode();
 using SRTarget = HRESULT(STDMETHODCALLTYPE *)(IDirect3DDevice9 *, DWORD,
                                               IDirect3DSurface9 *);
 HRESULT SuperResolutionSetTarget(IDirect3DDevice9 *, DWORD, IDirect3DSurface9 *,
                                  SRTarget);
 bool InstallSuperResolution(IDirect3DDevice9 *);
-void SuperResolutionFrame(bool ready);
+void SuperResolutionFrame(unsigned readyMode);
 void SuperResolutionObserveTone(IDirect3DDevice9 *);
 bool SuperResolutionLow();
 IDirect3DSurface9 *SuperResolutionDepth();

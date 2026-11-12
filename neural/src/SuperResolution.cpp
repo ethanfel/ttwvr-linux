@@ -24,6 +24,7 @@ IDirect3DDevice9 *device;
 ComPtr<IDirect3DTexture9> originalColor, lowColor;
 ComPtr<IDirect3DSurface9> originalSurface, originalDepth, lowSurface, lowDepth;
 ComPtr<IDirect3DBaseTexture9> toneSaved;
+unsigned lowMode = 0;
 bool active = false, probe = false, installed = false, internal = false;
 struct Guard {
   bool saved = internal;
@@ -50,7 +51,8 @@ HRESULT STDMETHODCALLTYPE SetTarget(IDirect3DDevice9 *d, DWORD n,
     D3DSURFACE_DESC td{};
     if (mapped)
       mapped->GetDesc(&td);
-    depth(d, td.Width <= InputWidth && td.Height <= InputHeight
+    depth(d, td.Width <= SRInputSize(lowMode).width &&
+                     td.Height <= SRInputSize(lowMode).height
                  ? lowDepth.Get()
                  : originalDepth.Get());
   }
@@ -75,8 +77,8 @@ HRESULT STDMETHODCALLTYPE SetViewport(IDirect3DDevice9 *d,
   auto scaled = *v;
   if (v->X == 0 && v->Y == 0 && v->Width == OutputWidth &&
       v->Height == OutputHeight) {
-    scaled.Width = InputWidth;
-    scaled.Height = InputHeight;
+    scaled.Width = SRInputSize(lowMode).width;
+    scaled.Height = SRInputSize(lowMode).height;
   }
   return viewport(d, &scaled);
 }
@@ -119,8 +121,9 @@ bool InstallSuperResolution(IDirect3DDevice9 *d) {
     return false;
   }
   installed = true;
-  Log("sr_adapter_installed input=%ux%u output=%ux%u probe=%u", InputWidth,
-      InputHeight, OutputWidth, OutputHeight, probe);
+  Log("sr_adapter_installed output=%ux%u modes=Quality,Balanced,Performance "
+      "probe=%u",
+      OutputWidth, OutputHeight, probe);
   return true;
 }
 // Called by the existing SetRenderTarget hook; it owns the one MinHook detour.
@@ -145,31 +148,23 @@ void SuperResolutionObserveTone(IDirect3DDevice9 *d) {
       c.Format != D3DFMT_A16B16G16R16F || z.Width != c.Width ||
       z.Height != c.Height || z.Format != D3DFMT_D24S8)
     return;
-  Guard guard;
-  ComPtr<IDirect3DTexture9> lc;
-  ComPtr<IDirect3DSurface9> ls, ld, os;
-  if (FAILED(d->CreateTexture(InputWidth, InputHeight, 1, D3DUSAGE_RENDERTARGET,
-                              c.Format, D3DPOOL_DEFAULT, &lc, nullptr)) ||
-      FAILED(lc->GetSurfaceLevel(0, &ls)) ||
-      FAILED(color->GetSurfaceLevel(0, &os)) ||
-      FAILED(d->CreateDepthStencilSurface(InputWidth, InputHeight, z.Format,
-                                          D3DMULTISAMPLE_NONE, 0, FALSE, &ld,
-                                          nullptr))) {
-    Log("sr_adapter_allocation_failed bypass=1");
+  ComPtr<IDirect3DSurface9> os;
+  if (FAILED(color->GetSurfaceLevel(0, &os)))
     return;
-  }
   originalColor = color;
   originalSurface = os;
   originalDepth = ds;
-  lowColor = lc;
-  lowSurface = ls;
-  lowDepth = ld;
-  Log("sr_scene_identified hdr=%p depth=%p low_hdr=%p input=%ux%u", os.Get(),
-      ds.Get(), ls.Get(), InputWidth, InputHeight);
+  Log("sr_scene_identified hdr=%p depth=%p output=%ux%u", os.Get(), ds.Get(),
+      OutputWidth, OutputHeight);
 }
-void SuperResolutionFrame(bool ready) {
-  const bool next = (probe || ready) && !!lowColor;
-  if (active && !next) {
+void SuperResolutionFrame(unsigned readyMode) {
+  // The helper publishes a ready mode only after releasing the previous
+  // transport and creating the matching NGX feature. Never resize mid-eye.
+  const unsigned mode = ValidSRMode(readyMode) ? (readyMode ? readyMode
+                                                  : probe   ? 1
+                                                            : 0)
+                                               : 0;
+  if (active && (!mode || mode != lowMode)) {
     Guard guard;
     ComPtr<IDirect3DSurface9> rt;
     device->GetRenderTarget(0, &rt);
@@ -185,13 +180,58 @@ void SuperResolutionFrame(bool ready) {
     device->GetDepthStencilSurface(&ds);
     if (ds.Get() == lowDepth.Get())
       depth(device, originalDepth.Get());
+    // SetRenderTarget can reset the viewport; explicitly restore the native
+    // viewport if the reduced one is still bound.
+    D3DVIEWPORT9 vp{};
+    if (SUCCEEDED(device->GetViewport(&vp)) && vp.X == 0 && vp.Y == 0 &&
+        vp.Width == SRInputSize(lowMode).width &&
+        vp.Height == SRInputSize(lowMode).height) {
+      vp.Width = OutputWidth;
+      vp.Height = OutputHeight;
+      Guard guard;
+      viewport(device, &vp);
+    }
+    active = false;
+    Log("sr_scene_rendering low=0 mode=Off input=%ux%u", OutputWidth,
+        OutputHeight);
   }
+  if (mode && originalColor && mode != lowMode) {
+    // Allocate a complete replacement before releasing the previous resources.
+    // Their old bindings were restored above; failure keeps the native bypass.
+    Guard guard;
+    const auto size = SRInputSize(mode);
+    ComPtr<IDirect3DTexture9> lc;
+    ComPtr<IDirect3DSurface9> ls, ld;
+    if (FAILED(device->CreateTexture(
+            size.width, size.height, 1, D3DUSAGE_RENDERTARGET,
+            D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &lc, nullptr)) ||
+        FAILED(lc->GetSurfaceLevel(0, &ls)) ||
+        FAILED(device->CreateDepthStencilSurface(
+            size.width, size.height, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0,
+            FALSE, &ld, nullptr))) {
+      Log("sr_adapter_allocation_failed mode=%s bypass=1", SRName(mode));
+      return;
+    }
+    lowColor = lc;
+    lowSurface = ls;
+    lowDepth = ld;
+    lowMode = mode;
+  }
+  const bool next = mode && lowMode == mode && !!lowColor;
   if (active != next)
-    Log("sr_scene_rendering low=%u input=%ux%u output=%ux%u", next,
-        next ? InputWidth : OutputWidth, next ? InputHeight : OutputHeight,
-        OutputWidth, OutputHeight);
+    Log("sr_scene_rendering low=%u mode=%s input=%ux%u output=%ux%u", next,
+        SRName(next ? mode : 0), SRInputSize(next ? mode : 0).width,
+        SRInputSize(next ? mode : 0).height, OutputWidth, OutputHeight);
   active = next;
 }
+unsigned SuperResolutionMode() { return active ? lowMode : 0; }
+unsigned SuperResolutionWidth() {
+  return SRInputSize(SuperResolutionMode()).width;
+}
+unsigned SuperResolutionHeight() {
+  return SRInputSize(SuperResolutionMode()).height;
+}
+
 bool SuperResolutionLow() { return active; }
 IDirect3DSurface9 *SuperResolutionDepth() {
   return active ? lowDepth.Get() : nullptr;

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "LiveSettings.h"
 #include <cassert>
+#include <initializer_list>
 using namespace ttwvrnr;
 int main() {
   ReloadState r;
@@ -74,6 +75,35 @@ int main() {
   invalidSR = sr;
   invalidSR.temporal = 0;
   assert(!invalidSR.Valid());
+  // Each preset changes input allocation and must invalidate the old helper.
+  ReloadState modes;
+  for (unsigned mode : {1u, 2u, 3u, 1u, 3u, 2u, 0u}) {
+    auto next = sr;
+    next.sr = mode;
+    assert(next.Valid() && modes.Request(next));
+    assert(!modes.CanApply());
+    if (modes.process) {
+      assert(modes.NeedStop() && !modes.NeedStart());
+      modes.Initialized(); // stale acknowledgement must not enable output
+      assert(!modes.CanApply());
+      modes.Exited();
+    }
+    if (mode) {
+      assert(modes.NeedStart());
+      modes.Started();
+      modes.Initialized();
+      assert(modes.CanApply() && modes.requested.sr == mode);
+    } else assert(!modes.NeedStart());
+  }
+  invalidSR = sr;
+  invalidSR.sr = 4;
+  assert(!invalidSR.Valid() && !modes.Request(invalidSR));
+  assert(SRInputSize(0).width == 2944 && SRInputSize(0).height == 2208);
+  assert(SRJitterPhases(0) == 8 && SRJitterPhases(1) == 18);
+  assert(SRJitterPhases(2) == 24 && SRJitterPhases(3) == 32);
+  assert(SRInputSize(2).width == 1708 && SRInputSize(2).height == 1281);
+  assert(SRInputSize(3).width == 1472 && SRInputSize(3).height == 1104);
+  assert(SRInputSize(4).width == 0 && SRJitterPhases(4) == 0);
   LiveSettings fg=off;fg.fg=fg.temporal=1;fg.identity=0;
   assert(fg.Valid()&&fg.Active());
   assert(r.Request(fg,true)&&r.NeedStart());r.Started();r.Initialized();

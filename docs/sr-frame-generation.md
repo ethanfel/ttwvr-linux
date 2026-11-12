@@ -1,6 +1,6 @@
 # DLSS SR and stereo frame generation — 12 November 2026
 
-The addon now implements **DLSS Quality** and **experimental stereo frame generation**
+The addon now implements **DLSS Quality, Balanced and Performance** and **experimental stereo frame generation**
 as separate live controls in TTWVR's native VR Settings. Both default off.
 This is a working integration with measured costs, not a claim that DLSS fixes
 TTWVR's performance. SR alone was slower than native at 120 Hz; at 90 Hz it
@@ -128,20 +128,30 @@ each new worker now gets fresh images. The reproduced SR+FG menu/Back/resume,
 second pause/resume and quit then passed. Normal rendering has no added CPU
 completion wait.
 
+## Additional preset validation
+
+Balanced and Performance now join Quality; see [preset sizes, captures and the
+90 Hz comparison](dlss-presets.md). A later rapid preset-cycle test with FG
+exposed an unresolved quit stall in NVIDIA device destruction after the
+presentation drain timed out. The helper exited, but the isolated game required
+SIGTERM. The earlier successful menu/quit tests above do not establish robust
+FG teardown for every transition. FG remains optional and defaults off.
+
 ## Use and rollback
 
-Install the matching protocol-6 layer and helper while the game is closed.
+Install the matching protocol-7 layer and helper while the game is closed.
 Preserve your runtime INI; add the separately obtained `nvngx_dlssg.dll` only
 if using FG. The existing `nvngx_dlss.dll` supplies DLAA and SR. Keep the Steam
 command and Fluorine profile. NVIDIA dependencies are not distributed here.
 
-Select **DLSS Super Resolution → Quality** and optionally **Frame gen. →
+Select **DLSS SR → Quality / Balanced / Performance** and optionally **Frame gen. →
 2x (experimental)**. SR excludes NR/DLAA; FG can run independently. Active MSAA
 excludes all neural processing and requires a restart to disable. Off switches
 restore native rendering and ordinary runtime pacing; initialization or invalid
 input failures retain original-image bypass.
 
-Only the verified 2944×2208 output/Quality adapter is currently supported. The
+Only the verified 2944×2208 output adapter is currently supported; its three
+presets retain that final output size. The
 stock TTWVR upscaler remains disabled. Keep both new features off until you want
 to test them; there is no recommendation to replace a working headset setup
 with these experimental modes. Neither this work nor the earlier GPU handoff

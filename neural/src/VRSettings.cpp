@@ -37,6 +37,7 @@ std::array<Option *, 9> rows{};
 const unsigned samples[] = {0, 0, 2, 4, 8};
 const char *aaNames[] = {"Off", "DLAA", "MSAA 2x (restart)",
                          "MSAA 4x (restart)", "MSAA 8x (restart)"};
+const char *srNames[] = {"Off", "Quality", "Balanced", "Performance"};
 const char *toggleNames[] = {"Off", "On"};
 const char *modelNames[] = {"A", "B"};
 const char *scaleNames[] = {"25%", "50%", "75%", "100%"};
@@ -85,7 +86,9 @@ void Sync(Option *row) {
     row->value = s.detail / 10;
   else if (row == rows[7]) {
     row->value = s.sr;
-    row->names[1] = actualSamples ? "Quality (restart)" : "Quality";
+    static const char *restart[] = {"Off", "Quality (restart)", "Balanced (restart)", "Performance (restart)"};
+    for (unsigned i = 0; i < 4; ++i)
+      row->names[i] = actualSamples ? restart[i] : srNames[i];
   } else if (row == rows[8]) {
     row->value = s.fg;
     row->names[1] = actualSamples ? "2x (restart)" : "2x (experimental)";
@@ -276,7 +279,7 @@ void Extend() {
           Add("NR strength", 11, percentNames),
           Add("NR tone", 11, percentNames),
           Add("NR detail", 11, percentNames),
-          Add("DLSS Super Resolution", 2, toggleNames),
+          Add("DLSS SR", 4, srNames),
           Add("Frame gen.", 2, toggleNames)};
   for (auto *p : rows)
     if (!p) {

@@ -97,8 +97,8 @@ struct Client {
   void Init(IDirect3DDevice9 *d, const D3DSURFACE_DESC &hdr,
             const D3DSURFACE_DESC &b) {
     device = d;
-    const unsigned width = reload.requested.sr ? InputWidth : hdr.Width;
-    const unsigned height = reload.requested.sr ? InputHeight : hdr.Height;
+    const unsigned width = reload.requested.sr ? SRInputSize(reload.requested.sr).width : hdr.Width;
+    const unsigned height = reload.requested.sr ? SRInputSize(reload.requested.sr).height : hdr.Height;
     if (reload.requested.sr)
       output.Init(d, OutputWidth, OutputHeight, D3DFMT_A16B16G16R16F);
     color.Init(d, width, height, D3DFMT_A16B16G16R16F);
@@ -263,13 +263,13 @@ bool DlaaApplied(uint64_t frame) {
   std::lock_guard lock(processingMutex);
   return AllApplied(frame) && client->p->dlaa;
 }
-bool SrApplied(uint64_t frame) {
+unsigned SrApplied(uint64_t frame) {
   std::lock_guard lock(processingMutex);
-  return AllApplied(frame) && client->p->sr;
+  return AllApplied(frame) ? client->p->sr : 0;
 }
-bool SuperResolutionReady() {
+unsigned SuperResolutionReady() {
   std::lock_guard lock(processingMutex);
-  return enabled && reload.CanApply() && client && client->p->sr;
+  return enabled && reload.CanApply() && client ? client->p->sr : 0;
 }
 bool TemporalNRApplied(uint64_t frame) {
   std::lock_guard lock(processingMutex);
@@ -357,8 +357,8 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
     Check(depth->GetDesc(&dd));
     if (hd.Format != D3DFMT_A16B16G16R16F ||
         bd.Format != D3DFMT_A16B16G16R16F || dd.Format != D3DFMT_D24S8 ||
-        hd.Width != (SuperResolutionLow() ? InputWidth : OutputWidth) ||
-        hd.Height != (SuperResolutionLow() ? InputHeight : OutputHeight) ||
+        hd.Width != (SuperResolutionLow() ? SuperResolutionWidth() : OutputWidth) ||
+        hd.Height != (SuperResolutionLow() ? SuperResolutionHeight() : OutputHeight) ||
         dd.Width != hd.Width || dd.Height != hd.Height ||
         bd.Width != OutputWidth / 4 || bd.Height != OutputHeight / 4 ||
         dd.MultiSampleType != D3DMULTISAMPLE_NONE)

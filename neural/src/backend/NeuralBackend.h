@@ -15,7 +15,7 @@ struct NeuralOptions {
   bool profileGpu = false; // Optional NGX GPU timestamp samples.
   bool neural = true;
   bool dlaa = false;
-  bool sr = false;
+  unsigned sr = 0; // 0 off, 1 Quality, 2 Balanced, 3 Performance.
   // SR uses a lower-resolution input and a distinct native output.
   unsigned outputWidth = 0, outputHeight = 0;
   bool temporalGuides = false; // Explicit verified motion/jitter contract.

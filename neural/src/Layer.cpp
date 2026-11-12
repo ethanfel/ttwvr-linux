@@ -4,6 +4,7 @@
 #include "FrameDelivery.h"
 #include "Graphics.h"
 #include "SpatialNR.h"
+#include "SRMode.h"
 #include "Support.h"
 #define XR_USE_GRAPHICS_API_D3D11
 #define XR_USE_PLATFORM_WIN32
@@ -66,7 +67,7 @@ struct CapturedView {
 struct CapturedFrame {
   bool neural = false;
   bool dlaa = false;
-  bool sr = false;
+  unsigned sr = 0;
   bool temporal = false;
   bool fgPresented = false;
   struct {
@@ -517,6 +518,7 @@ bool WriteCapturedFrame(const CapturedFrame &frame,
           meta,
           "{\n  \"mode\": \"%s\", \"neural_rendering\": %s,\n"
           "  \"dlaa\": %s, \"jitter_pixels\": [%g, %g],\n"
+          "  \"sr_mode\": \"%s\",\n"
           "  \"fg_interpolated\": %s, \"fg_presented\": %s, \"fg_format\": "
           "29,\n"
           "  \"frame\": %llu, \"display_time\": %lld, \"layer\": %u, \"eye\": "
@@ -535,7 +537,7 @@ bool WriteCapturedFrame(const CapturedFrame &frame,
                                            : "spatial_nr_reset_every_frame")
                          : "capture_only",
           frame.neural ? "true" : "false", frame.dlaa ? "true" : "false",
-          frame.jitter.x, frame.jitter.y,
+          frame.jitter.x, frame.jitter.y, SRName(frame.sr),
           view.fgInterpolated ? "true" : "false",
           frame.fgPresented ? "true" : "false",
           static_cast<unsigned long long>(frame.frame),

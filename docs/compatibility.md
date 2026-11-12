@@ -39,8 +39,8 @@ patches do require the matching Proton files.
 | Rendering Addon in Fluorine | Installed; native VR Settings rows, gamepad navigation, live NR/DLAA/SR/FG, restart for MSAA |
 | Scene MSAA 2×/4×/8× | Matching full-size color/depth sample counts verified in isolated GPU runs |
 | NR and native-resolution DLAA | Both eyes/consecutive frames verified in isolated gameplay captures; DLAA softness/haze at distance remains under investigation |
-| DLSS Quality SR | Both eyes/consecutive frames reconstructed 1963×1472 → 2944×2208; slower than native rendering in the measured corridor |
-| Stereo FG | Actual generated/real stereo delivery verified under simulated Monado 120 Hz; repeats counted separately; headset quality/latency untested |
+| DLSS SR Quality / Balanced / Performance | Verified per-eye inputs 1963×1472 / 1708×1281 / 1472×1104, reconstructed to 2944×2208; live switching and consecutive stereo captures tested |
+| Stereo FG | Actual generated/real stereo delivery verified under simulated Monado 120 Hz; repeats counted separately; headset quality/latency untested; rapid preset cycling with FG can stall on quit |
 | Blood-effect depth copy | Warnings remain |
 | Complete controls / calibration / Pip-Boy checks | Pending |
 | Long sessions, outdoor benchmarks, other hardware | Pending |

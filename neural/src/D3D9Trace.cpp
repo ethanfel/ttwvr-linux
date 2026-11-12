@@ -140,8 +140,8 @@ void Observe(IDirect3DDevice9 *d, const char *op,
     if (NativeGuidesEnabled() && !std::strcmp(op, "draw_indexed") &&
         Shader(vs.Get(), "vs") == "\"vs-6149896215606588438\"") {
       D3DSURFACE_DESC scene{};
-      if (rt && SUCCEEDED(rt->GetDesc(&scene)) && scene.Width == (SuperResolutionLow()?InputWidth:OutputWidth) &&
-          scene.Height == (SuperResolutionLow()?InputHeight:OutputHeight) && scene.Format == D3DFMT_A16B16G16R16F)
+      if (rt && SUCCEEDED(rt->GetDesc(&scene)) && scene.Width == (SuperResolutionLow()?SuperResolutionWidth():OutputWidth) &&
+          scene.Height == (SuperResolutionLow()?SuperResolutionHeight():OutputHeight) && scene.Format == D3DFMT_A16B16G16R16F)
         NativeGuidesObserveScene(d, frame);
     }
     if ((captureInputs || spatial.load(std::memory_order_relaxed) ||

@@ -1,5 +1,13 @@
 # Changes
 
+## DLSS Balanced and Performance — 2026-11-12
+
+- Add live Off / Quality / Balanced / Performance choices in the native **DLSS SR** row and CLI. Preserve existing enabled settings; omitted mode defaults to Quality.
+- Use NGX-verified 1963×1472 / 1708×1281 / 1472×1104 inputs with 2944×2208 output, mode-specific NGX quality hints, matching guide grids and 18/24/32 jitter phases.
+- Rebuild scene resources only at stereo boundaries after the old helper exits; retain native bypass and per-eye history reset. Matching layer/helper protocol is now 7.
+- Validate consecutive stereo captures, alpha preservation, actual SR/FG output and controller switching; record [preset measurements and limitations](docs/dlss-presets.md).
+- Record an unresolved FG quit stall after rapid preset cycling. FG remains optional and defaults off.
+
 ## 90 Hz DLSS/FG comparison — 2026-11-12
 
 - Record matched and repeated 90 Hz simulated measurements for native, DLAA, SR Quality, FG and SR+FG, including GPU power and distinct/repeated submissions.

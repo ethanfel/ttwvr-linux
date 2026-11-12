@@ -1,6 +1,6 @@
 # TTWVR Rendering Addon for Fluorine
 
-DLSS Quality reconstruction and experimental queued stereo frame generation
+DLSS Quality/Balanced/Performance reconstruction and experimental queued stereo frame generation
 are implemented as separate, live VR Settings controls. See
 [contracts, dependencies and validation](docs/SR-FRAME-GENERATION.md).
 
@@ -15,7 +15,7 @@ Both eyes were captured with DLAA alone, temporal NR alone and both combined
 in the loaded Vault 101 scene on consecutive frames,
 at the original **2944 × 2208 per eye**. The temporal motion path is experimental;
 see the exact tested modes in [the evidence record](docs/EVIDENCE.md).
-DLSS Quality and stereo frame generation are covered in the newer
+DLSS Quality/Balanced/Performance and stereo frame generation are covered in the newer
 [SR/FG implementation and evidence](docs/SR-FRAME-GENERATION.md). The regular Steam launch requires an explicit
 [addon installation and opt-in](docs/STEAM.md).
 
@@ -307,7 +307,7 @@ gpu_handoff=1
 ```
 
 Restart the game after changing this setting. Install the matching layer/helper
-pair: protocol 6 is 440 bytes and refuses older helpers. Set `gpu_handoff=0`
+pair: protocol 7 is 440 bytes and refuses older helpers. Set `gpu_handoff=0`
 and restart to restore CPU completion waits. Distributed defaults keep it off.
 This changes synchronization, not NR/DLAA quality or rendering dimensions.
 Do not combine it with the historical monotonic-D3D12-fence binary patch.

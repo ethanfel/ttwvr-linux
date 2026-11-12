@@ -48,7 +48,11 @@ bool Save(const LiveSettings &s) {
                                   s.preset == 1 ? L"A" : L"B", tmp.c_str()) &&
        ok;
   put(L"dlaa", L"enabled", s.dlaa);
-  put(L"super_resolution", L"enabled", s.sr);
+  put(L"super_resolution", L"enabled", s.sr != 0);
+  if (s.sr)
+    ok = WritePrivateProfileStringW(L"super_resolution", L"mode",
+        s.sr == 3 ? L"Performance" : s.sr == 2 ? L"Balanced" : L"Quality",
+        tmp.c_str()) && ok;
   put(L"frame_generation", L"enabled", s.fg);
   Flush(tmp);
   if (ok)
@@ -87,7 +91,11 @@ LiveSettings ReadLiveSettings() {
   GetPrivateProfileStringW(L"neural_rendering", L"model", L"B", model, 16,
                            p.c_str());
   s.preset = !_wcsicmp(model, L"A") ? 1 : 2;
-  s.sr = get(L"super_resolution", L"enabled", 0) != 0;
+  wchar_t srMode[32]{};
+  GetPrivateProfileStringW(L"super_resolution", L"mode", L"Quality", srMode, 32, p.c_str());
+  if (get(L"super_resolution", L"enabled", 0))
+    s.sr = !_wcsicmp(srMode, L"Performance") ? 3
+         : !_wcsicmp(srMode, L"Balanced") ? 2 : 1;
   s.fg = get(L"frame_generation", L"enabled", 0) != 0;
   if (s.fg) { s.temporal = 1; s.identity = 0; }
   if (s.sr) {
@@ -153,7 +161,8 @@ void PublishMenuState(const ReloadState &r, bool applied) {
     else if (!applied)
       status = "Ready - waiting for a scene";
     else if (r.requested.sr)
-      status = "Active: DLSS Quality (Super Resolution)";
+      status = r.requested.sr == 3 ? "Active: DLSS Performance"
+             : r.requested.sr == 2 ? "Active: DLSS Balanced" : "Active: DLSS Quality";
     else if (r.requested.neural && r.requested.dlaa)
       status = "Active: NR + DLAA";
     else if(r.requested.fg && !r.requested.neural && !r.requested.dlaa)

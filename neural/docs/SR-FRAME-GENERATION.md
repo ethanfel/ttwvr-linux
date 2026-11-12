@@ -1,6 +1,6 @@
 # DLSS Super Resolution and stereo frame generation
 
-The rendering addon provides **DLSS Super Resolution → Quality** and
+The rendering addon provides **DLSS SR → Quality / Balanced / Performance** and
 **Frame gen. → 2x (experimental)** inside TTWVR's native **VR Settings**.
 They are separate features and can be switched live. Both default off.
 
@@ -9,6 +9,13 @@ under Proton Experimental 11 with an RTX 5090. Headset streaming, latency,
 moving-head comfort and behavior in other scenes still need physical testing.
 Do not equate the compositor submission rate with the number of distinct images.
 
+The preset validation also exposed a shutdown limitation: after rapidly cycling
+SR presets with FG enabled, resuming and quitting, one simulated test timed out
+the presentation drain and stalled in NVIDIA `vkDestroyDevice`. Its helper had
+exited; the private game required a targeted SIGTERM. Earlier slower menu tests
+passed, so this is not a claim that FG teardown is fixed. FG remains optional
+and defaults off. See [preset validation](../../docs/dlss-presets.md).
+
 ## Features and dependencies
 
 | Feature | NVIDIA runtime | Rendering behavior |
@@ -16,10 +23,14 @@ Do not equate the compositor submission rate with the number of distinct images.
 | NR | `nvngx_dlssnr.dll` | Neural rendering before tone mapping |
 | DLAA | `nvngx_dlss.dll` | Native-resolution temporal antialiasing |
 | DLSS SR Quality | `nvngx_dlss.dll` | 1963×1472 scene reconstructed to 2944×2208 per eye |
+| DLSS SR Balanced | `nvngx_dlss.dll` | 1708×1281 scene reconstructed to 2944×2208 per eye |
+| DLSS SR Performance | `nvngx_dlss.dll` | 1472×1104 scene reconstructed to 2944×2208 per eye |
 | Stereo FG | `nvngx_dlssg.dll` | An interpolated stereo pair between consecutive real pairs |
 
-The current SR adapter supports the verified **2944×2208 output**, Quality mode
-and preset K. Its 1963×1472 input is NVIDIA's queried optimal size. It does not
+The current SR adapter supports the verified **2944×2208 output** and Quality,
+Balanced and Performance modes, using preset K. All three input sizes were
+queried from the installed NGX runtime and are checked again on every helper
+start; a mismatch triggers bypass. It does not
 change the final headset, HUD or tone-mapping output dimensions. Original
 full-size scene resources remain allocated, so VRAM consumption is not a useful
 measure of whether SR is active.
@@ -38,7 +49,7 @@ binaries, game assets or private captures. The reference is
 ## Installation and controls
 
 Follow [the Fluorine addon installation](STEAM.md). Close the game and helper
-before replacing the matching x86 layer and x64 helper; protocol **6** is not
+before replacing the matching x86 layer and x64 helper; protocol **7** is not
 compatible with older helper binaries. Preserve the runtime INI and profile
 settings rather than replacing them with development defaults. The Steam
 command and WiVRn registration remain unchanged.
@@ -51,6 +62,7 @@ in addition to the common and NR headers.
 ```ini
 [super_resolution]
 enabled=0
+mode=Quality
 capture_probe=0
 [frame_generation]
 enabled=0
@@ -66,10 +78,18 @@ forces reduced scene rendering without neural reconstruction.
 Explicit CLI controls are available for an identified runtime INI:
 
 ```sh
-python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini sr on
+python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini sr quality
+python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini sr balanced
+python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini sr performance
 python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini fg on
 python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini all-off
 ```
+
+`sr on` enables the last selected mode (Quality when the mode key is absent).
+`sr off` disables SR while retaining that selection. The native row cycles
+Off → Quality → Balanced → Performance. Switching presets stops the old helper,
+restores native bindings, allocates the new scene/depth/motion grid and resets
+per-eye temporal history at a stereo boundary.
 
 Turning features off restores native rendering and ordinary runtime pacing.
 Live changes briefly bypass processing while the previous helper exits. No
@@ -87,7 +107,7 @@ copying Titanfall's texture signatures or shader bindings.
    buffers and viewport. It retains the game's bloom/adaptation output sizing.
 3. The helper reconstructs each eye independently through D3D12 NGX. Its full-size
    HDR output is bound only for the tone-map draw; the previous binding is restored.
-   Alpha is bilinearly resampled from the original input. SR uses 18 Halton phases,
+   Alpha is bilinearly resampled from the original input. SR uses 18/24/32 Halton phases for Quality/Balanced/Performance,
    with the verified raster-jitter sign; motion excludes jitter.
 4. FG retains decoded guides for that exact frame and eye. It resamples them onto
    the final eye grid, removes the sampling displacement and scales pixel motion

@@ -118,25 +118,19 @@ The newer SR/FG integration uses the same GPU handoff, with matching **protocol-
 
 ===== MESSAGE 5 — COPY BELOW =====
 
-**Experimental DLSS Quality + stereo frame generation**
+**DLSS presets + experimental stereo frame generation**
 
-The addon now has live **DLSS Super Resolution → Quality** and **Frame gen. → 2x (experimental)** controls inside VR Settings. Both default off. SR reconstructs a 1963×1472 scene to **2944×2208 per eye**; final HUD/output size stays native. This initial adapter supports that output size only.
+VR Settings now has **DLSS SR → Off / Quality / Balanced / Performance**, plus **Frame gen. → 2x (experimental)**. Both features default off and switch live. Per-eye scene inputs are **1963×1472 / 1708×1281 / 1472×1104**, reconstructed to **2944×2208**. Final HUD/output stays native. This adapter supports that output size only.
 
-SR uses its own temporal reconstruction and excludes NR/DLAA. FG is independent and can run with SR. Active MSAA excludes neural processing. Turning the new features off restores native rendering and ordinary runtime pacing.
+SR uses its own temporal reconstruction and excludes NR/DLAA. FG is independent and can run with SR. Active MSAA excludes neural processing. Off restores native rendering and ordinary pacing.
 
-**Actual 120 Hz simulated corridor results (RTX 5090)**
-• Effects off: **58 app FPS**.
-• DLSS Quality: **48 app FPS**; no performance gain over native in this scene.
-• SR + FG: **38 real + 38 generated stereo pairs/s**. About **17 extra repeats/s** made the compositor report roughly 92 submissions/s. Repeats are not generated frames.
-• SR used less GPU power than native DLAA in this test, but more than effects off.
+**RTX 5090, simulated corridor:** at 120 Hz, native was ~58 app FPS and Quality ~48. Quality+FG gave ~38 real + 38 generated stereo pairs/s; ~17 repeats/s inflated submissions to ~92. At 90 Hz, native/Quality were ~39 FPS and Quality+FG ~42 real + 42 generated, with 1–2 repeats/s. Quality cost more GPU power than effects off. Repeats are not generated frames.
 
-**90 Hz repeat:** native/SR both ≈39 FPS; SR+FG ≈42 real + 42 generated pairs/s, with 1–2 repeats/s. SR still uses more GPU power than effects off.
+Both new presets passed consecutive-eye captures with matching guides and reconstructed output. **Headset motion, latency, WiVRn streaming and comfort still need validation.** A rapid preset-cycle test with FG stalled on quit; FG teardown is not fully reliable. DLAA haze is not fixed.
 
-Both eyes and consecutive frames were captured. Generated submissions are verified; the real-image color round trip is pixel-identical. This is a headset-free GPU test. **Moving-head quality, added latency, WiVRn streaming and comfort still need headset validation.** FG is not a demonstrated fix for low base FPS or DLAA haze.
+Close the game before updating the matching **protocol-7 layer/helper**; preserve your INI. `nvngx_dlss.dll` supplies SR/DLAA; obtain `nvngx_dlssg.dll` separately for FG. Keep the same Steam command. No NVIDIA/game binaries are distributed.
 
-Close the game before updating the matched layer/helper. Preserve your runtime INI and add the separately obtained **`nvngx_dlssg.dll`** for FG; **`nvngx_dlss.dll`** supplies SR/DLAA. Keep the same Steam command. No NVIDIA/game binaries are distributed.
-
-**Measurements:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/sr-frame-generation.md>
-**Dependencies, build and controls:** <https://github.com/ethanfel/ttwvr-linux/blob/main/neural/docs/SR-FRAME-GENERATION.md>
+**Preset checks/results:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/dlss-presets.md>
+**Build/dependencies:** <https://github.com/ethanfel/ttwvr-linux/blob/main/neural/docs/SR-FRAME-GENERATION.md>
 
 ===== END MESSAGE 5 =====

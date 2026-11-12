@@ -28,8 +28,10 @@ if args.action in ('quality', 'strength', 'tone', 'detail'):
         parser.error('Percentage must be between 0 and 100')
 if args.action == 'model' and args.value.upper() not in ('A', 'B'):
     parser.error('model must be A or B')
-if args.action in ('dlaa', 'sr', 'fg') and args.value not in ('on', 'off'):
-    parser.error('dlaa/sr/fg requires on or off')
+if args.action in ('dlaa', 'fg') and args.value not in ('on', 'off'):
+    parser.error('dlaa/fg requires on or off')
+if args.action == 'sr' and args.value not in ('on', 'off', 'quality', 'balanced', 'performance'):
+    parser.error('sr requires off, on, quality, balanced or performance')
 config = configparser.ConfigParser()
 config.read(args.config)
 for section in ('neural_rendering', 'dlaa', 'super_resolution', 'frame_generation', 'capture'):
@@ -57,9 +59,12 @@ elif args.action == 'dlaa':
         nr['transport_identity'] = '0'
         config['super_resolution']['enabled'] = '0'
 elif args.action == 'sr':
-    config['super_resolution']['enabled'] = '1' if args.value == 'on' else '0'
+    enabled = args.value != 'off'
+    config['super_resolution']['enabled'] = str(int(enabled))
     config['super_resolution']['capture_probe'] = '0'
-    if args.value == 'on':
+    if args.value in ('quality', 'balanced', 'performance'):
+        config['super_resolution']['mode'] = args.value.title()
+    if enabled:
         nr['enabled'] = config['dlaa']['enabled'] = '0'
         nr['transport_identity'] = '0'
 elif args.action == 'fg':
@@ -86,6 +91,8 @@ print(f'NR configured: {nr.get("enabled", "0")} | model {nr.get("model", "B")} |
       f'strength {nr.get("intensity_percent", "50")}% | '
       f'tone {nr.get("tone_percent", "100")}% | detail {nr.get("detail_percent", "100")}%')
 print(f'DLAA configured: {config["dlaa"].get("enabled", "0")} | native resolution')
-print(f'DLSS Quality configured: {config["super_resolution"].get("enabled", "0")} | 1963x1472 scene -> 2944x2208 per eye')
+sr_mode = config['super_resolution'].get('mode', 'Quality').title()
+sr_size = {'Quality': '1963x1472', 'Balanced': '1708x1281', 'Performance': '1472x1104'}.get(sr_mode, '1963x1472')
+print(f'DLSS configured: {config["super_resolution"].get("enabled", "0")} | {sr_mode} | {sr_size} scene -> 2944x2208 per eye')
 print(f'Frame generation configured: {config["frame_generation"].get("enabled", "0")} | experimental stereo 2x')
 print('Configuration alone does not prove successful feature evaluation.')

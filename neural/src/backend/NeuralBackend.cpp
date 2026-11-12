@@ -3,6 +3,7 @@
 #include "NeuralBackend.h"
 #include "../Support.h"
 #include "../GuideMath.h"
+#include "../SRMode.h"
 #include "GpuInterop.h"
 #include "GpuTiming.h"
 #include "NgxLifetime.h"
@@ -220,6 +221,14 @@ struct NeuralBackend::Impl {
   }
   bool Init(ID3D11Device *d, unsigned width, unsigned height,
             const std::wstring &directory, const NeuralOptions &opt) {
+    if (!ValidSRMode(opt.sr))
+      throw std::runtime_error("Invalid SR mode");
+    const auto srQuality = opt.sr == 3 ? NVSDK_NGX_PerfQuality_Value_MaxPerf
+        : opt.sr == 2 ? NVSDK_NGX_PerfQuality_Value_Balanced
+                     : NVSDK_NGX_PerfQuality_Value_MaxQuality;
+    const auto srHint = opt.sr == 3 ? NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_Performance
+        : opt.sr == 2 ? NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_Balanced
+                     : NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_Quality;
     if ((opt.dlaa || opt.sr) && !opt.temporalGuides)
       throw std::runtime_error(
           "TTW DLAA requires verified motion and jitter; disabled");
@@ -335,7 +344,7 @@ struct NeuralBackend::Impl {
       ttwvrnr_parameter_set_uint(caps, NVSDK_NGX_Parameter_Width, outW);
       ttwvrnr_parameter_set_uint(caps, NVSDK_NGX_Parameter_Height, outH);
       ttwvrnr_parameter_set_int(caps, NVSDK_NGX_Parameter_PerfQualityValue,
-                                NVSDK_NGX_PerfQuality_Value_MaxQuality);
+                                srQuality);
       ttwvrnr_parameter_set_int(caps, NVSDK_NGX_Parameter_RTXValue, 0);
       Ngx(reinterpret_cast<PFN_NVSDK_NGX_DLSS_GetOptimalSettingsCallback>(
               callback)(caps),
@@ -348,11 +357,11 @@ struct NeuralBackend::Impl {
               caps, NVSDK_NGX_Parameter_OutHeight, &recommendedH)),
           "sr_optimal_height");
       Log("sr_optimal_settings input=%ux%u recommended=%ux%u output=%ux%u "
-          "quality=1",
-          fullW, fullH, recommendedW, recommendedH, outW, outH);
+          "mode=%s",
+          fullW, fullH, recommendedW, recommendedH, outW, outH, SRName(opt.sr));
       if (recommendedW != fullW || recommendedH != fullH)
         throw std::runtime_error(
-            "SR scene dimensions do not match SDK Quality recommendation");
+            "SR scene dimensions do not match SDK mode recommendation");
     }
     for (unsigned index = 0; index < 2; ++index) {
       auto &e = eyes[index];
@@ -400,13 +409,13 @@ struct NeuralBackend::Impl {
               {NVSDK_NGX_Parameter_OutHeight, outH},
               {NVSDK_NGX_Parameter_CreationNodeMask, 1},
               {NVSDK_NGX_Parameter_VisibilityNodeMask, 1},
-              {opt.sr ? NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_Quality
+              {opt.sr ? srHint
                       : NVSDK_NGX_Parameter_DLSS_Hint_Render_Preset_DLAA,
                NVSDK_NGX_DLSS_Hint_Render_Preset_K}})
           ttwvrnr_parameter_set_uint(p, v.first, v.second);
         ttwvrnr_parameter_set_int(p, NVSDK_NGX_Parameter_PerfQualityValue,
                                   opt.sr
-                                      ? NVSDK_NGX_PerfQuality_Value_MaxQuality
+                                      ? srQuality
                                       : NVSDK_NGX_PerfQuality_Value_DLAA);
         ttwvrnr_parameter_set_int(p,
                                   NVSDK_NGX_Parameter_DLSS_Feature_Create_Flags,

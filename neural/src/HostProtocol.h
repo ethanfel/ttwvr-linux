@@ -7,7 +7,7 @@ namespace ttwvrnr {
 // publish this single-writer control block; only one request may be
 // outstanding.
 struct HostProtocol {
-  uint32_t magic = 0x54544e52, version = 6, width = 0, height = 0;
+  uint32_t magic = 0x54544e52, version = 7, width = 0, height = 0;
   uint64_t colorHandle = 0, depthHandle = 0, bloomHandle = 0, motionHandle = 0,
            frame = 0;
   uint32_t eye = 0, command = 0, result = 0, parentPid = 0;
@@ -20,6 +20,7 @@ struct HostProtocol {
            detail = 100;
   uint32_t profile = 0, revision = 0, padding = 0;
   uint64_t inputTimeline = 0, outputTimeline = 0, serial = 0;
+  // v7: sr is a mode (0 off, 1 Quality, 2 Balanced, 3 Performance).
   uint32_t sr = 0, outputWidth = 0, outputHeight = 0, padding2 = 0;
   uint64_t outputHandle = 0;
   uint32_t fg = 0, fgInterpolated = 0;

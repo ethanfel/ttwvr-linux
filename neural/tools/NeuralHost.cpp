@@ -57,7 +57,7 @@ int wmain(int argc, wchar_t **argv) {
     return 3;
   auto *p = static_cast<HostProtocol *>(
       MapViewOfFile(mapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(HostProtocol)));
-  if (!p || p->magic != 0x54544e52 || p->version != 6)
+  if (!p || p->magic != 0x54544e52 || p->version != 7)
     return 3;
   HANDLE request = OpenEventW(SYNCHRONIZE, FALSE, (name + L"-request").c_str());
   HANDLE reply =
@@ -97,7 +97,9 @@ int wmain(int argc, wchar_t **argv) {
     }
     ComPtr<ID3D11Texture2D> hdr, packed, bloom, objectMotion, output;
     if (p->sr) {
-      if (p->outputWidth != 2944 || p->outputHeight != 2208)
+      const auto input = SRInputSize(p->sr);
+      if (p->outputWidth != OutputWidth || p->outputHeight != OutputHeight ||
+          p->width != input.width || p->height != input.height)
         throw std::runtime_error("SR output dimensions");
       Check(d->OpenSharedResource(
           reinterpret_cast<HANDLE>(uintptr_t(p->outputHandle)),
@@ -218,7 +220,7 @@ RWTexture2D<float2> motion:register(u2);
     options.passthrough = p->identity != 0;
     options.neural = p->neural != 0;
     options.dlaa = p->dlaa != 0;
-    options.sr = p->sr != 0;
+    options.sr = p->sr;
     options.outputWidth = p->outputWidth;
     options.outputHeight = p->outputHeight;
     options.temporalGuides = p->temporal != 0;

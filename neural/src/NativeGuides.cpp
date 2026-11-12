@@ -159,10 +159,10 @@ bool NativeGuidesEnabled() {
   return enabled && !CurrentMsaaSamples() && (captureProbe || SceneProcessingEnabled());
 }
 void NativeGuidesFrame(uint64_t frame) {
-  const auto nextWidth = SuperResolutionLow() ? InputWidth : OutputWidth;
+  const auto nextWidth = SuperResolutionLow() ? SuperResolutionWidth() : OutputWidth;
   if (Width != nextWidth) {
     Width = nextWidth;
-    Height = SuperResolutionLow() ? InputHeight : OutputHeight;
+    Height = SuperResolutionLow() ? SuperResolutionHeight() : OutputHeight;
     sceneDepth.Reset();
     previous[0] = Camera{};
     previous[1] = Camera{};
@@ -172,8 +172,8 @@ void NativeGuidesFrame(uint64_t frame) {
                             previous[0].frame + 1 == frame &&
                             previous[1].frame + 1 == frame;
   applyJitter = jitterProbe || (DlaaJitterReady() && camerasReady);
-  // Scale temporal coverage with the output/input pixel ratio (Quality ~18).
-  const unsigned phases = SuperResolutionLow() ? 18 : 8;
+  // Scale temporal coverage with the output/input pixel ratio (18/24/32).
+  const unsigned phases = SRJitterPhases(SuperResolutionMode());
   jitterX = applyJitter ? Halton(unsigned(frame % phases) + 1, 2) - .5f : 0;
   jitterY = applyJitter ? Halton(unsigned(frame % phases) + 1, 3) - .5f : 0;
 }

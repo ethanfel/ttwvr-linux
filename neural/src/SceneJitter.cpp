@@ -128,8 +128,8 @@ SceneJitter::SceneJitter(IDirect3DDevice9 *d, bool bypass) {
   ComPtr<IDirect3DSurface9> rt, ds;
   D3DSURFACE_DESC r{}, z{};
   if (FAILED(d->GetRenderTarget(0, &rt)) || !rt || FAILED(rt->GetDesc(&r)) ||
-      r.Width != (SuperResolutionLow() ? InputWidth : OutputWidth) ||
-      r.Height != (SuperResolutionLow() ? InputHeight : OutputHeight) ||
+      r.Width != (SuperResolutionLow() ? SuperResolutionWidth() : OutputWidth) ||
+      r.Height != (SuperResolutionLow() ? SuperResolutionHeight() : OutputHeight) ||
       r.Format != D3DFMT_A16B16G16R16F ||
       FAILED(d->GetDepthStencilSurface(&ds)) || !ds ||
       FAILED(ds->GetDesc(&z)) || z.Width != r.Width || z.Height != r.Height ||

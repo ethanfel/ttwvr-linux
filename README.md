@@ -55,7 +55,7 @@ main/pause menu; 1.1.0 uses **Settings → VR**. The addon rows follow Resolutio
 
 - **Anti-aliasing:** Off, native-resolution DLAA, MSAA 2×/4×/8×.
 - **Neural Rendering:** enable, model A/B, processing scale, strength, tone and detail.
-- **DLSS Super Resolution:** Off / Quality, with native-size output.
+- **DLSS SR:** Off / Quality / Balanced / Performance, with native-size output.
 - **Frame generation:** Off / experimental stereo 2×.
 
 NR/DLAA/SR/FG changes apply live. MSAA changes require a game restart and
@@ -82,7 +82,9 @@ NR + DLAA from **16.0 to 39.2 FPS** at 2944×2208 per eye. These are not headset
 FPS predictions. See the [measurements, Proton research, setup and rollback](docs/proton-neural-performance.md).
 The setting is experimental and defaults off pending headset validation.
 
-**DLSS Quality and stereo frame generation are now integrated** into the addon.
+**DLSS Quality, Balanced, Performance and stereo frame generation are integrated** into the addon.
+See [preset controls and measured results](docs/dlss-presets.md); FG still has
+an unresolved quit stall after rapid preset cycling.
 Both eyes and consecutive generated submissions were verified in the isolated
 120 Hz runtime. In the matched corridor, native rendering was **58 FPS**, SR
 alone **48 FPS**, and SR + FG **38 real + 38 generated pairs/s**. About 17 further
