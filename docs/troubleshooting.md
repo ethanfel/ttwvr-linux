@@ -1,57 +1,50 @@
-# Troubleshooting the Fluorine setup
+# Troubleshooting the Linux patch
 
-[← Installation](installation.md) · [Fluorine configuration](native-fluorine.md) ·
-[Tested versions](compatibility.md)
+[← Installation](installation.md) · [Fluorine reference](native-fluorine.md)
 
-| Symptom | What to check |
+| Symptom | Action |
 |---|---|
-| A window still says “ModOrganizer” | Fluorine's native binary is `ModOrganizer-core`; inherited names are normal. The primary launch starts `fluorine-manager`, not Windows `ModOrganizer.exe`. |
-| TTW game plugin does not exist | Close Fluorine. The instance's `ModOrganizer.ini` needs `gameName=TTW` under `[General]`. |
-| Wine registry game-path mismatch | Verify Fluorine uses the intended game copy and private prefix. Accept the update only when both paths are correct. |
-| Missing `GECKCustom.ini` / `GECKPrefs.ini` | Accept the manager's copy prompt; these are editor INIs. |
-| Wrong game or prefix opens | Verify both instance settings and the dedicated global `fluorine/config.json`; global prefix/Proton settings take precedence. Use the same XDG directories every time. |
-| WiVRn socket unavailable, `/run/user/0` appears | Launch through `tools/launch_fluorine.py`; its private save-mount adapter preserves the desktop UID. See [save mounts](native-fluorine.md#save-mount-compatibility-fix). |
-| Steam runtime missing in a secondary library | Set `--steam-runtime` to Steam Linux Runtime 4 in the executable's Wrapper options. |
-| Manager opens but no game starts | Remove `--manager-only` for automatic launch. The selected executable must be named `Tale of Two Wastelands`, or supply its actual name with `--executable`. |
-| ShowOff or another utility is missing/outdated | Finish the guide's utility downloads, including separate INI/preset files; rerun ML Utilities Checker. |
-| Crash loading a save in `libvkd3d-shader` | Install both native compiler DLLs in Fluorine's prefix and set `native_d3dcompiler47=true` in `instance/ttwvr-linux.ini`. |
-| Menu works but headset goes black in gameplay | Check the OpenXR bridge patch, supported Proton version and instance INI. |
-| `OpenXR bridge hash mismatch` / `DXVK original hash mismatch` | Installed Proton differs from the supported build. Revalidate the patches; do not remove the checks. |
-| `DXVK candidate hash mismatch` | Rebuild from the pinned source and regenerate the local hash manifest. |
-| Flat launch waits for VR | Close Fallout and Fluorine, then launch with `--profile "TTW - Flat"`. Keep that exact profile name and disable TTWVR in it. |
-| VR launch has no runtime | Connect WiVRn first. Check the wrapper's `--xr-runtime` and `--xrizer` paths. |
-| Manager waits for `FalloutNV.exe` to close | Quit Fallout normally first. An open game keeps its FUSE mods and profile-save mount in use. |
-| Low FPS after installing the fixes | Confirm both DXVK paths in `instance/ttwvr-linux.ini`. The earlier Quest 3 capture used 120 Hz; it was not a Fluorine benchmark. |
-| 90 Hz gives about 45 FPS | Possible at the observed frame times; refresh rate does not impose a universal half-rate cap. |
-| Original DLSS/FSR controls are missing or disabled | The addon hides/disables the stock path and provides DLAA/MSAA and NR. The changed upstream 1.1.3 host has not been revalidated; leave the old renderer/fence experiments disabled. |
-| Rendering controls absent from VR Settings | Check the [addon installation](../neural/docs/STEAM.md), enabled Fluorine mod, matching layer/helper, private 32-bit registration and `neural_rendering=true`. Verified TTWVR 1.1.0 and the supplied 1.1.3 build are supported; 1.1.3 needs the updated layer and startup addon together. |
-| MSAA choice says `(restart)` | Quit and relaunch Fallout. MSAA changes require a restart, including returning to Off/DLAA; active MSAA prevents NR/DLAA processing. |
-| DLAA blurs after movement | Use the current layer/helper containing the [jitter correction](../neural/docs/VR-SETTINGS.md#dlaa-correction). The user still reports softness/haze at distance; this remains under investigation. Compare AA Off or MSAA. Updating TTWVR is not a demonstrated fix for this. |
+| Preflight says unsupported/modified Proton | Use the exact tested build. Steam Experimental updates can invalidate both bridge and renderer hashes; do not bypass guards. |
+| Preflight rejects TTWVR | Point `mod` at the complete original 1.1.3/1.1.4 mod, not an already patched copy or mixed-version files. |
+| Existing transaction/destination mod | This tool does not overwrite previous patch deployments. Roll back first; retain backups, then use a fresh fixes directory and original mod. A retained copied mod can be moved aside while disabled. |
+| Missing compiler/build command | Install the listed distro prerequisite. MinGW must target i686 with POSIX threads. |
+| DXVK build fails | Inspect the first compiler error. After correcting prerequisites, remove only the reported incomplete dependency source/build directories and retry `prepare`; the prepared game has not been activated. |
+| Rollback reports changed files | It protects edits made since apply. Save them manually or use `rollback ... --force`, which also snapshots current conflicting files. |
+| Fluorine reports FUSE permission denied | Start through the generated launcher on the host. Do not wrap the manager itself in bubblewrap. Ensure FUSE 3 works for your desktop user. |
+| Menu crash / missing BSA assets | Use real copies or reflinks for mod assets; the tested Fluorine skips symlinked files. Rebuild its file index after correcting them. |
+| Window says “ModOrganizer” | Native Fluorine inherits these names. The launched manager should be `fluorine-manager` / `ModOrganizer-core`, not Windows `ModOrganizer.exe`. |
+| TTW game plugin missing | Select Fluorine's `TTW` plugin (`gameName=TTW`), not the Windows plugin name. |
+| Registry game path mismatch | Verify the managed game and private prefix first. Accept the path update when they are the intended copy. |
+| Missing GECK INIs | Accept the manager's copy prompt; these are editor INIs. |
+| Wrong prefix/game starts | Check setup.json, instance settings and dedicated global `fluorine/config.json`; global paths take precedence. |
+| Utility warning in game | Finish The Best of Times utilities and their separate INI presets. The patch tool does not replace ML Utilities Checker. |
+| WiVRn unavailable / `/run/user/0` | Use the generated launcher and its UID-preserving save-mount adapter. Connect WiVRn before starting. |
+| Black headset after loading | Check the OpenXR bridge hash/overlay and that the generated launcher is used. A newer Proton needs a revalidated patch. |
+| Original DLSS/FSR menu missing | Disable the archived Rendering Addon/Neural Menu, including renamed copies or conflicting files in overwrite. Current setup uses the original author menu. |
+| FSR log still mentions DLSS | The author helper can start even with native FSR active. Inspect native-FSR state and actual fresh stereo output; a label alone is insufficient. |
+| Manager waits for Fallout to close | Quit the game first; it is still using the mounted mods and saves. |
+| Flat play opens VR | Use `--profile "TTW - Flat"`, disable TTWVR in that profile, and close the previous manager/game first. |
+| FPS near half refresh rate | Runtime pacing can produce this at current frame times. 90 Hz does not universally impose a 45 FPS cap. Check GPU time/load as well as application FPS. |
 
-## Useful logs
+## Logs and checks
 
-- Proton: `steam-22380.log` in the game wrapper's `--state-dir` directory.
-- Fluorine: the dedicated instance's logs; check its prepared executable, prefix and FUSE launch.
-- TTWVR/DXVK: the managed prefix under `drive_c/users/steamuser/Documents/My Games/FalloutNV/`.
-- Addon: the private layer/helper runtime directory; feature evaluation and actual output application matter more than a loaded DLL.
-- For an FPS overlay, put `env DXVK_HUD=fps,frametimes` before `python3` in the native Steam command.
+Proton logs are under **fixes/state/steam-22380.log**. Fluorine's instance logs
+show its prepared command and mount failures. TTWVR logs are under the private
+prefix's `drive_c/users/steamuser/Documents/My Games/FalloutNV/`.
+Use `python3 fixes/launch-ttwvr.py --dry-run` to inspect manager/profile paths.
+For the FPS overlay, prepend `env DXVK_HUD=fps,frametimes` to the generated
+launch command.
 
-The launcher's `--dry-run` shows the selected manager, instance, profile and XDG
-directories without launching or writing files. Wrapper options are configured
-inside Fluorine; Steam Launch Options use `launch_fluorine.py`.
+The read-only `tools/inspect_ttwvr_upscaler.py <Linux-PID>` recognizes supported
+TTWVR builds. Successful initialization is not proof of fresh rendering: check
+both eyes, consecutive frames and head movement. See [DLSS evidence](author-dlss.md)
+and [native FSR evidence](native-vulkan-fsr.md).
 
 ## Undo a fix
 
-Close Fallout and Fluorine first. In `instance/ttwvr-linux.ini`, remove
-`openxr_bridge` to disable the bridge patch, or remove **both** `dxvk_renderer`
-and `dxvk_syswow64` to disable the performance patch. Relaunch through the native
-entry point. Steam's installed Proton files need no restoration.
+Use [the complete rollback](installation.md#6-roll-back), with Fallout and
+Fluorine closed. Installed Proton files and global runtime registration were
+never changed. Restore any Steam launch option you changed manually.
 
-For the compiler, remove `native_d3dcompiler47`, restore the two backed-up DLLs
-in the managed prefix, and refresh the private `syswow64` copy if retaining the
-DXVK overlay. Removing a fix may restore its original failure.
-
-For the addon, follow its [rollback steps](../neural/docs/STEAM.md#rollback).
-For a full return to the old Windows manager, use the
-[migration/rollback notes](native-fluorine.md#migrate-an-existing-mo2-installation)
-and [archived MO2 instructions](archive/mo2/README.md).
+The [custom addon](../archive/rendering-addon/README.md) and
+[Windows MO2 workflow](archive/mo2/README.md) are historical references.

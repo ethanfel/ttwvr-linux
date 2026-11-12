@@ -4,7 +4,7 @@ DLSS Quality/Balanced/Performance reconstruction and experimental queued stereo 
 are implemented as separate, live VR Settings controls. See
 [contracts, dependencies and validation](docs/SR-FRAME-GENERATION.md).
 
-The optional addon for the [native Fluorine setup](../docs/installation.md) adds
+The optional addon for the [native Fluorine setup](../../../docs/installation.md) adds
 **Off/DLAA/MSAA 2×/4×/8× and NR controls directly to VR Settings**. Install it
 as a mod in the VR profile with the matching OpenXR layer and helper. NR/DLAA
 and SR/FG changes apply live; MSAA needs a restart and excludes neural processing.
@@ -137,7 +137,7 @@ The helper requires working D3D12 and native D3DCompiler 47. NVIDIA features
 also require the driver NGX core and NVIDIA GPU visibility. Register the manifest **only in the copied prefix's 32-bit
 OpenXR implicit-layer registry view**. Do not apply that manifest to the native
 Linux OpenXR loader. The existing private Wine OpenXR bridge is still required.
-See the repository's [simulated runtime notes](../docs/simulated-vr.md).
+See the repository's [simulated runtime notes](../../../docs/simulated-vr.md).
 To install a validated build into the regular VR profile, follow the
 [Steam opt-in steps](docs/STEAM.md); the test installation is not inherited automatically.
 

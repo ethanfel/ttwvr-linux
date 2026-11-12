@@ -1,9 +1,14 @@
 # Author's native Vulkan FSR path on Proton
 
+For the current installation, use the [prepared-install tool](installation.md).
+It includes this repair together with author DLSS and the required Linux
+companions. Both exact 1.1.3 and [1.1.4](ttwvr-1.1.4.md) builds are supported.
+The detailed experiments below record the 1.1.3 diagnosis and validation.
+
 The TTWVR 1.1.3 renderer now reaches **embedded FSR 3.1.4 in the 32-bit game**,
 using the author's bundled custom DXVK and per-eye Vulkan contexts. Complete
 stereo images and movement in the reconstructed center have been captured.
-This is separate from [our D3D12 helper's FSR 3.1.5 path](fsr-integration.md).
+This is separate from [our D3D12 helper's FSR 3.1.5 path](../archive/rendering-addon/docs/fsr-integration.md).
 
 This remains an **isolated experiment**, not a normal-launch replacement.
 The regular Fluorine installation, Steam command, Titanfall installation and

@@ -1,6 +1,8 @@
 # Full-resolution DXVK performance fix
 
-For setup commands, see [Apply the Linux fixes](linux-fixes.md#3-dxvk-performance-patch).
+For current setup, use [the patch tool](installation.md#4-check-and-apply).
+This page records the earlier pool-only experiment; the author path also needs
+the opaque-fence patch, which the tool applies during its build.
 This page records the reason for the patch and its measurements.
 
 This source-built performance patch has passed an initial physical Quest 3

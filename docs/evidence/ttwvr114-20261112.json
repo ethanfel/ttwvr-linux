@@ -1,0 +1,128 @@
+{
+  "archive_sha256": "5a48c134222d334b37519bca93473c4566e1bd5349dd46fa1f18153578859ed1",
+  "combined_sha256": "e54dccb5e29e1361d36dd9f9a7ee23294b07663f29690cabbaff7168cbd62413",
+  "validation": "simulated Monado 90 Hz; both eyes, consecutive frames and translated pose; not physical headset validation",
+  "dlss_quality_200": [
+    {
+      "eye": 0,
+      "frames": [
+        2730,
+        2731,
+        2940,
+        2941
+      ],
+      "dimensions": [
+        5888,
+        4416
+      ],
+      "consecutive": 0.5542096028030482,
+      "motion": 0.8028264084775717,
+      "center_motion": 0.998520695494644,
+      "center_consecutive": 0.2782107799700693,
+      "shift_consecutive": 0.5275662764108774,
+      "sha256": [
+        "cfc95286ce15497a23f8849c8d2825634ed4c4a54ddd97d26b07446e36b63bec",
+        "9f3e342768f47f5363fc1780e733d13c931dd86d524bdf762a29ce52527b81dd",
+        "43ae3ed9542798c76887e396032f4ad2fdfc3a593bd44bcc7287b5b5a955912f",
+        "938dd603f2a7f995ddd69db43a4ff93ef4cc2089567f717afdb31adcbaa69979"
+      ]
+    },
+    {
+      "eye": 1,
+      "frames": [
+        2730,
+        2731,
+        2940,
+        2941
+      ],
+      "dimensions": [
+        5888,
+        4416
+      ],
+      "consecutive": 0.5519932612880041,
+      "motion": 0.8026940694903907,
+      "center_motion": 0.9985526937618148,
+      "center_consecutive": 0.2730209071754883,
+      "shift_consecutive": 0.5255566544704041,
+      "sha256": [
+        "739d7aa79118a478259056e143ff4f05801f47fcaedd09dd0005cd044652a6ac",
+        "ba224945cc758e797c93a143538ad2ff4906c6194adb2839f23970cb34f4f89f",
+        "dd969c580cac7b9b8cdb4fe246f61eaeff75df3dea4efd3f66c08c501a7c0589",
+        "4438c7a32d2abd2cacafa5ebe62cd5ad6ed9ebcffa8e0601cdeeb036d95b96e1"
+      ]
+    }
+  ],
+  "fsr_quality_100": [
+    {
+      "eye": 0,
+      "frames": [
+        2580,
+        2581,
+        2760,
+        2761
+      ],
+      "dimensions": [
+        2944,
+        2208
+      ],
+      "consecutive": 0.6264593055883743,
+      "motion": 0.8109806976606805,
+      "center_motion": 0.9996529418714556,
+      "center_consecutive": 0.3652060688405797,
+      "shift_consecutive": 0.6141182815945967,
+      "sha256": [
+        "c6be8e04d3168cbe77643549f16eacd18f1861d6c74adcd20e9d154503627f6e",
+        "b68f95ea0bff7cf8aac7fad4d415846d5a2b54ce2a906cbcda2e2634d4e0022d",
+        "f04be3f57e12ab01ae0503f91276ea4e8b890265d1b7c7c43abbf2e9834ac4ca",
+        "ecde83329122b07202020a7cc411687f392017a66020fb55072f07af3d3e401e"
+      ]
+    },
+    {
+      "eye": 1,
+      "frames": [
+        2580,
+        2581,
+        2760,
+        2761
+      ],
+      "dimensions": [
+        2944,
+        2208
+      ],
+      "consecutive": 0.6256481187480308,
+      "motion": 0.8110608471664303,
+      "center_motion": 0.9995151031821046,
+      "center_consecutive": 0.3566453016698173,
+      "shift_consecutive": 0.6127432791331916,
+      "sha256": [
+        "6a0e124d3618d9fa591cee5f2cdccb381b76e1197fc1d728e963d814bebac1fd",
+        "86e112a74d3178308a27c9d4ae457ea8fa1a431b5d94b6eddea9b9918965b169",
+        "eb995c1b998dbc158d5886590ff5da5c5f76cc179aa854185350809d7671515f",
+        "9bc351286640190a1eb6fa907464763f78173d652837017059a6a6da21c43dc7"
+      ]
+    }
+  ],
+  "ngx_evaluations": [
+    {
+      "feature": 3,
+      "result": "0x1"
+    },
+    {
+      "feature": 4,
+      "result": "0x1"
+    },
+    {
+      "feature": 3,
+      "result": "0x1"
+    },
+    {
+      "feature": 4,
+      "result": "0x1"
+    }
+  ],
+  "restoration": {
+    "private_files_restored": 13,
+    "regular_files_unchanged": 65,
+    "test_processes_closed": true
+  }
+}

@@ -141,6 +141,20 @@ os.execvpe(command[0], command, os.environ)
                 self.assertEqual(child['nvapi'], '1' if enabled else '0')
                 self.assertEqual(child['hide_nvidia'], '0' if enabled else '1')
 
+    def test_author_path_disables_archived_layer_and_enables_nvapi(self):
+        (self.mo2.parent / 'ttwvr-linux.ini').write_text(
+            '[VR]\nauthor_renderer=true\nneural_rendering=true\n')
+        result = self.launch([self.proton, 'waitforexitandrun', self.game],
+                             '--mode', 'vr', '--dry-run',
+                             environment={'ENABLE_TTWVR_NEURAL_RENDERING': '1',
+                                          'PROTON_ENABLE_NVAPI': '0'})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        env = json.loads(result.stdout)['environment']
+        self.assertIsNone(env['ENABLE_TTWVR_NEURAL_RENDERING'])
+        self.assertEqual(env['DISABLE_TTWVR_NEURAL_RENDERING'], '1')
+        self.assertEqual(env['PROTON_ENABLE_NVAPI'], '1')
+        self.assertEqual(env['PROTON_HIDE_NVIDIA_GPU'], '0')
+
     def test_native_compiler_flag_is_vr_only(self):
         for mode in ('vr', 'flat'):
             result = self.launch([self.proton, 'waitforexitandrun', self.game],

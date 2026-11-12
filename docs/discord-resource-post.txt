@@ -1,204 +1,93 @@
-DISCORD RESOURCE POST — TTWVR ON LINUX
-Updated for TTWVR 1.1.3, author DLSS/Vulkan FSR research and the rendering addon, 2026-11-12.
+TTWVR LINUX — DISCORD RESOURCE POST
+Updated 2026-11-13: original renderer, author DLSS / native Vulkan FSR, TTWVR 1.1.4.
+Suggested title: TTWVR on Linux — prepare your install, then apply the Linux patch
+Copy each numbered message separately. Links are public; the TTWVR download thread requires Discord access.
 
-Suggested forum title: TTWVR on Linux — Fluorine + WiVRn setup and rendering addon
+----- MESSAGE 1 -----
+**TTWVR on Linux: original renderer + DLSS / FSR**
 
-Copy the nine messages below separately, without the separator labels.
-Each message is under 2,000 UTF-16 code units. Paths in the Steam command are
-examples to replace; the linked guide contains the full configuration.
+This project patches a prepared Tale of Two Realities / TTWVR installation for **native Fluorine + Proton + WiVRn**.
 
-===== MESSAGE 1 — COPY BELOW =====
+The focus is the original mod's VR menu, controls and renderer:
+• Author's bundled Vulkan/DXVK renderer.
+• DLSS through the author's 64-bit **D3D11 NGX helper**, with repaired shared output and GPU synchronization.
+• Native **Vulkan FSR 3.1.4** in the 32-bit game.
+• Original resolution, upscaler-level and sharpness controls.
 
-**TTWVR on Linux — native Fluorine + WiVRn**
+DLSS is not a new direct Vulkan NGX implementation. Our previous custom D3D12 NR/DLAA/SR/FG addon is archived and is not needed for this setup.
 
-A Linux guide and compatibility patches for **Tale of Two Wastelands** in VR, using KUPOkinz's **Tale of Two Realities (TTWVR)**. Fluorine manages mods natively; Proton runs Fallout.
+**Repository:** <https://github.com/ethanfel/ttwvr-linux>
+**Start here:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/installation.md>
 
-**Project:** <https://github.com/ethanfel/ttwvr-linux>
-**Installation:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/installation.md>
+You supply the games, TTW, utilities and original TTWVR files. The Linux tool creates a separate patched mod, private compatibility files, a launcher and rollback records. No game/mod/NVIDIA DLLs are bundled.
 
-**What it adds**
-• Fluorine/FUSE launch integration with separate flat and VR profiles.
-• Fixes for the observed save-loading crash and black headset image after the menu.
-• A DXVK memory-pool patch for performance at the original eye resolution.
-• Optional AA, NR, DLSS Quality and stereo FG controls in **VR Settings**.
+----- MESSAGE 2 -----
+**1. Prepare your install**
 
-**Requirements / tested versions**
-• English New Vegas Ultimate Edition and Fallout 3 GOTY, with all DLC.
-• TTW 3.4, its required utilities, and the supplied TTWVR 1.1.3 build; 1.1.0 remains supported.
-• Fluorine 0.4.1 with FUSE, WiVRn and xrizer.
-• Proton Experimental **`experimental-11.0-20261105c-x86_64`**, Steam Linux Runtime 4.
+• Own English New Vegas Ultimate and Fallout 3 GOTY with all DLC.
+• Install TTW and all required utilities/presets. Use FNV4GB **for Proton**.
+• Prepare native **Fluorine 0.4.1**, its TTW plugin, **FUSE**, a dedicated game copy and initialized private Proton prefix.
+• Make **TTW - Flat** work first: Utilities Checker passes, intro works, save/reload works. Keep that profile and its saves.
+• Duplicate it as **TTW - VR**. Install and enable the complete original **TTWVR 1.1.4 or 1.1.3** archive as a separate mod.
+• Set up WiVRn and xrizer. Use regular mod files or reflinks: the tested Fluorine skips symlinked BSA assets.
 
-Binary patches check exact hashes; newer Proton builds are not automatically compatible. This manual setup includes build steps. Obtain games/mods separately.
-
-**Updating to 1.1.3:** update TTWVR plus the matching addon DLL, OpenXR layer and helper together. Preserve your INIs and retain the old mod for rollback. The Steam command stays unchanged. The archive's metadata still says 1.1.2; its DLL hash identifies the supported build.
-**Upgrade guide:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/ttwvr-1.1.3.md>
-
-**TTW requirements:** <https://thebestoftimes.moddinglinked.com/intro.html>
+**TTW guide:** <https://thebestoftimes.moddinglinked.com/intro.html>
+**Native TTW installer:** <https://github.com/SulfurNitride/TTW_Linux_Installer>
 **Fluorine:** <https://github.com/SulfurNitride/Fluorine-Manager/releases/tag/v0.4.1>
-**Original TTWVR thread:** <https://discord.com/channels/747967102895390741/1560413111423344730>
+**TTWVR download:** <https://discord.com/channels/747967102895390741/1560413111423344730>
 
-===== END MESSAGE 1 =====
+The exact tested Proton build is **experimental-11.0-20261105c-x86_64**, with Steam Linux Runtime 4. Newer Experimental builds are not automatically compatible; the tool checks hashes and stops on unknown versions.
 
-===== MESSAGE 2 — COPY BELOW =====
+Install Python 3.11+, Git, bubblewrap, FUSE 3, unshare, Meson, Ninja, glslang and i686 MinGW-w64 C/C++ with POSIX threads. See the full guide for paths and prerequisites.
 
-**Setup and Steam launch**
+----- MESSAGE 3 -----
+**2. Apply the Linux patch**
 
-1. Launch both unmodded games once, then close them. Prepare a dedicated Fluorine instance and game/prefix copies; preserve your existing saves.
-2. Install TTW and the required utilities using the guide. Use **FNV4GB for Proton**, the native TTW converter, and the internal game identifier **`TTW`**.
-3. Create **`TTW - Flat`** with profile-specific INIs/saves. Verify “All utilities installed!”, reach gameplay and test a save.
-4. Duplicate it as **`TTW - VR`**. Install TTWVR only in this profile. Copy a save together with its matching `.nvse` companion if continuing an existing game.
-5. Apply the native D3DCompiler 47, OpenXR bridge and DXVK pool fixes. Put their settings in **`instance/ttwvr-linux.ini`**, beside `ModOrganizer.ini`.
-6. Configure the executable's **Wrapper options inside Fluorine**, then set Steam's Launch Options below. Both stages are required.
-
-**Patch commands:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/linux-fixes.md>
-**Wrapper and native launch setup:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/native-fluorine.md>
-
-Steam → New Vegas → Properties → Launch Options; replace every example path:
-```text
-python3 "/path/to/ttwvr-linux/tools/launch_fluorine.py" --manager "/path/to/fluorine-manager/fluorine-manager" --instance "/path/to/ttwvr/instance" --config-home "/path/to/ttwvr/config" --data-home "/path/to/ttwvr/share" -- %command%
+Clone the repository, copy its setup template, and edit the paths to your prepared install:
+```sh
+git clone https://github.com/ethanfel/ttwvr-linux.git
+cd ttwvr-linux
+cp tools/setup.example.json setup.json
+python3 tools/setup_linux.py check setup.json
 ```
 
-Connect the headset to WiVRn, then launch from Steam. The default selects **TTW - VR** and runs the executable named **Tale of Two Wastelands**.
+Run as your desktop user. Close Fallout and Fluorine, then:
+```sh
+python3 tools/setup_linux.py apply setup.json
+```
 
-Add `--manager-only` before `-- %command%` to manage mods without launching. For flat play, close Fallout and Fluorine, then use `--profile "TTW - Flat"` there instead.
+The first run prepares checksum-pinned shader compilers and builds the patched DXVK dependency. It keeps the original mod and settings, creates a Linux-patched copy, configures Fluorine and prints your launch command.
 
-===== END MESSAGE 2 =====
+**3. Connect WiVRn and launch**
+```sh
+python3 "/your/linux-fixes/launch-ttwvr.py"
+```
+Use the exact path printed by the tool. For Steam, copy **linux-fixes/steam-launch-options.txt** into New Vegas's Launch Options. Fluorine mounts the mods and starts the game automatically.
 
-===== MESSAGE 3 — COPY BELOW =====
+Choose DLSS or FSR in the original **VR Settings**. Existing resolution, sharpness and calibration settings are preserved. The tool does not force 200% or a fixed FPS target.
 
-**Optional Rendering Addon**
+To prepare downloads/builds separately, use `python3 tools/setup_linux.py prepare setup.json` before apply. The checked cache is reused.
 
-After base VR works, install **TTWVR Rendering Addon** in Fluorine's VR profile with its matching OpenXR layer/helper and private-prefix registration. Set `neural_rendering=true` in the instance compatibility INI. Keep your Steam command.
+**Full instructions:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/installation.md>
 
-**Addon setup:** <https://github.com/ethanfel/ttwvr-linux/blob/main/neural/docs/STEAM.md>
+----- MESSAGE 4 -----
+**Validation, troubleshooting and rollback**
 
-In **1.1.3**, open **VR Settings** directly from the main/pause menu, beside Settings. In 1.1.0, use **Settings → VR**. Our controls follow Resolution:
-• **Anti-aliasing:** Off, native-resolution DLAA, MSAA 2×/4×/8×.
-• **Neural Rendering:** on/off, model A/B, processing scale, strength, tone and detail.
+1.1.3: author DLSS Quality/Balanced/Performance and native FSR passed fresh stereo/consecutive-frame and head-motion checks. The user confirmed good physical WiVRn output at 200% / DLSS Quality.
 
-NR/DLAA/SR/FG apply live. **MSAA needs a restart** and excludes neural processing. Distributed defaults leave effects off. NR processing scale preserves final eye resolution.
+1.1.4: DLSS Quality at 200% and FSR Quality at 100% passed isolated gameplay checks, with both eyes and successful actual NGX evaluations. Physical 1.1.4 confirmation is still separate. Voice, multiplayer, every menu setting, other hardware and long sessions are not fully validated. Simulated FPS is not a streaming benchmark.
 
-**Validation and limits**
-• 1.1.3: gamepad menu/Back/resume, both eyes on consecutive NR/DLAA frames, and MSAA 4× after restart passed isolated Monado GPU tests. Physical-headset confirmation of this update is pending.
-• Stock DLSS/FSR stays disabled. Separate experimental **DLSS Quality** and **Frame gen.** rows are now available; details in message 5.
-• DLAA softness/haze at distance remains under investigation; 1.1.3 is not a demonstrated fix.
-• Earlier headset testing used RTX 5090, Ryzen 9 5950X and Quest 3. Other hardware and sustained performance need testing.
+The setup tool was tested with disposable real files, generated launch configuration and rollback. It does not replace TTW's utility checker.
 
 **Troubleshooting:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/troubleshooting.md>
-**Archived MO2 setup:** <https://github.com/ethanfel/ttwvr-linux/tree/main/docs/archive/mo2>
+**Evidence:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/compatibility.md>
 
-Credits: KUPOkinz, the TTW team, Fluorine and WiVRn. Neural addon reference: TF2VRNeuralRendering. Original addon code: GPL-3.0-only. NVIDIA SDKs/runtime DLLs are separate dependencies under NVIDIA's terms; game/mod binaries are not bundled.
-
-===== END MESSAGE 3 =====
-
-===== MESSAGE 4 — COPY BELOW =====
-
-**Experimental neural performance update**
-
-The addon now offers a GPU handoff between the 32-bit game and 64-bit neural helper. It replaces CPU completion waits with GPU dependencies while retaining full eye resolution and the chosen NR/DLAA settings.
-
-Earlier matched 90 Hz simulated corridor test: NR **23.5 → 38.6 FPS**, NR + DLAA **16.0 → 39.2 FPS**, DLAA **35.8 → 38.6 FPS**. Headset gains still need checking.
-
-**Measurements, Proton research and rollback:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/proton-neural-performance.md>
-
-Close the game/helper, back up the installed files, and install the matching new `TTWVRNeuralRenderingLayer.dll` + `neural_host.exe`. Keep your existing runtime INI and NVIDIA DLLs. Layer/helper protocol versions must match.
-
-Add to the runtime INI, then restart:
-```ini
-[diagnostics]
-gpu_handoff=1
+Close Fallout and Fluorine before rollback:
+```sh
+python3 tools/setup_linux.py rollback "/your/linux-fixes/transaction.json"
 ```
-Set it to `0` and restart to restore CPU completion waits. The distributed default remains off. Keep the same Steam command and Fluorine profile.
+It restores original configuration/compiler files and mod selection. Saves are untouched; private build/mod copies are retained. Restore your previous Steam launch option separately. Rollback stops if later edits would be overwritten; the guide explains the backed-up `--force` option.
 
-**Evidence:** 32 asynchronous HDR/depth round trips passed 393,216 pixel checks with zero mismatches. In-game comparisons use the same corridor and full 2944×2208 eye targets on simulated Monado; they do not predict WiVRn/Quest FPS or comfort. Both eyes and consecutive frames are checked separately from timing.
-
-The newer SR/FG integration uses the same GPU handoff, with matching layer/helper files (currently **protocol 8**). See message 5 for its separate 120 Hz measurements. The stock upscaler stays disabled and DLAA's distant haze remains unresolved.
-
-===== END MESSAGE 4 =====
-
-===== MESSAGE 5 — COPY BELOW =====
-
-**DLSS presets + experimental stereo frame generation**
-
-VR Settings now has **DLSS SR → Off / Quality / Balanced / Performance**, plus **Frame gen. → 2x (experimental)**. Both features default off and switch live. Per-eye scene inputs are **1963×1472 / 1708×1281 / 1472×1104**, reconstructed to **2944×2208**. Final HUD/output stays native. This adapter supports that output size only.
-
-SR uses its own temporal reconstruction and excludes NR/DLAA. FG is independent and can run with SR. Active MSAA excludes neural processing. Off restores native rendering and ordinary pacing.
-
-**RTX 5090, simulated corridor:** at 120 Hz, native was ~58 app FPS and Quality ~48. Quality+FG gave ~38 real + 38 generated stereo pairs/s; ~17 repeats/s inflated submissions to ~92. At 90 Hz, native/Quality were ~39 FPS and Quality+FG ~42 real + 42 generated, with 1–2 repeats/s. Quality cost more GPU power than effects off. Repeats are not generated frames.
-
-Both new presets passed consecutive-eye captures with matching guides and reconstructed output. **Headset motion, latency, WiVRn streaming and comfort still need validation.** A rapid preset-cycle test with FG stalled on quit; FG teardown is not fully reliable. DLAA haze is not fixed.
-
-Close the game before updating the matching **protocol-8 layer/helper**; preserve your INI. `nvngx_dlss.dll` supplies SR/DLAA; obtain `nvngx_dlssg.dll` separately for FG. Keep the same Steam command. No NVIDIA/game binaries are distributed.
-
-**Preset checks/results:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/dlss-presets.md>
-**Build/dependencies:** <https://github.com/ethanfel/ttwvr-linux/blob/main/neural/docs/SR-FRAME-GENERATION.md>
-
-===== END MESSAGE 5 =====
-
-===== MESSAGE 6 — COPY BELOW =====
-
-**Bundled Vulkan/DLSS investigation — experimental, not a release**
-
-The supplied TTWVR 1.1.3 renderer/helper was retested under Proton. Guarded loader edits enable its custom DXVK worker; a private fence experiment reaches successful D3D11 NGX evaluations.
-
-**The apparent FPS gain was rejected:** DLSS submitted about 64 frames/s versus 39 for native fallback, but both eye images stayed byte-identical when the simulated headset moved. The FSR control changed about 85% of pixels in both eyes. Successful evaluation and increasing frame counters did not prove fresh output.
-
-No diagnostic renderer/fence patch is enabled in normal Fluorine launches. Your existing addon, Steam command and WiVRn runtime selection stay the same. The author's worker scheduling and D3D11 backend remain useful directions, but shared-image transfer and synchronization need fixing before a performance claim or headset test.
-
-**Evidence and details:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/bundled-renderer-113.md>
-
-===== END MESSAGE 6 =====
-
-===== MESSAGE 7 — COPY BELOW =====
-
-**FSR 3.1.5: a working first path**
-
-The addon now adds **VR Settings → FSR SR → Off / Quality / Balanced / Performance**, beside DLSS. Presets switch live. Input sizes are **1962×1472 / 1731×1298 / 1472×1104** per eye, reconstructed to **2944×2208**. HUD/output stays full size. Only that output layout is supported.
-
-Close Fallout/helper, back up your runtime and install the matching **protocol-8 layer/helper**. Copy `NVSE/Plugins/TTWVR/amd_fidelityfx_upscaler_dx12.dll` from your own TTWVR 1.1.3 download into the addon's `runtime/` directory. Keep the same Steam command. No diagnostic Wine fence patch is needed; no AMD/game/NVIDIA DLLs are distributed here.
-
-FSR owns temporal AA and excludes NR, DLAA, DLSS and FG. Active MSAA requires a restart before FSR can run. Off or missing-runtime failure keeps native rendering available.
-
-**Measured, not promised:** on the RTX 5090 with simulated Monado at 90 Hz, native, all FSR presets and DLSS Quality stayed around **39 app FPS**. FSR Quality used ~120 W versus DLSS Quality ~131 W, but native used ~87–94 W. This is not an FPS win over native. Both eyes, consecutive frames, headset movement and missing-DLL bypass passed isolated checks.
-
-Headset motion/comfort, fog/particles and text still need review. No reactive/transparency mask or sharpening is supplied yet. DLAA's reported haze is not fixed by this work. Frame generation stays off with FSR.
-
-**Setup, source and measured results:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/fsr-integration.md>
-
-===== END MESSAGE 7 =====
-
-===== MESSAGE 8 — COPY BELOW =====
-
-**Author's Vulkan FSR: working experimental path**
-
-We now have **FSR 3.1.4 running inside TTWVR's 32-bit game through the author's bundled custom DXVK**. This is separate from the addon/helper's FSR 3.1.5 above. It reconstructs a central crop and composites the peripheral image.
-
-The Linux patches initialize the embedded backend and preserve 64-bit Vulkan image, pipeline and constant-buffer handles. Those conversions caused a crash and then a black central region. Complete stereo captures now show fresh content, including movement in the reconstructed center of both eyes.
-
-A private DXVK change handles the bridge's increasing shared GPU timelines. **Stock Wine stays intact**; the earlier broad Wine fence patch is unnecessary here. A standalone 32-bit/64-bit test passed 64 GPU synchronization round trips. This is not a general fix for rewinding D3D fences.
-
-Fresh runs on RTX 5090 / simulated Monado at 90 Hz measured **native 39.7 app FPS; FSR Quality 52.5 (~82 W); Balanced 61.7 (~90 W)**, all with **2944×2208 output per eye**. This is not a Quest/WiVRn headset benchmark, and the author's cropped processing is a different workload from our helper path.
-
-**Experimental and isolated:** the regular Fluorine launch stays unchanged. Do not combine both processing paths or overwrite loaded DLLs. Headset motion/comfort, ghosting, fog, Pip-Boy text and long sessions still need review. The DLSS repair follows in message 9; frame generation is off here.
-
-Exact-build patch generators, source notes, captures, setup and measurements:
-<https://github.com/ethanfel/ttwvr-linux/blob/main/docs/native-vulkan-fsr.md>
-
-===== END MESSAGE 8 =====
-
-===== MESSAGE 9 — COPY BELOW =====
-
-**Author's DLSS path: frozen output fixed**
-
-The author's bundled Vulkan renderer and D3D11 DLSS helper now produce fresh stereo output under Proton. DLSS itself was working; the plugin selected direct headset output without usable imported headset images, leaving only 16×16 fallback textures. The patch keeps full-size shared output instead.
-
-Both eyes, consecutive frames and simulated head movement pass in Quality, Balanced and Performance. Successful NGX evaluations alternate per-eye features. No CPU image readback is added to normal rendering, and stock Wine stays intact. An optional combined patch also retains the native Vulkan FSR repair.
-
-At 2944×2208 output per eye, RTX 5090 / simulated Monado with its reported interval held at 90 Hz measured **native 52.1 app FPS; DLSS Quality 67.4; Balanced 62.1; Performance 57.2**. These are individual samples, not a headset forecast. Adaptive runtime pacing can change the result; full timings, GPU power and caveats are documented. The author reconstructs a central crop and composites the periphery.
-
-**Experimental and isolated:** regular Fluorine launches remain unchanged. Headset comfort, peripheral coverage, ghosting, fog, text and long sessions still need testing. Frame generation remains off for this author-path test. No game/mod/NVIDIA DLLs are distributed.
-
-Exact-build patch generator, captures, setup and evidence:
-<https://github.com/ethanfel/ttwvr-linux/blob/main/docs/author-dlss.md>
-
-===== END MESSAGE 9 =====
+Credits: KUPOkinz, TTW, Fluorine, Wine/Proton, DXVK, WiVRn and xrizer.
+**Archived custom addon:** <https://github.com/ethanfel/ttwvr-linux/tree/main/archive/rendering-addon>
+Its original code remains GPL-3.0-only; NVIDIA SDKs/runtime DLLs are separate dependencies under NVIDIA's terms. The Windows MO2 workflow also remains archived.

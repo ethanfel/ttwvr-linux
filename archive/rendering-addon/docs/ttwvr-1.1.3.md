@@ -1,6 +1,6 @@
 # TTWVR 1.1.3 compatibility and menu update
 
-[← README](../README.md) · [Addon controls](../neural/docs/VR-SETTINGS.md)
+[← README](../../../README.md) · [Addon controls](../neural/docs/VR-SETTINGS.md)
 
 The supplied TTWVR1.1.3.zip moves **VR Settings** to the main/pause menu, beside
 Settings. The Rendering Addon now follows that menu and retains its seven rows

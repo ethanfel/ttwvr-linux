@@ -1,68 +1,53 @@
-# Tested configuration
+# Tested configuration and feature coverage
 
 [← README](../README.md) · [Installation](installation.md)
-
-Primary manager: **native Fluorine 0.4.1, FUSE**, functionally confirmed on
-**2026-11-12**. Initial physical headset measurements were recorded on
-**2026-11-11** with the now-archived Windows MO2 setup. These are tested versions,
-not a claim that every component must use exactly this version. The binary
-patches do require the matching Proton files.
 
 | Component | Tested version / hardware |
 |---|---|
 | Linux | EndeavourOS / Arch, KVM guest |
 | GPU / driver | RTX 5090 / NVIDIA 615.78.08 |
-| CPU | Ryzen 9 5950X |
-| Headset | Quest 3, 120 Hz |
+| CPU / headset | Ryzen 9 5950X / Quest 3 |
 | Streaming runtime | WiVRn 26.9 |
-| Proton | `experimental-11.0-20261105c-x86_64`, WoW64 enabled |
-| Steam container | Steam Linux Runtime 4 |
-| xrizer | `0.6.r5.g63fc7eb`, 64-bit |
-| Native manager | Fluorine 0.4.1, FUSE backend |
-| Historical manager | Windows MO2 2.5.2 portable; [archived workflow](archive/mo2/README.md) |
-| TTW / TTWVR | 3.4 / supplied 1.1.3 installed; verified 1.1.0 remains supported |
-| xNVSE | 6.4.9 |
-| DXVK source | `cf0a0d90f8965147741ad17dcd0b263817572ab3`, with the pool patch |
+| Proton | Exact `experimental-11.0-20261105c-x86_64`, WoW64 |
+| Container / startup probe | Steam Linux Runtime 4 / xrizer `0.6.r5.g63fc7eb`, 64-bit |
+| Native manager | Fluorine 0.4.1, FUSE |
+| TTW / xNVSE | 3.4 / 6.4.9 |
+| TTWVR | Supplied 1.1.3 and 1.1.4 archives, exact hashes |
+| DXVK patch source | `cf0a0d90f8965147741ad17dcd0b263817572ab3`, mapped-pool and opaque-fence changes |
 
 ## Current status
 
-| Check | Result |
+| Feature / check | Evidence |
 |---|---|
-| Native Fluorine launch and migrated save | Passed; confirmed by the user, without a new measured headset benchmark |
-| TTWVR 1.1.3 upgrade | Installed with adapted addon/layer; 53 checked settings/save files unchanged. Revised menu, stereo NR/DLAA and MSAA 4× passed isolated tests; headset confirmation pending. |
-| Flat TTW intro and utilities | Passed in the original setup; retained through migration |
-| VR save loading | Passed with native D3DCompiler 47 |
-| Headset gameplay and tracking | Passed with the OpenXR bridge patch |
-| Earlier full-resolution performance | 59.8 FPS capture at 120 Hz with Windows MO2; user reported clear, very smooth gameplay. Not a Fluorine benchmark. |
-| Capture resolution | 2944×2208 per eye, `Resolution=150%` in isolated tests; the upgrade preserves the regular profile's chosen resolution |
-| TTWVR built-in DLSS / FSR upscaler | Disabled in normal addon setup; [native Vulkan FSR experiment](native-vulkan-fsr.md) produces fresh stereo output; [author DLSS repair](author-dlss.md) also passes consecutive stereo and movement checks in isolation |
-| Rendering Addon in Fluorine | Installed; native VR Settings rows, gamepad navigation, live NR/DLAA/SR/FG, restart for MSAA |
-| Scene MSAA 2×/4×/8× | Matching full-size color/depth sample counts verified in isolated GPU runs |
-| NR and native-resolution DLAA | Both eyes/consecutive frames verified in isolated gameplay captures; DLAA softness/haze at distance remains under investigation |
-| DLSS SR Quality / Balanced / Performance | Verified per-eye inputs 1963×1472 / 1708×1281 / 1472×1104, reconstructed to 2944×2208; live switching and consecutive stereo captures tested |
-| Stereo FG | Actual generated/real stereo delivery verified under simulated Monado 120 Hz; repeats counted separately; headset quality/latency untested; rapid preset cycling with FG can stall on quit |
-| Blood-effect depth copy | Warnings remain |
-| Complete controls / calibration / Pip-Boy checks | Pending |
-| Long sessions, outdoor benchmarks, other hardware | Pending |
-| Physical 90 Hz test with the final patches | Pending |
+| Native Fluorine, migrated saves, VR gameplay | Confirmed by the user |
+| Flat TTW intro and utilities | Passed before VR setup |
+| Author DLSS Quality / Balanced / Performance | 1.1.3: fresh consecutive frames in both eyes, translated-head test, successful per-eye NGX evaluations |
+| Author native Vulkan FSR | 1.1.3: Quality/Balanced, consecutive stereo/movement, no native-FSR failure; 1.1.4: Quality at 100% |
+| Resolution slider | 1.1.3: 100/150/200%; outputs 2944×2208 / 4480×3360 / 5888×4416 in this runtime configuration |
+| Physical author-path image quality | User confirmed good 200% DLSS Quality output with 1.1.3; no controlled sustained headset benchmark |
+| 1.1.4 port | DLSS Quality 200% and FSR Quality 100% passed isolated stereo/movement checks; successful NGX calls for DLSS; physical confirmation pending |
+| Original menu/settings | Preserved; 1.1.4 adds Turn Speed and Loot Menu keys. Every setting's behavior has not been exhaustively tested. |
+| Linux setup tool | Fresh dependency build, apply/rollback on disposable real files, Qt argument parsing, generated launch dry-run and real namespace overlays; see [tool validation](setup-validation.md) |
+| Voice, multiplayer, all calibration/control combinations | Not comprehensively validated |
+| Long sessions, outdoor frame times, other GPUs/distros | Pending |
+| Custom NR/DLAA/SR/FG | Archived; not part of the current patch workflow |
 
-TTWVR uses **OpenXR directly**. xrizer is used by Proton's earlier VR startup
-probe. No global OpenXR/OpenVR runtime change is required by the launcher.
+The author renderer uses Vulkan, DLSS evaluation uses its D3D11 helper, and FSR
+runs directly in Vulkan. No custom D3D12 processing helper is needed.
+TTWVR uses OpenXR directly; xrizer serves Proton's earlier VR startup probe.
+The launcher does not replace global runtime registration.
 
 ## Evidence
 
-- [Author DLSS output-routing repair and simulated results](author-dlss.md)
+- [1.1.4 patch hashes, stereo captures and settings preservation](ttwvr-1.1.4.md)
+- [Author DLSS output diagnosis and measurements](author-dlss.md)
+- [Native Vulkan FSR and shared-fence repair](native-vulkan-fsr.md)
+- [Native save-mount integration](native-fluorine.md#save-mount-compatibility-fix)
+- [OpenXR bridge](openxr-layers.md), [shader compiler](simulated-vr.md)
+- [Earlier mapped-pool A/B and physical headset result](dxvk-pools.md)
+- [Archived custom rendering experiments](../archive/rendering-addon/README.md)
 
-- [DLSS SR and queued stereo FG evidence](sr-frame-generation.md)
-- [TTWVR 1.1.3 compatibility and menu update](ttwvr-1.1.3.md)
-- [Native Fluorine configuration, save mount and migration validation](native-fluorine.md)
-- [Rendering Addon controls, jitter correction and stereo tests](../neural/docs/VR-SETTINGS.md)
-- [OpenXR patch and regression results](openxr-layers.md)
-- [DXVK control comparison and physical headset result](dxvk-pools.md)
-- [Compiler workaround and save-load test](simulated-vr.md)
-- [Earlier investigation and supplied binary hashes](investigation.md)
-- [Installed utility archive records](guide-dependencies.json)
-
-FPS captures are scene snapshots, not average FPS benchmarks. The patched
-90 Hz simulated control comparison was 18.8 → 44.1 FPS. The physical 120 Hz
-result was a separate test; it should not be treated as the same comparison.
+The earlier 59.8 FPS physical capture at 120 Hz used Windows MO2 and the
+pool-only path. It is not a benchmark of the current author path or Fluorine.
+Monado's simulated pacing differs from WiVRn; do not treat simulated application
+FPS or an output-resolution change as a controlled headset performance result.

@@ -1,5 +1,13 @@
 # Changes
 
+## Author-renderer focus and prepared-install Linux patch — 2026-11-13
+
+- Make native Fluorine and the original TTWVR Vulkan renderer, D3D11-helper DLSS and native Vulkan FSR the primary setup.
+- Add `setup_linux.py` preflight, pinned dependency preparation, separate patched mod, launch configuration, generated Steam command and journaled rollback. Preserve original mods/settings/saves and installed Proton.
+- Port exact-build patches and diagnostics to TTWVR 1.1.4; verify consecutive stereo output, head motion and actual NGX success. Retain 1.1.3 hashes.
+- Move the custom NR/DLAA/SR/FG/D3D12-helper experiments into `archive/rendering-addon`, preserving source, licensing and evidence. Windows MO2 remains archived.
+- Rewrite the installation and Discord resource guides around preparation followed by Linux patching.
+
 ## Author DLSS shared-output repair — 2026-11-12
 
 - Repair the author renderer's stale DLSS output by retaining full-size shared textures when direct headset images are unavailable. Keep the bundled Vulkan worker, D3D11 NGX helper and scoped opaque GPU fences.
@@ -18,7 +26,7 @@
 - Add live Off / Quality / Balanced / Performance choices in the native **DLSS SR** row and CLI. Preserve existing enabled settings; omitted mode defaults to Quality.
 - Use NGX-verified 1963×1472 / 1708×1281 / 1472×1104 inputs with 2944×2208 output, mode-specific NGX quality hints, matching guide grids and 18/24/32 jitter phases.
 - Rebuild scene resources only at stereo boundaries after the old helper exits; retain native bypass and per-eye history reset. Matching layer/helper protocol is now 7.
-- Validate consecutive stereo captures, alpha preservation, actual SR/FG output and controller switching; record [preset measurements and limitations](docs/dlss-presets.md).
+- Validate consecutive stereo captures, alpha preservation, actual SR/FG output and controller switching; record [preset measurements and limitations](archive/rendering-addon/docs/dlss-presets.md).
 - Record an unresolved FG quit stall after rapid preset cycling. FG remains optional and defaults off.
 
 ## 90 Hz DLSS/FG comparison — 2026-11-12
@@ -34,14 +42,14 @@
 - Adapt the FG backend to TTWVR camera and pixel-motion conventions, share final eye textures through separate GPU timelines, and queue private generated/real stereo pairs with tracked OpenXR ownership.
 - Protect the D3D11 context during queued delivery; drain queued GPU copies, renew presentation swapchains after menus, and stop the helper before runtime teardown. Preserve bypass and ordinary pacing when disabled. Layer/helper protocol is now 6.
 - Add stereo delivery/camera tests and native/SR-guide moving-object probes. Record actual consecutive-eye captures and distinct/generated/repeated presentation counts.
-- Publish [120 Hz measurements and limits](docs/sr-frame-generation.md): SR alone did not improve the measured corridor; generated frames add buffering and need headset validation. DLAA haze remains unresolved.
+- Publish [120 Hz measurements and limits](archive/rendering-addon/docs/sr-frame-generation.md): SR alone did not improve the measured corridor; generated frames add buffering and need headset validation. DLAA haze remains unresolved.
 
 ## Neural GPU handoff and Proton research — 2026-11-12
 
 - Add an opt-in opaque Vulkan timeline handoff between the 32-bit game and 64-bit NGX helper, preserving GPU ordering without CPU completion waits. Matching protocol-4 layer/helper required; distributed default remains off.
 - Materialize deferred DXVK depth clears before external copies; verify HDR/depth/output across 32 asynchronous round trips with deferred readback and zero pixel mismatches.
 - Reuse the helper completion query, avoid implicit polling flushes, and batch output synchronization with the resolve.
-- Add optional OpenXR CPU-span timing and document matched full-resolution tests, capture evidence, current Proton/NR findings and rollback in [the investigation](docs/proton-neural-performance.md).
+- Add optional OpenXR CPU-span timing and document matched full-resolution tests, capture evidence, current Proton/NR findings and rollback in [the investigation](archive/rendering-addon/docs/proton-neural-performance.md).
 - Verify the reference FG backend in the isolated Proton prefix; no TTWVR frame generation or Super Resolution integration is enabled. DLAA haze still needs headset assessment.
 
 ## TTWVR 1.1.3 deployment and resource guide — 2026-11-12
@@ -57,7 +65,7 @@
 - Keep addon controls inside the new top-level VR Settings entry; verify stock option labels before hiding upscaler rows.
 - Adapt the native D3D9 device, motion-guide and MSAA startup hooks to the new build. Rendering algorithms and final resolution are unchanged.
 - Preserve the separate DLAA haze investigation; this compatibility update does not claim to fix it.
-- Document [upgrade steps and validation](docs/ttwvr-1.1.3.md).
+- Document [upgrade steps and validation](archive/rendering-addon/docs/ttwvr-1.1.3.md).
 
 ## Fluorine-first documentation and MO2 archive — 2026-11-12
 
@@ -73,7 +81,7 @@
 - Add native Settings → VR rows for AA and NR tuning; hide the unavailable built-in upscaler controls.
 - Enable scene MSAA 2×/4×/8× through a hash-verified xNVSE startup hook, with restart labels and a neural-processing bypass while MSAA is active.
 - Correct the sign of the raster jitter supplied to DLAA and test the projection-to-NGX convention geometrically.
-- Record isolated stereo captures, motion validation and remaining headset checks in [the evidence note](neural/docs/VR-SETTINGS.md).
+- Record isolated stereo captures, motion validation and remaining headset checks in [the evidence note](archive/rendering-addon/neural/docs/VR-SETTINGS.md).
 
 ## Native Fluorine launch integration — 2026-11-12
 
@@ -87,14 +95,14 @@
 - **Connected the neural addon to regular Steam VR launches:** an opt-in manifest
   and `neural_rendering=true` instance setting enable the layer/NVIDIA access
   through the existing command. Added deployment and rollback instructions;
-  flat launches stay outside the opt-in. [Setup](neural/docs/STEAM.md)
+  flat launches stay outside the opt-in. [Setup](archive/rendering-addon/neural/docs/STEAM.md)
 
 - **Added native in-game neural controls and live Apply:** separate NR/DLAA
   switches, model/scale/strength/tone/detail, controller navigation and keyboard
   fallback. Feature changes rebuild the helper on bypass between stereo frames,
   reset both histories, and preserve the original game/DLAA resolution. Failed
   generations can be retried; stale menu edits are rejected. No frame generation.
-  [Controls and implementation](neural/README.md#in-game-controls)
+  [Controls and implementation](archive/rendering-addon/neural/README.md#in-game-controls)
 
 - **Added experimental temporal NR and independent DLAA:** verified camera and
   object motion, per-eye history and native-resolution jitter; captured both eyes
@@ -103,13 +111,13 @@
   inconsistent jitter in TTWVR's replacement lighting shaders, separated capture
   files per launch, and removed a redundant GPU completion wait after validating
   pending color/depth copies. All effects still default off; normal Steam/Titanfall/WiVRn setup remains unchanged.
-  [Implementation and validation limits](neural/README.md)
+  [Implementation and validation limits](archive/rendering-addon/neural/README.md)
 
 - **Added an isolated spatial NR prototype:** full-resolution D3D9 scene inputs,
   64-bit NGX helper, GPU depth/HDR transport, per-eye NR features and confirmed
   in-game stereo captures on consecutive frames. History resets every frame;
   this original mode remains available alongside the temporal path. The working
-  Steam setup is unchanged. [Source and evidence](neural/README.md)
+  Steam setup is unchanged. [Source and evidence](archive/rendering-addon/neural/README.md)
 
 - Added Amethyst as a native Linux alternative for base TTW setup, with its
   upstream guide. Amethyst integration with this project's VR launcher remains

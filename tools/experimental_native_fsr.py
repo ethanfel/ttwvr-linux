@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create an EXPERIMENTAL TTWVR 1.1.3 native-Vulkan-FSR candidate.
+"""Create an EXPERIMENTAL TTWVR 1.1.3/1.1.4 native-Vulkan-FSR candidate.
 
 Reads only the exact original DLL, writes a NEW file, and never installs it.
 Includes bundled-DXVK activation, Wine Vulkan lookup, missing FSR startup,
@@ -80,14 +80,70 @@ PATCHES = (
 )
 
 
+# 1.1.4 sites were reviewed independently against the relocated instructions,
+# startup calls, shared settings and unchanged FidelityFX structure access.
+SOURCE_SHA256_114 = '7eb72860d209d9b9bdd774607220ee63323367aa9fa525f6eb1b23184f30f91e'
+PATCHED_SHA256_114 = '216e74fae62df07f7b1cea9857097288f1d946b510b5d6bb26effb368efcf127'
+PATCHES_114 = (('Initialize embedded Vulkan FSR', 5452443, 'e846f0aeff', 'e9c0440300'),
+ ('FSR startup trampoline',
+  5666656,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  'e80badffffe8000000005988813e5a4901e870ababffe925bbfcff'),
+ ('VkImage',
+  5655280,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '8b8c24dc0000008988a4000000c780a0000000564b36345f5e81c4c8000000c3'),
+ ('VkImage', 5655259, '5f5e81c4c8000000', 'e910000000909090'),
+ ('VkImage',
+  5655744,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '31c081baa0000000564b363475068b82a400000089443e04e9cb261d00'),
+ ('VkImage', 7566240, 'c7443e0400000000', 'e91bd9e2ff909090'),
+ ('VkPipeline',
+  7555680,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '83c40c8b8c240c010000898f548e0000c787508e0000564b503431c0e97bffffff'),
+ ('VkPipeline', 7555575, '83c40c33c0', 'e964000000'),
+ ('VkPipeline',
+  7555728,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '31c981bbd48e0000564b503475068b8bd88e000051ffb390000000e932410000'),
+ ('VkPipeline', 7572442, '6a00ffb390000000', 'e9b1beffff909090'),
+ ('VkPipeline',
+  7555776,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '31d281bb508e0000564b503475068b93548e00006a005251e9fb120000'),
+ ('VkPipeline', 7560659, '6a006a0051', 'e9e8ecffff'),
+ ('VkBuffer / GetResource',
+  7563808,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '8b873c3900008981a4000000c781a0000000564b36348b8738390000e9e7fdffff'),
+ ('VkBuffer / GetResource', 7563298, '8b8738390000', 'e9f901000090'),
+ ('VkBuffer / GetResource',
+  7563856,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '5031c081bc2410010000564b363475078b84241401000089460458e98a200000'),
+ ('VkBuffer / GetResource', 7572211, 'c7460400000000', 'e958dfffff9090'),
+ ('VkBuffer / GetResource',
+  7563904,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '8b8b103900008b4411048987a4000000c787a0000000564b3634e9cc070000'),
+ ('VkBuffer / GetResource', 7565925, '8b8b10390000', 'e916f8ffff90'))
+
+
 def build(original):
-    if hashlib.sha256(original).hexdigest() != SOURCE_SHA256:
-        raise ValueError("unsupported TTWVR.dll; need the exact original 1.1.3 archive build")
+    digest = hashlib.sha256(original).hexdigest()
+    if digest == SOURCE_SHA256:
+        renderer, loader, patches, expected = 0x513f2c, 0xa3df70, PATCHES, PATCHED_SHA256
+    elif digest == SOURCE_SHA256_114:
+        renderer, loader, patches, expected = 0x52618c, 0xa51fd0, PATCHES_114, PATCHED_SHA256_114
+    else:
+        raise ValueError("unsupported TTWVR.dll; need the exact original 1.1.3 or 1.1.4 archive build")
     result = bytearray(original)
-    changes = [("Bundled DXVK", 0x513f2c, BEFORE, AFTER),
-               ("Wine Vulkan lookup", 0xa3df70, LOADER_BEFORE, LOADER_AFTER)]
+    changes = [("Bundled DXVK", renderer, BEFORE, AFTER),
+               ("Wine Vulkan lookup", loader, LOADER_BEFORE, LOADER_AFTER)]
     changes += [(name, rva - 0xc00, bytes.fromhex(old), bytes.fromhex(new))
-                for name, rva, old, new in PATCHES]
+                for name, rva, old, new in patches]
     occupied = set()
     for name, offset, old, new in changes:
         if len(old) != len(new) or original[offset:offset + len(old)] != old:
@@ -97,7 +153,7 @@ def build(original):
             raise ValueError("overlapping patch regions")
         occupied |= positions
         result[offset:offset + len(old)] = new
-    if hashlib.sha256(result).hexdigest() != PATCHED_SHA256:
+    if hashlib.sha256(result).hexdigest() != expected:
         raise ValueError("unexpected resulting DLL hash")
     return result
 
@@ -116,8 +172,8 @@ def main():
     except (OSError, ValueError) as exc:
         parser.error(str(exc))
     print(json.dumps({"status": "experimental; isolated launch only",
-                      "source_sha256": SOURCE_SHA256,
-                      "patched_sha256": PATCHED_SHA256,
+                      "source_sha256": hashlib.sha256(original).hexdigest(),
+                      "patched_sha256": hashlib.sha256(patched).hexdigest(),
                       "changed_bytes": sum(a != b for a, b in zip(original, patched)),
                       "native_fsr": "3.1.4 Vulkan, per-eye contexts",
                       "shared_fence_fix_required": True}, indent=2))

@@ -1,151 +1,189 @@
-# Install TTWVR with native Fluorine
+# Prepare an install, then patch it for Linux
 
-[← README](../README.md) · [Troubleshooting](troubleshooting.md) ·
-[Fluorine configuration](native-fluorine.md)
+[← README](../README.md) · [Troubleshooting](troubleshooting.md)
 
-This is the primary manual setup for **TTW 3.4 / TTWVR 1.1.3**, using
-**Fluorine 0.4.1 with FUSE**. Fluorine runs natively on Linux; Fallout runs through
-Proton. The tested migration started with an existing working TTW installation.
-The fresh setup below uses the same native instance and launch configuration.
-For an existing VR setup, follow the [1.1.3 upgrade steps](ttwvr-1.1.3.md), including
-the matching addon/layer update and preservation of settings.
-
-Already have working TTW in Windows MO2? Start with the
-[migration checklist](native-fluorine.md#migrate-an-existing-mo2-installation),
-then verify the Linux fixes and launch settings below. The old MO2 setup is
-[archived](archive/mo2/README.md).
+The tool applies Linux compatibility to a **prepared native Fluorine install**.
+It does not install Fallout, convert TTW, download Nexus mods or validate every
+TTW utility version. Finish the preparation phase and verify flat TTW first.
 
 ## 1. Get the requirements
 
-| Download / install | Source |
+| Requirement | Source / tested version |
 |---|---|
 | English New Vegas Ultimate + Fallout 3 GOTY, all DLC | Your Steam library |
-| Native Fluorine Manager, tested v0.4.1 | [Official release](https://github.com/SulfurNitride/Fluorine-Manager/releases/tag/v0.4.1) |
-| TTW, YUPTTW, xNVSE and required utilities/presets | [The Best of Times](https://thebestoftimes.moddinglinked.com/intro.html) |
+| TTW, YUPTTW, xNVSE, utilities and required INI presets | [The Best of Times](https://thebestoftimes.moddinglinked.com/intro.html) |
 | Native TTW conversion tool | [TTW Linux Installer](https://github.com/SulfurNitride/TTW_Linux_Installer) |
-| FNV4GB **for Proton**, tested 1.5 | [Author's download page](https://www.nexusmods.com/newvegas/mods/62552?tab=files) |
-| Tale of Two Realities / TTWVR 1.1.3 | [KUPOkinz's Flat2VR thread](https://discord.com/channels/747967102895390741/1560413111423344730), Discord access required |
+| FNV4GB **for Proton** | [Author's download page](https://www.nexusmods.com/newvegas/mods/62552?tab=files), tested 1.5 |
+| Native Fluorine | [Official v0.4.1 release](https://github.com/SulfurNitride/Fluorine-Manager/releases/tag/v0.4.1), FUSE backend |
+| Original TTWVR 1.1.4 or 1.1.3 | [KUPOkinz's Flat2VR thread](https://discord.com/channels/747967102895390741/1560413111423344730); Discord access required |
 | WiVRn and xrizer | [WiVRn](https://github.com/WiVRn/WiVRn), [xrizer](https://github.com/Supreeeme/xrizer#download--usage) |
+| Proton / Steam runtime | `experimental-11.0-20261105c-x86_64` / Steam Linux Runtime 4 |
 
-Install Python 3, Git, curl, bubblewrap (`/usr/bin/bwrap`) and the FUSE support
-required by Fluorine. The DXVK build also needs Meson, Ninja, glslang and the
-i686 MinGW-w64 C/C++ compiler with POSIX thread support. Install working Vulkan
-drivers with their 32-bit support.
+The patch is pinned to exact Proton and TTWVR file hashes. **A newer Proton
+Experimental is not automatically supported.** Retain the tested build in your
+own Steam installation; if preflight rejects it, stop and use a supported build
+or wait for an updated patch. Do not bypass the checks.
 
-The supported Proton build is **`experimental-11.0-20261105c-x86_64`**, used with
-**Steam Linux Runtime 4**. Check Proton's `version` file. Other builds require
-patch revalidation; selecting the latest Experimental is not sufficient.
+Install Python **3.11+**, Git, bubblewrap (`/usr/bin/bwrap`), FUSE 3 with
+`fusermount3`, and `unshare`. The dependency build needs Meson, Ninja, glslang,
+and the **i686 MinGW-w64 C/C++ toolchain with POSIX threads**, including windres.
+Use working Vulkan drivers and the required 32-bit libraries. DLSS requires a
+supported NVIDIA RTX GPU; FSR's current validation was also on RTX 5090.
+Distro package names differ. The tool reports missing commands before apply.
 
-Launch each unmodded game once through Steam to initialize its prefix and INIs,
-then close both games. Clone this repository:
+## 2. Prepare and verify TTW in Fluorine
+
+Use a dedicated game copy, initialized private Proton prefix, and native
+Fluorine instance. Follow the [Fluorine preparation/migration reference](native-fluorine.md)
+for its layout, `create-portable` command and global config paths.
+
+1. Install TTW and all required utilities/presets from the guide.
+2. Apply FNV4GB for Proton to the managed game. Configure Fluorine's **TTW** game
+   plugin, **FUSE**, the supported Proton and private prefix ending in `/pfx`.
+3. Configure an executable named **Tale of Two Wastelands**, pointing to the
+   managed `FalloutNV.exe`, with Proton enabled and Steam app ID **22380**.
+4. Create **TTW - Flat** with profile-local INIs and saves. Launch it, check that
+   ML Utilities Checker reports **“All utilities installed!”**, reach the intro,
+   save and reload. Disable the checker after it passes.
+5. Copy the profile as **TTW - VR**. Keep the flat profile and original saves.
+   Install the complete **original, unpatched** TTWVR archive as its own mod and
+   enable it in the VR profile. Keep the author-supplied helpers and runtimes.
+
+Use actual files or reflinks for mod assets. Fluorine 0.4.1 skips symlinked
+assets; symlinked BSAs caused a menu crash in testing. Do not hard-link game/mod
+files when making an isolated installation that you will later patch.
+
+The selected profile must use `instance/mods` and `instance/profiles`.
+Custom external mod-directory layouts are not supported by this first tool.
+The private prefix and global `config/fluorine/config.json` must point to the
+same prepared installation. The tool rejects conflicting paths.
+
+## 3. Describe your prepared install
+
+Clone this repository somewhere you will keep it, then copy the template:
 
 ```sh
 git clone https://github.com/ethanfel/ttwvr-linux.git
+cd ttwvr-linux
+cp tools/setup.example.json setup.json
 ```
 
-## 2. Set up and verify flat TTW
+Edit **setup.json** with your absolute paths. Spaces are supported.
+`mod` is the extracted TTWVR directory under `instance/mods`, not its ZIP.
+`fixes` must be a **new, separate directory** outside the instance, mod, prefix
+and Proton directories. It will hold dependencies, backups and the launcher.
+Keep the repository and fixes directory in place after installation.
 
-Choose a dedicated workspace for the native instance, XDG configuration, game
-and Proton prefix. The tested setup uses independent game/prefix copies so the
-original Steam installation remains available. Use ordinary copies or reflinks,
-not hardlinks. Keep the full compatdata directory, including its `pfx` subdirectory.
-See the [layout and first-run configuration](native-fluorine.md#instance-layout-and-configuration).
+`config_home` and `data_home` are the same dedicated XDG directories used to
+prepare Fluorine. They are not the paths to `config.json` or the manager binary.
+The defaults for profile/executable and WiVRn/xrizer match the template; change
+them only to match your installation. Keep the flat profile named `TTW - Flat`.
 
-Create a **Tale of Two Wastelands** instance in Fluorine, pointing at the intended
-New Vegas game directory. The internal game name is `TTW`. Configure:
+## 4. Check and apply
 
-- The supported Proton installation, the dedicated prefix ending in `/pfx`, and Steam app ID **22380**.
-- **FUSE** as the mod deployment backend.
-- A profile named **TTW - Flat**, with profile-specific INIs and saves.
-- An executable named **Tale of Two Wastelands**, pointing to that game's `FalloutNV.exe`.
-- The [game wrapper](native-fluorine.md#game-wrapper-inside-fluorine) in the executable's **Wrapper options**.
+```sh
+python3 tools/setup_linux.py check setup.json
+```
 
-Follow [The Best of Times](https://thebestoftimes.moddinglinked.com/intro.html)
-for required mods, utility presets, load order and INIs. Use Fluorine to install
-and arrange the mods. Replace the guide's Windows manager/launch steps with this
-native setup. Linux-specific steps:
+This reads the prepared install without changing it. It checks the exact plugin
+and helper files, Proton bridge/renderer, Fluorine paths, active mod assets and
+required tools. It also reproduces the binary patch in memory. It does not
+replace the flat-game utility check or prove headset connectivity.
 
-1. Back up `FalloutNV.exe`, then apply **FNV4GB for Proton** to the managed game.
-2. Convert the extracted TTW `.mpi` with the native installer, using both game
-   directories and `instance/mods/Tale of Two Wastelands` as the output.
-3. Install the required root files in the managed game directory and the
-   remaining mods in the instance; include separately downloaded INI presets.
-4. Start the instance through `launch_fluorine.py` with `--profile "TTW - Flat"`
-   as shown in the [launcher reference](native-fluorine.md#native-manager-and-steam-entry-point).
-   The tested 4GB patch autoloads xNVSE through `FalloutNV.exe`.
+Close Fallout and Fluorine, then:
 
-**Checkpoint:** ML Utilities Checker reports **“All utilities installed!”**, a
-new game reaches the TTW intro, and a save can be loaded. Disable the checker
-after it passes. Keep this flat profile and its saves.
+```sh
+python3 tools/setup_linux.py apply setup.json
+```
 
-## 3. Create the VR profile
+The first apply downloads checksum-pinned native shader compilers from
+[Mozilla's fxc2 repository](https://github.com/mozilla/fxc2/tree/master/dll),
+clones the pinned DXVK revision and builds it with the pool and opaque-fence
+source patches. Build output is shown in the terminal. No NVIDIA SDK download
+or custom D3D12 helper build is required. Allow several GB of disk space for
+the source/build, private Windows directory and copied mod.
 
-With Fallout closed, duplicate the flat profile as **TTW - VR**, retaining
-separate INIs and saves. Install the author's TTWVR archive in Fluorine and
-enable it only in the VR profile. Give it final asset override priority, then
-follow its included calibration and control instructions.
+To complete the downloads/build separately, while continuing to use the
+existing install, run `python3 tools/setup_linux.py prepare setup.json` first.
+`apply` reuses the verified dependency cache. Both use the same config file.
 
-To continue an existing game, copy the desired save and its matching `.nvse`
-companion to the VR profile's `saves` directory. Keep the originals.
-The optional Rendering Addon is installed later, after base VR works.
+Apply then:
 
-## 4. Apply the Linux fixes
+- Copies TTWVR into **TTWVR Linux 1.1.4** (or 1.1.3) and patches that copy for
+  bundled renderer activation, Wine Vulkan loading, DLSS output and native FSR.
+- Preserves the original mod and its INI settings, including calibration,
+  resolution and upscaler choice. Disables previous TTWVR/menu-addon entries
+  only in the chosen VR profile and gives the new mod priority.
+- Installs both native compiler files in the private prefix, creates private
+  OpenXR/DXVK overlays and configures the selected Fluorine executable.
+- Enables the author's path and NVAPI; disables the archived neural layer.
+- Records backups in **fixes/transaction.json**, then creates the launcher and
+  **fixes/steam-launch-options.txt**. Saves are never edited.
 
-**[Follow the three patch steps](linux-fixes.md)** using the prefix and game
-managed by Fluorine: native D3DCompiler 47, the private OpenXR bridge, and the
-DXVK eye-buffer pool patch. Create **`instance/ttwvr-linux.ini`**, beside
-`ModOrganizer.ini`. This file belongs to the native instance, not the Fluorine
-application directory.
+An existing transaction or destination mod is rejected. This is a guarded
+first-install tool, not an in-place updater. Keep rollback records when
+upgrading; use a fresh fixes directory and original upstream mod for a new run.
 
-All three fixes are part of the tested VR setup. Keep TTWVR's original
-`Resolution=150%` (2944×2208 in the tested configuration). The performance fix
-does not depend on lowering resolution or enabling DLSS.
+## 5. Launch
 
-## 5. Launch in VR
+Connect your headset in WiVRn. Run the exact command printed by apply:
 
-First configure the [wrapper inside Fluorine](native-fluorine.md#game-wrapper-inside-fluorine).
-Then put this command on one line in **New Vegas → Properties → Launch Options**,
-replacing every path:
+```sh
+python3 "/path/to/ttwvr/linux-fixes/launch-ttwvr.py"
+```
+
+For Steam, copy the generated **steam-launch-options.txt** into **New Vegas →
+Properties → Launch Options**. Its form is:
 
 ```text
-python3 "/path/to/ttwvr-linux/tools/launch_fluorine.py" --manager "/path/to/fluorine-manager/fluorine-manager" --instance "/path/to/ttwvr/instance" --config-home "/path/to/ttwvr/config" --data-home "/path/to/ttwvr/share" -- %command%
+python3 "/path/to/ttwvr/linux-fixes/launch-ttwvr.py" -- %command%
 ```
 
-This selects **TTW - VR** and runs the executable named **Tale of Two Wastelands**
-automatically. Fluorine prepares Proton's command; the original Steam command
-is consumed by the native entry point. A local shortcut can contain this same
-command. The setup is manual; this repository does not install the games or mods.
+The tool prints the properly quoted command for your paths. Fluorine runs on
+the host and mounts its FUSE view before the game-only overlays are applied.
+It selects the VR profile and starts Fallout automatically. Names such as
+“ModOrganizer” in native Fluorine dialogs are normal.
 
-1. Start WiVRn and connect the headset. The earlier Quest 3 test used **120 Hz**.
-2. Start New Vegas in Steam. Fluorine mounts the selected mods and launches Fallout.
-3. Load the copied save; verify headset gameplay, tracking, controls and calibration.
+Use the original **VR Settings** to choose **DLSS** or **FSR**, upscaler level,
+resolution and sharpness. The tool preserves your choices; it does not force
+200% or promise an FPS target. In the tested author path, 100%/150%/200% produced
+2944×2208 / 4480×3360 / 5888×4416 per-eye output. These are measured on one
+runtime configuration, not universal dimensions. See [resolution evidence](author-dlss.md).
 
-Always use this entry point so the profile-save mount retains the desktop user
-ID needed for WiVRn. Fluorine's binary and some dialogs still say
-**ModOrganizer**; this is expected for its native port.
+Launcher options:
 
-To open the manager without starting Fallout, insert `--manager-only` before
-`-- %command%`. For flat play, close Fallout and Fluorine, then use
-`--profile "TTW - Flat"` before the separator. The flat profile disables the VR
-patch path and neural opt-in. `--dry-run` prints the launch without starting it.
+- `--dry-run`: show the native manager command without starting it.
+- `--manager-only`: open Fluorine to manage this instance.
+- `--profile "TTW - Flat"`: flat play, with TTWVR disabled in that profile.
 
-## 6. Add in-game AA and neural rendering controls
+Close Fallout and Fluorine before changing launch modes. The wrapper keeps
+WiVRn's default runtime registration and installed Proton files unchanged.
 
-After base VR works, follow the **[Rendering Addon installation](../neural/docs/STEAM.md)**.
-Install it as a mod in Fluorine's VR profile, with the matching layer/helper and
-private-prefix registration. Your Steam command remains the same.
+## 6. Roll back
 
-Open **VR Settings** for Off/DLAA/MSAA 2×/4×/8× and NR tuning. NR/DLAA settings
-apply live; MSAA requires a restart and currently excludes NR/DLAA. NVIDIA
-runtime files must be obtained separately. The addon defaults to effects off.
-See [tested behavior and limits](../neural/docs/VR-SETTINGS.md).
+With Fallout and Fluorine closed:
 
-## Existing installations and other managers
+```sh
+python3 tools/setup_linux.py rollback "/path/to/ttwvr/linux-fixes/transaction.json"
+```
 
-- [Migrate from Windows MO2](native-fluorine.md#migrate-an-existing-mo2-installation), preserving profiles, saves and rollback copies.
-- [Archived Windows MO2 setup](archive/mo2/README.md), including its old Steam commands.
-- [Amethyst](https://github.com/ChrisDKN/Amethyst-Mod-Manager) is another native manager, but its TTWVR launch integration has not been tested here.
+This restores configuration, mod selection and compiler files, including original
+symlinks. It disables the added mod through the restored modlist. Private build
+files and the copied mod remain available for inspection; saves remain intact.
+Restore your previous Steam launch option separately if you changed it manually.
 
-The native path was functionally confirmed with a migrated save. The earlier
-59.8 FPS headset capture is not a Fluorine benchmark; see the
-[compatibility and evidence summary](compatibility.md).
+If you edited settings after apply, rollback stops before restoring any file.
+Keep those edits manually, or add `--force` to save the current conflicting
+files under `before-forced-rollback-*` and then restore the original backups.
+Do not remove just the fence fix while retaining the patched author renderer.
+
+## Optional local dependency inputs
+
+Advanced users may add `compiler32` / `compiler64` paths to setup.json to avoid
+those downloads; exact known hashes are required. `dxvk_dir` accepts the exact
+previously validated private renderer bundle with `hashes.json`. Unknown
+prebuilt binaries are refused; omit this field to build from pinned source.
+Locally built outputs carry their revision, patch hashes and file checksums.
+
+[Compatibility and limits](compatibility.md) · [Linux fixes explained](linux-fixes.md) ·
+[Archived Windows MO2](archive/mo2/README.md)

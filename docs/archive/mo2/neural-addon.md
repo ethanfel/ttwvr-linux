@@ -16,7 +16,7 @@ After validating in a separate setup, opt an existing VR installation in:
    edit a Wine registry file while its prefix is in use.
 2. Put the validated x86 layer, x64 helper, INI and separately obtained NVIDIA
    runtime DLLs in a dedicated directory accessible to the Steam container, as
-   described in the [installation notes](../../../neural/README.md#installation-and-testing).
+   described in the [installation notes](../../../archive/rendering-addon/neural/README.md#installation-and-testing).
    Disable captures/probes, set `transport_identity=0` and
    `experimental_temporal=1`, and leave NR/DLAA `enabled=0` initially.
 3. Build `rendering_addon` in the x86 build and copy the resulting
@@ -24,7 +24,7 @@ After validating in a separate setup, opt an existing VR installation in:
    in the **VR profile**, disabling the older `TTWVR Neural Menu` mod. The new
    folder includes the xNVSE startup plugin; scripts alone cannot enable MSAA.
    No ESP or save changes are needed.
-4. Copy the [opt-in manifest](../../../neural/manifest/XR_APILAYER_TTWVR_neural_rendering.opt-in.json)
+4. Copy the [opt-in manifest](../../../archive/rendering-addon/neural/manifest/XR_APILAYER_TTWVR_neural_rendering.opt-in.json)
    beside the layer DLL. Register its absolute Windows path as a DWORD value of
    `0` in the target prefix's **32-bit**
    `HKLM\SOFTWARE\Khronos\OpenXR\1\ApiLayers\Implicit` registry key.
@@ -45,7 +45,7 @@ Flat launches and configurations without this setting do not enable the opt-in
 manifest. This setting loads the addon; the in-game NR and DLAA switches remain
 independent. Open **Settings → VR**. NR/DLAA and tuning apply live when a row changes;
 MSAA changes require restarting Fallout. The menu marks pending changes.
-See [native settings and compatibility](../../../neural/docs/VR-SETTINGS.md).
+See [native settings and compatibility](../../../archive/rendering-addon/neural/docs/VR-SETTINGS.md).
 
 Rollback: close Fallout/MO2, set `neural_rendering=false` and disable the menu mod
 in the VR profile. To remove the addon entirely, also remove its one registry

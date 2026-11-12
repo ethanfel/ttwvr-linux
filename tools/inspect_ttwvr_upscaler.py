@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read TTWVR 1.1.3's upscaler counters from a specified Linux/Wine process.
+"""Read TTWVR 1.1.3/1.1.4 upscaler counters from a specified Linux/Wine process.
 
 Read-only diagnostic. These are the original status-panel counters, not proof
 of valid or fresh pixels. Capture both eyes and test motion separately.
@@ -18,6 +18,9 @@ SUPPORTED = {
     "4c45d6e5adb5da76dd3d08bf0639d360761d3dc50d891ea0bd19b51e4fb006a0",
     "b82d341690cf0068b561803dca22a4ac07ea8042e6437c68f3ab9a85fcd16530",
 }
+# 1.1.4 status formatter and resource-state instructions independently reviewed.
+BUILD_114 = {'7eb72860d209d9b9bdd774607220ee63323367aa9fa525f6eb1b23184f30f91e', 'd35cc677ea792bbfbb21936656cfdb2d4bc023a1a4e757b79eb8cb31a2e00616', 'e54dccb5e29e1361d36dd9f9a7ee23294b07663f29690cabbaff7168cbd62413', '216e74fae62df07f7b1cea9857097288f1d946b510b5d6bb26effb368efcf127'}
+SUPPORTED |= BUILD_114
 # Independently checked against the supplied 1.1.3 status formatter.
 COUNTERS = {
     "render_width": 0x19987B4, "render_height": 0x19987B8,
@@ -50,10 +53,11 @@ def inspect(pid):
     digest = hashlib.sha256(dll.read_bytes()).hexdigest()
     if digest not in SUPPORTED:
         raise ValueError("unsupported mapped DLL hash; refusing unverified offsets")
+    shift = 0x64978 if digest in BUILD_114 else 0
     fd = os.open(proc / "mem", os.O_RDONLY)
     try:
         def read(rva, size):
-            data = os.pread(fd, size, base + rva)
+            data = os.pread(fd, size, base + rva + shift)
             if len(data) != size:
                 raise ValueError("short process-memory read")
             return data

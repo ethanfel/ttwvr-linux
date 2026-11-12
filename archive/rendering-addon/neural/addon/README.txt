@@ -1,5 +1,5 @@
 TTWVR Rendering Addon (GPL-3.0-only)
-Source: https://github.com/ethanfel/ttwvr-linux/tree/main/neural
+Source: https://github.com/ethanfel/ttwvr-linux/tree/main/archive/rendering-addon/neural
 
 Requires the matching TTWVRNeuralRenderingLayer.dll and neural_host.exe,
 registered in the private Proton prefix as described in neural/docs/STEAM.md.

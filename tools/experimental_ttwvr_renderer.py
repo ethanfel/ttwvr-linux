@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create an EXPERIMENTAL TTWVR 1.1.0/1.1.3 copy that loads its bundled DXVK.
+"""Create an EXPERIMENTAL TTWVR 1.1.0/1.1.3/1.1.4 copy that loads its bundled DXVK.
 
 This bypasses only the stock-DXVK detection return. It is not a proven
 performance fix. Keep the original, test with a launch-scoped overlay, and
@@ -13,6 +13,8 @@ from pathlib import Path
 
 # Exact original DLL hashes; offsets independently checked in each build.
 BUILDS = {
+    "7eb72860d209d9b9bdd774607220ee63323367aa9fa525f6eb1b23184f30f91e":
+        ("1.1.4", 0x52618C, 0x526D8C, 0xA51FD0),
     "8a3a71b48d362984fe346c73b68dfbd476d6e138d6831f26f10c6f506cd03880":
         ("1.1.0", 0x4F8E4C, 0x4F9A4C, 0xA1FEB0),
     "4c45d6e5adb5da76dd3d08bf0639d360761d3dc50d891ea0bd19b51e4fb006a0":

@@ -1,7 +1,7 @@
 # FSR 3.1.5 through the Linux rendering addon
 
 For work on the author's embedded Vulkan renderer, see the separate
-[native FSR 3.1.4 experiment](native-vulkan-fsr.md). The two paths have different
+[native FSR 3.1.4 experiment](../../../docs/native-vulkan-fsr.md). The two paths have different
 transport, processing regions and controls.
 
 FSR Quality, Balanced and Performance are available in **VR Settings → FSR SR**.

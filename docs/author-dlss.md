@@ -7,9 +7,12 @@ It is separate from our addon's D3D12 Super Resolution backend. DLSS itself is
 still evaluated through the author's D3D11 helper, not a new Vulkan NGX port.
 [D3D11 DLSS is supported by DXVK-NVAPI](https://github.com/jp7677/dxvk-nvapi#readme).
 
-The regular Fluorine installation and Steam command remain unchanged. These
-are simulated-Monado results, not WiVRn streaming or physical-headset validation.
-NR, DLAA, our addon's SR and frame generation are disabled in these tests.
+The author path is now the primary Linux workflow. Use the
+[prepared-install tool](installation.md), which includes the companion fixes.
+The detailed measurements below record the 1.1.3 isolated tests. The user later
+confirmed good WiVRn output at 200% / DLSS Quality. The [1.1.4 port](ttwvr-1.1.4.md)
+adds separate stereo/movement validation; its physical confirmation is pending.
+Custom NR/DLAA/SR/FG are archived and disabled on this path.
 
 ## Diagnosis
 
@@ -60,7 +63,8 @@ rewinds.
 
 ## Build a candidate without installing
 
-Use the exact original `TTWVR.dll` from your own `TTWVR1.1.3.zip`:
+Use the exact original `TTWVR.dll` from your own 1.1.3 or 1.1.4 archive.
+The offsets and measurements below describe 1.1.3; see the [1.1.4 audit](ttwvr-1.1.4.md).
 
 ```sh
 python3 tools/experimental_author_dlss.py original/TTWVR.dll test/TTWVR.dll
@@ -153,6 +157,17 @@ Check physical-headset motion, temporal ghosting, eye agreement, fog, particles,
 Pip-Boy text, peripheral transitions and long-session stability before using
 this as a regular-launch replacement. This work does not fix the separate DLAA
 haze report or validate frame generation on the author's path.
+
+## Resolution slider and headset follow-up
+
+The author path's slider was checked at 100%, 150% and 200%. In the tested
+runtime configuration the per-eye outputs were 2944×2208, 4480×3360 and
+5888×4416. The scene input reached a 2944×2208 cap at both 150% and 200%, so
+output size and reconstructed scene-input size must not be conflated.
+The user confirmed good physical WiVRn output at 200% / DLSS Quality in the
+separate author-renderer profile. This is visual confirmation, not a sustained
+performance measurement. The [1.1.4 port](ttwvr-1.1.4.md) and
+[fresh dependency build](setup-validation.md) have separate isolated checks.
 
 ## Exact candidates
 

@@ -18,8 +18,11 @@ state/
 *.nvse
 
 # Private neural diagnostics and build artifacts
-neural/captures/
-neural/runtime/
-neural/build*/
+archive/rendering-addon/neural/captures/
+archive/rendering-addon/neural/runtime/
+archive/rendering-addon/neural/build*/
 *.obj
 *.bin
+
+# User-specific prepared-install paths
+/setup.json

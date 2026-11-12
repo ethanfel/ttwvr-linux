@@ -1,0 +1,151 @@
+{
+  "date": "2026-11-13",
+  "unit_tests_passed": 30,
+  "real_user_namespace_tests": true,
+  "qt_argument_roundtrip": true,
+  "generated_launcher_dry_run": true,
+  "overlay_hashes_match": true,
+  "installed_proton_unchanged": true,
+  "built_renderer_hashes": {
+    "d3d9.dll": "d7d5fd1008f09494c81acb6d607aeff00d09dcff5cf63759b6ab3f3e1169e85d",
+    "d3d11.dll": "19b0e23e280645ac62cab4f9bfc7c06286d42bfa9b2b9e33a9e3bc93933384f8",
+    "dxgi.dll": "8414f9622edcc0ab258b8d667717ee35fa2e01ce43152ec5408084182e2db7bf"
+  },
+  "combined_ttwvr_sha256": "e54dccb5e29e1361d36dd9f9a7ee23294b07663f29690cabbaff7168cbd62413",
+  "build": {
+    "revision": "cf0a0d90f8965147741ad17dcd0b263817572ab3",
+    "patches": {
+      "dxvk-32bit-mapped-pool.patch": "173aeff60df3b320cac91440a05178be4ca72f6f39500495453af73a2d0fb582",
+      "dxvk-ttwvr-opaque-fences.patch": "48f66b4d27219a92af85b86aa14d632b084481c094e6973a5ad282644995b087"
+    }
+  },
+  "rollback": {
+    "original_files_match": true,
+    "save_unchanged": true,
+    "activation_removed": true
+  },
+  "dlss_quality_200": [
+    {
+      "eye": 0,
+      "frames": [
+        2370,
+        2371,
+        2550,
+        2551
+      ],
+      "dimensions": [
+        5888,
+        4416
+      ],
+      "consecutive": 0.5171136116936437,
+      "motion": 0.8018092712517723,
+      "center_motion": 0.9980345679741651,
+      "center_consecutive": 0.24146630828607435,
+      "shift_consecutive": 0.5109648677487004,
+      "sha256": [
+        "d560247f7ac5c35ffc527efb55d7f26df13099c4206e39f903ef165ff277b72e",
+        "7e5b8c9df27b693c7e2e07efa81f2b540c34a1273ab6334c3f82043250d1d238",
+        "d053c28d6ad78e99cb40825742eed8e79978e9ed637fc3815eab690e80411707",
+        "e20c106ef455803d2471dbdf102dd66d4f88cf85b216f8f7587ed6642c9a2eed"
+      ]
+    },
+    {
+      "eye": 1,
+      "frames": [
+        2370,
+        2371,
+        2550,
+        2551
+      ],
+      "dimensions": [
+        5888,
+        4416
+      ],
+      "consecutive": 0.5175030521424071,
+      "motion": 0.801678278345542,
+      "center_motion": 0.9980351833254568,
+      "center_consecutive": 0.243263134057971,
+      "shift_consecutive": 0.5090191654236571,
+      "sha256": [
+        "eb3a1274baea9762867ce160c3d9b1c7ba0821408669e70f0b0c9ef26911789f",
+        "a4f1935877af0a1d59a2819592212f1b3668af7e5d424b7d578a02a64d3c8388",
+        "e3e51b3b68c56b69a339551d640e37152271323ff993602778279506f0d48c70",
+        "50ffe6d7f15ef7acfc5db64c7322b596d6230967920de559ff77070f7da66a06"
+      ]
+    }
+  ],
+  "fsr_quality_100": [
+    {
+      "eye": 0,
+      "frames": [
+        2310,
+        2311,
+        2490,
+        2491
+      ],
+      "dimensions": [
+        2944,
+        2208
+      ],
+      "consecutive": 0.6446310907470857,
+      "motion": 0.8107013281742281,
+      "center_motion": 0.9995052575614367,
+      "center_consecutive": 0.3874473259294266,
+      "shift_consecutive": 0.6285451926295683,
+      "sha256": [
+        "bbbcff95fc1ce87479981d0a3f7a799fc0b76ac1fe2ef5848ff124fcb514f283",
+        "0c79374a90397edaecb03489d3e3290b31739521be815e90c47fff64cfb8f4b8",
+        "51d5ba34f06b8b4b1d66b56c93dd2ac444d5487da88ffe35486c8e1a90d2ecfb",
+        "18360a53ab11b97757157be3e3e91a505187238bf89711f9a8e6b3a5a89527dc"
+      ]
+    },
+    {
+      "eye": 1,
+      "frames": [
+        2310,
+        2311,
+        2490,
+        2491
+      ],
+      "dimensions": [
+        2944,
+        2208
+      ],
+      "consecutive": 0.6435626870667926,
+      "motion": 0.810786246652489,
+      "center_motion": 0.999332959199748,
+      "center_consecutive": 0.37576303560176433,
+      "shift_consecutive": 0.6262260874488028,
+      "sha256": [
+        "8aa964974845a00017f5b62379d1c154396cf5e9ecc9fce1b40e40d86f1e82b2",
+        "12c65148912f361ec9cde36093d96c67d9b97062156bae16ea781775f2d70adc",
+        "ce81425698796ac8610c0b2d33504c317334f8ffd1c6f551f52d925e78cda45e",
+        "5d3c378e148f15ef27e0325767e598871b37273a4d0a6db265c45cf49c34d101"
+      ]
+    }
+  ],
+  "ngx_evaluations": [
+    {
+      "feature": 3,
+      "result": "0x1"
+    },
+    {
+      "feature": 4,
+      "result": "0x1"
+    },
+    {
+      "feature": 3,
+      "result": "0x1"
+    },
+    {
+      "feature": 4,
+      "result": "0x1"
+    }
+  ],
+  "restoration": {
+    "private_files_restored": 13,
+    "regular_files_unchanged": 65,
+    "test_processes_closed": true
+  },
+  "scope": "Disposable real-file installer fixture; Qt/namespace launch checks; existing isolated Monado GPU harness; no new physical headset validation."
+}

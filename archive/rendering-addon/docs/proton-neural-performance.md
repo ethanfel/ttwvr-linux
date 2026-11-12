@@ -31,7 +31,7 @@ separate temporal state for each eye. DLAA remains a distinct feature.
 
 The opaque mechanism passed a standalone 32-to-64-bit probe with 32 GPU-signalled
 round trips on the installed, unmodified Proton. It avoids the imported
-cross-process metadata involved in the [earlier D3D12 fence crash](fence-experiment.md).
+cross-process metadata involved in the [earlier D3D12 fence crash](../../../docs/fence-experiment.md).
 It does not fix arbitrary D3D12 fence imports or enable the stock TTWVR upscaler.
 
 The texture stress test also exposed a pre-existing depth issue: a full-image

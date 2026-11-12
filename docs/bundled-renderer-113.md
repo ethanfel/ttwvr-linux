@@ -115,7 +115,7 @@ the timing windows. Our layer was passive, with NR/DLAA/SR/FG disabled.
 The apparent 66% gain is **invalid as a gameplay performance claim** because
 DLSS did not deliver updated eye images. Earlier measurements of our working
 Quality path were about 39 FPS at this runtime frequency; they are recorded
-separately in [DLSS presets](dlss-presets.md). No WiVRn streaming or physical
+separately in [DLSS presets](../archive/rendering-addon/docs/dlss-presets.md). No WiVRn streaming or physical
 headset result is claimed by this retest.
 
 ## Reproduction and next work

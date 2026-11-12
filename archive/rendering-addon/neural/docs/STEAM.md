@@ -1,10 +1,10 @@
 # Install the Rendering Addon in Fluorine
 
-[← Addon source and build](../README.md) · [Native TTWVR setup](../../docs/installation.md) ·
+[← Addon source and build](../README.md) · [Native TTWVR setup](../../../../docs/installation.md) ·
 [Controls and validation](VR-SETTINGS.md)
 
 This installs **TTWVR Rendering Addon** into the native Fluorine **TTW - VR**
-profile. Start with a working [Fluorine/Proton/WiVRn installation](../../docs/installation.md).
+profile. Start with a working [Fluorine/Proton/WiVRn installation](../../../../docs/installation.md).
 The Steam entry point remains `tools/launch_fluorine.py`; no new Steam command
 is needed. The isolated development setup is separate and does not enable the
 addon in a regular installation automatically.
@@ -107,5 +107,5 @@ The DLAA correction still needs confirmation in the user's physical headset.
 ## Historical Windows MO2 deployment
 
 The earlier 2026-11-11 installation and its Windows-manager instructions are
-preserved in the [MO2 addon archive](../../docs/archive/mo2/neural-addon.md).
+preserved in the [MO2 addon archive](../../../../docs/archive/mo2/neural-addon.md).
 Use the native steps above for current setup.

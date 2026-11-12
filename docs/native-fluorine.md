@@ -34,7 +34,6 @@ ttwvr/
     overwrite/
     downloads/
   fixes/                        private compiler/OpenXR/DXVK files
-  neural-runtime/               optional layer, helper and NVIDIA dependencies
   state/                        launcher logs
 ```
 
@@ -91,6 +90,9 @@ initial setup; the validated configuration did not require them.
 
 ## Game wrapper inside Fluorine
 
+The [setup tool](installation.md#4-check-and-apply) writes this automatically
+for the selected game executable. The following is the manual reference.
+
 In each executable's **Wrapper options**, enter one line:
 
 ```text
@@ -120,6 +122,9 @@ WiVRn is selected by default at `/usr/share/openxr/1/openxr_wivrn.json`.
 Neither path changes the desktop's default runtime registration.
 
 ## Native manager and Steam entry point
+
+Use the generated `fixes/launch-ttwvr.py` after applying the patch tool. The
+command below is the underlying entry point for manual preparation/migration.
 
 Launch the dedicated instance using:
 
@@ -165,12 +170,16 @@ the profile, nested bubblewrap works and the mount disappears on exit.
 
 ## Validation and limits
 
+The following records the earlier migration, before the custom addon was
+archived. The current setup uses the original author menu and renderer; see
+[current compatibility](compatibility.md) and [1.1.4](ttwvr-1.1.4.md).
+
 On 2026-11-12 the native FUSE launch loaded xNVSE, TTW and TTWVR, displayed the
 neural settings menu and loaded a copied save (confirmed by the user). The
 simulated-headset run used full 2944×2208 eye images. DLAA logs included
 `dlaa_evaluate ... output_applied=1` for both eyes on consecutive frames.
 At that migration checkpoint NR was off and DLAA was on. The later
-[Rendering Addon deployment](../neural/docs/STEAM.md#native-rendering-addon-deployment-2026-11-12)
+[Rendering Addon deployment](../archive/rendering-addon/neural/docs/STEAM.md#native-rendering-addon-deployment-2026-11-12)
 retained the subsequently saved state with both features off; the two records
 describe different checkpoints.
 The user subsequently confirmed that the native setup works in normal use.
@@ -214,7 +223,7 @@ A registry path mismatch prompt is expected when the game is copied. Accept
 it only after checking the manager uses the copied prefix and the managed path
 is the intended game copy.
 
-If using the neural addon, copy its runtime separately and update the **copied
+For archival reproduction only: if using the old neural addon, copy its runtime separately and update the **copied
 prefix's** OpenXR layer manifest registration to the new manifest. Keep the
 addon opt-in and existing NR/DLAA settings. Do not overwrite loaded DLLs.
 
