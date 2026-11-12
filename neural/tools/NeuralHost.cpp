@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "../src/HostProtocol.h"
+#include "../src/GpuTimeline.h"
 #include "../src/LiveSettings.h"
 #include "../src/Support.h"
 #include "../src/backend/NeuralBackend.h"
@@ -17,21 +18,31 @@ void Check(HRESULT hr) {
   if (FAILED(hr))
     throw std::runtime_error("host D3D operation");
 }
-void Wait(ID3D11Device *d, ID3D11DeviceContext *c) {
-  ComPtr<ID3D11Query> q;
-  D3D11_QUERY_DESC desc{D3D11_QUERY_EVENT, 0};
-  Check(d->CreateQuery(&desc, &q));
-  c->End(q.Get());
-  c->Flush();
-  auto start = GetTickCount64();
-  HRESULT r;
-  while ((r = c->GetData(q.Get(), nullptr, 0, 0)) == S_FALSE) {
-    if (GetTickCount64() - start > 5000)
-      throw std::runtime_error("host GPU timeout");
-    Sleep(0);
+// Reuse the completion query. Once explicitly flushed, polling must not
+// flush again: the reply still waits for every final D3D11 write to complete.
+class GpuCompletion {
+  ComPtr<ID3D11Query> query;
+  ComPtr<ID3D11DeviceContext> context;
+public:
+  GpuCompletion(ID3D11Device *d, ID3D11DeviceContext *c) : context(c) {
+    D3D11_QUERY_DESC desc{D3D11_QUERY_EVENT, 0};
+    Check(d->CreateQuery(&desc, &query));
   }
-  Check(r);
-}
+  void Wait() {
+    context->End(query.Get());
+    context->Flush();
+    const auto start = GetTickCount64();
+    HRESULT result;
+    while ((result = context->GetData(query.Get(), nullptr, 0,
+                                     D3D11_ASYNC_GETDATA_DONOTFLUSH)) == S_FALSE) {
+      if (GetTickCount64() - start > 5000)
+        throw std::runtime_error("host GPU timeout");
+      Sleep(0);
+    }
+    Check(result);
+  }
+};
+
 int wmain(int argc, wchar_t **argv) {
   if (argc != 2)
     return 2;
@@ -42,7 +53,7 @@ int wmain(int argc, wchar_t **argv) {
     return 3;
   auto *p = static_cast<HostProtocol *>(
       MapViewOfFile(mapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(HostProtocol)));
-  if (!p || p->magic != 0x54544e52 || p->version != 3)
+  if (!p || p->magic != 0x54544e52 || p->version != 4)
     return 3;
   HANDLE request = OpenEventW(SYNCHRONIZE, FALSE, (name + L"-request").c_str());
   HANDLE reply =
@@ -64,6 +75,13 @@ int wmain(int argc, wchar_t **argv) {
     ComPtr<ID3D11DeviceContext> c;
     Check(D3D11CreateDevice(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
                             nullptr, 0, D3D11_SDK_VERSION, &d, nullptr, &c));
+    GpuCompletion completion(d.Get(), c.Get());
+    GpuTimeline *timeline = nullptr;
+    if (p->inputTimeline && p->outputTimeline) {
+      timeline = new GpuTimeline;
+      timeline->Init(d.Get(), p->parentPid, p->inputTimeline, p->outputTimeline);
+      Log("gpu_handoff_host_ready mode=opaque_timeline");
+    }
     ComPtr<ID3D11Texture2D> hdr, packed, bloom, objectMotion;
     Check(d->OpenSharedResource(
         reinterpret_cast<HANDLE>(uintptr_t(p->colorHandle)),
@@ -200,6 +218,8 @@ RWTexture2D<float2> motion:register(u2);
       if (p->command != 1 || p->eye > 1 || !std::isfinite(p->hdrParam) ||
           p->hdrParam <= 0)
         throw std::runtime_error("host request");
+      if (timeline) timeline->WaitInput(p->serial);
+      backend.LogCompletedGpuTiming();
       Constants parameters{};
       parameters.hdrParam = p->hdrParam;
       parameters.width = p->width;
@@ -236,7 +256,8 @@ RWTexture2D<float2> motion:register(u2);
                           p->eye, p->frame, p->reset != 0, p->jitterX,
                           p->jitterY))
         throw std::runtime_error("host evaluate");
-      Wait(d.Get(), c.Get());
+      if (timeline) timeline->SignalOutput(p->serial);
+      else completion.Wait();
       backend.LogCompletedGpuTiming();
       // The client may overwrite the shared request as soon as reply is set.
       const auto completedFrame = p->frame;
@@ -244,13 +265,18 @@ RWTexture2D<float2> motion:register(u2);
       const auto elapsed = GetTickCount64() - start;
       p->result = 1;
       SetEvent(reply);
-      if (completedFrame % 120 == 0)
+      if (completedFrame % 120 == 0 && timeline)
+        Log("host_submitted frame=%llu eye=%u cpu_submission_ms=%llu gpu_completion=queued",
+            (unsigned long long)completedFrame, completedEye, (unsigned long long)elapsed);
+      else if (completedFrame % 120 == 0)
         Log("host_completed frame=%llu eye=%u gpu_wait_included_ms=%llu "
             "temporal=%u dlaa=%u",
             (unsigned long long)completedFrame, completedEye,
             (unsigned long long)elapsed, options.temporalGuides,
             options.dlaa);
     }
+    completion.Wait();
+    backend.LogCompletedGpuTiming();
     backend.Shutdown();
   } catch (const std::exception &e) {
     Log("host_failed reason=%s bypass=1", e.what());

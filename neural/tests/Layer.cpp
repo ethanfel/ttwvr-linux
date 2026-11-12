@@ -8,7 +8,8 @@ unsigned checks = 0, creates = 0, releaseCalls = 0, endCalls = 0, copies = 0, wr
 bool target = true, captureFirst = true, rejectTransfer = false, requestCapture = false;
 bool failRelease = false;
 bool overwriteImageHeaders = false;
-XrResult waitResult = XR_SUCCESS, frameResult = XR_SUCCESS;
+XrResult waitResult = XR_SUCCESS, frameResult = XR_SUCCESS, frameWaitResult = XR_SUCCESS;
+const XrFrameWaitInfo* forwardedWait = nullptr;
 uintptr_t nextInstance = 10, nextSession = 100, nextSwapchain = 1000;
 uint32_t acquiredIndex = 0;
 XrSwapchainUsageFlags lastUsage = 0;
@@ -52,6 +53,11 @@ XrResult XRAPI_CALL FakeEnumerate(XrSwapchain, uint32_t capacity, uint32_t* coun
 XrResult XRAPI_CALL FakeAcquire(XrSwapchain, const XrSwapchainImageAcquireInfo*, uint32_t* index) { *index = acquiredIndex; return XR_SUCCESS; }
 XrResult XRAPI_CALL FakeWait(XrSwapchain, const XrSwapchainImageWaitInfo*) { return waitResult; }
 XrResult XRAPI_CALL FakeRelease(XrSwapchain, const XrSwapchainImageReleaseInfo*) { ++releaseCalls; return failRelease ? XR_ERROR_RUNTIME_FAILURE : XR_SUCCESS; }
+XrResult XRAPI_CALL FakeFrameWait(XrSession, const XrFrameWaitInfo* info, XrFrameState* state) {
+    forwardedWait = info;
+    state->predictedDisplayTime = 123456; state->predictedDisplayPeriod = 11111111; state->shouldRender = XR_TRUE;
+    return frameWaitResult;
+}
 XrResult XRAPI_CALL FakeEnd(XrSession, const XrFrameEndInfo* info) { ++endCalls; forwardedFrame = info;
     return frameResult; }
 XrResult XRAPI_CALL FakeSync(XrSession, const XrActionsSyncInfo*) { return XR_SESSION_NOT_FOCUSED; }
@@ -66,6 +72,7 @@ XrResult XRAPI_CALL FakeProc(XrInstance, const char* name, PFN_xrVoidFunction* f
     FN("xrAcquireSwapchainImage", FakeAcquire)
     FN("xrWaitSwapchainImage", FakeWait)
     FN("xrReleaseSwapchainImage", FakeRelease)
+    FN("xrWaitFrame", FakeFrameWait)
     FN("xrEndFrame", FakeEnd)
     FN("xrSyncActions", FakeSync)
 #undef FN
@@ -144,6 +151,17 @@ int main() {
     XrGraphicsBindingD3D11KHR binding{XR_TYPE_GRAPHICS_BINDING_D3D11_KHR}; binding.device = Handle<ID3D11Device*>(1);
     XrSessionCreateInfo si{XR_TYPE_SESSION_CREATE_INFO}; si.next = &binding;
     XrSession session{}; Check(CreateSession(instance, &si, &session) == XR_SUCCESS, "D3D11 session tracked");
+    XrFrameWaitInfo wi{XR_TYPE_FRAME_WAIT_INFO};
+    XrFrameState ws{XR_TYPE_FRAME_STATE};
+    Check(req.getInstanceProcAddr(instance, "xrWaitFrame", &fn) == XR_SUCCESS && fn == reinterpret_cast<PFN_xrVoidFunction>(&WaitFrame), "frame wait intercepted");
+    for (bool enabled : {false, true}) {
+        Lookup(sessions, session)->instance->config.frameTiming = enabled;
+        Check(WaitFrame(session, &wi, &ws) == XR_SUCCESS && forwardedWait == &wi && ws.predictedDisplayTime == 123456 && ws.predictedDisplayPeriod == 11111111 && ws.shouldRender, "timing preserves runtime frame state and input pointer");
+        frameWaitResult = XR_ERROR_SESSION_LOST;
+        Check(WaitFrame(session, &wi, &ws) == frameWaitResult, "timing preserves frame wait failure");
+        frameWaitResult = XR_SUCCESS;
+    }
+    Lookup(sessions, session)->instance->config.frameTiming = false;
     XrSwapchainCreateInfo ci{XR_TYPE_SWAPCHAIN_CREATE_INFO}; ci.usageFlags = XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT;
     ci.width = 128; ci.height = 64; ci.arraySize = 2; ci.mipCount = ci.faceCount = ci.sampleCount = 1; ci.format = DXGI_FORMAT_R8G8B8A8_UNORM;
     XrSwapchain sc{}; Check(CreateSwapchain(session, &ci, &sc) == XR_SUCCESS, "swapchain creation");

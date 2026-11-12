@@ -11,6 +11,7 @@ struct Config {
     bool captureFirst = false;
     bool inspectBindings = true;
     bool captureCandidates = true;
+    bool frameTiming = false;
     unsigned burstFrames = 1;
     unsigned logEvery = 600;
 };

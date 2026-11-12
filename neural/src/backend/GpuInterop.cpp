@@ -174,7 +174,8 @@ bool GpuInterop::Submit() {
   serial_ = c->completedAt = value;
   if (!Check(context11_->Wait(output11_.Get(), value), "wait_output11"))
     return false;
-  context11_->Flush();
+  // Queue the dependent resolve work before flushing. The next input signal
+  // or the host's final completion fence submits this wait and those writes.
   return true;
 }
 bool GpuInterop::Drain(DWORD timeout) {

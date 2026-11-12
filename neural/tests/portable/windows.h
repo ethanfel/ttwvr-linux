@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <unistd.h>
 #define __declspec(x)
+inline unsigned long GetCurrentThreadId() { return static_cast<unsigned long>(gettid()); }
 inline unsigned long GetCurrentProcessId() { return static_cast<unsigned long>(getpid()); }
 inline unsigned long long GetTickCount64() {
     return static_cast<unsigned long long>(std::chrono::duration_cast<std::chrono::milliseconds>(

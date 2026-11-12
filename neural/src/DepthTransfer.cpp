@@ -111,7 +111,7 @@ struct Transfer {
     Check(vkCreateFence(device, &fi, nullptr, &fence));
   }
   void Copy(IDirect3DDevice9 *d, IDirect3DSurface9 *source,
-            IDirect3DSurface9 *output) {
+            IDirect3DSurface9 *output, bool wait) {
     if (d != owner.Get())
       throw std::runtime_error("depth device changed");
     if (submitted)
@@ -137,6 +137,15 @@ struct Transfer {
     if (!(desc[0].usage & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) ||
         !(desc[1].usage & VK_IMAGE_USAGE_TRANSFER_DST_BIT))
       throw std::runtime_error("depth copy usage");
+    // DXVK may retain a full depth clear as metadata until the image is used.
+    // A plain command-stream flush does not materialize non-shared images.
+    // Ask DXVK to access the depth image, then restore its tracked layout before
+    // the raw Vulkan copy. This also makes clear-only frames safe to capture.
+    const VkImageSubresourceRange range{VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 1, 0, 1};
+    const auto temporary = layout[0] == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+                               ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    interop->TransitionTextureLayout(src.Get(), &range, layout[0], temporary);
+    interop->TransitionTextureLayout(src.Get(), &range, temporary, layout[0]);
     Check(vkResetCommandPool(device, pool, 0));
     VkCommandBufferBeginInfo begin{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -199,7 +208,7 @@ struct Transfer {
     interop->ReleaseSubmissionQueue();
     Check(result);
     submitted = true;
-    Check(vkWaitForFences(device, 1, &fence, VK_TRUE, 5000000000ull));
+    if (wait) Check(vkWaitForFences(device, 1, &fence, VK_TRUE, 5000000000ull));
   }
 };
 // Lifetime is deliberately process-bound for this experimental adapter. The
@@ -208,7 +217,7 @@ Transfer *transfer = nullptr;
 bool failed = false;
 } // namespace
 bool TransferDepthBits(IDirect3DDevice9 *d, IDirect3DSurface9 *depth,
-                       IDirect3DSurface9 *packed) {
+                       IDirect3DSurface9 *packed, bool wait) {
   if (failed || !d || !depth || !packed)
     return false;
   try {
@@ -219,7 +228,7 @@ bool TransferDepthBits(IDirect3DDevice9 *d, IDirect3DSurface9 *depth,
       transfer = new Transfer;
       transfer->Init(d, desc.Width, desc.Height);
     }
-    transfer->Copy(d, depth, packed);
+    transfer->Copy(d, depth, packed, wait);
     return true;
   } catch (const std::exception &e) {
     Log("depth_transport_failed reason=%s bypass=1", e.what());

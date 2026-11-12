@@ -306,3 +306,81 @@ __CRT_UUID_DECL(ID3D9VkInteropDevice,      0x2eaa4b89,0x0107,0x4bdb,0x87,0xf7,0x
 __CRT_UUID_DECL(ID3D9VkExtSwapchain,       0x13776e93,0x4aa9,0x430a,0xa4,0xec,0xfe,0x9e,0x28,0x11,0x81,0xd5);
 __CRT_UUID_DECL(ID3D9VkExtInterface,       0x65b55086,0xe3e3,0x4c3e,0xb3,0xa0,0x86,0x81,0x5c,0xce,0x2c,0x4c);
 #endif
+
+struct IDXGIVkInteropSurface;
+MIDL_INTERFACE("e2ef5fa5-dc21-4af7-90c4-f67ef6a09323")
+IDXGIVkInteropDevice : public IUnknown {
+  /**
+   * \brief Queries Vulkan handles used by DXVK
+   *
+   * \param [out] pInstance The Vulkan instance
+   * \param [out] pPhysDev The physical device
+   * \param [out] pDevide The device handle
+   */
+  virtual void STDMETHODCALLTYPE GetVulkanHandles(
+          VkInstance*           pInstance,
+          VkPhysicalDevice*     pPhysDev,
+          VkDevice*             pDevice) = 0;
+
+  /**
+   * \brief Queries the rendering queue used by DXVK
+   *
+   * \param [out] pQueue The Vulkan queue handle
+   * \param [out] pQueueFamilyIndex Queue family index
+   */
+  virtual void STDMETHODCALLTYPE GetSubmissionQueue(
+          VkQueue*              pQueue,
+          uint32_t*             pQueueFamilyIndex) = 0;
+
+  /**
+   * \brief Transitions a surface to a given layout
+   *
+   * Executes an explicit image layout transition on the
+   * D3D device. Note that the image subresources \e must
+   * be transitioned back to its original layout before
+   * using it again from D3D11.
+   * \param [in] pSurface The image to transform
+   * \param [in] pSubresources Subresources to transform
+   * \param [in] OldLayout Current image layout
+   * \param [in] NewLayout Desired image layout
+   */
+  virtual void STDMETHODCALLTYPE TransitionSurfaceLayout(
+          IDXGIVkInteropSurface*    pSurface,
+    const VkImageSubresourceRange*  pSubresources,
+          VkImageLayout             OldLayout,
+          VkImageLayout             NewLayout) = 0;
+
+  /**
+   * \brief Flushes outstanding D3D rendering commands
+   *
+   * Must be called before submitting Vulkan commands
+   * to the rendering queue if those commands use the
+   * backing resource of a D3D11 object.
+   */
+  virtual void STDMETHODCALLTYPE FlushRenderingCommands() = 0;
+
+  /**
+   * \brief Locks submission queue
+   *
+   * Should be called immediately before submitting
+   * Vulkan commands to the rendering queue in order
+   * to prevent DXVK from using the queue.
+   *
+   * While the submission queue is locked, no D3D11
+   * methods must be called from the locking thread,
+   * or otherwise a deadlock might occur.
+   */
+  virtual void STDMETHODCALLTYPE LockSubmissionQueue() = 0;
+
+  /**
+   * \brief Releases submission queue
+   *
+   * Should be called immediately after submitting
+   * Vulkan commands to the rendering queue in order
+   * to allow DXVK to submit new commands.
+   */
+  virtual void STDMETHODCALLTYPE ReleaseSubmissionQueue() = 0;
+};
+#ifndef _MSC_VER
+__CRT_UUID_DECL(IDXGIVkInteropDevice, 0xe2ef5fa5,0xdc21,0x4af7,0x90,0xc4,0xf6,0x7e,0xf6,0xa0,0x93,0x23);
+#endif

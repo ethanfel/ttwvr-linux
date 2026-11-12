@@ -11,6 +11,7 @@
 #include <openxr_loader_negotiation.h>
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cstdio>
 #include <cstring>
 #include <map>
@@ -39,6 +40,7 @@ struct Instance {
     PFN_xrAcquireSwapchainImage acquireImage = nullptr;
     PFN_xrWaitSwapchainImage waitImage = nullptr;
     PFN_xrReleaseSwapchainImage releaseImage = nullptr;
+    PFN_xrWaitFrame waitFrame = nullptr;
     PFN_xrEndFrame endFrame = nullptr;
     PFN_xrLocateViews locateViews = nullptr;
 };
@@ -69,6 +71,11 @@ struct Session {
     // Borrowed from the session graphics binding; never used after session destruction.
     ID3D11Device* device = nullptr;
     uint64_t frames = 0;
+    std::chrono::steady_clock::time_point waitReturned{};
+    unsigned long waitThread = 0;
+    double waitMs = 0, appMs = 0, endMs = 0;
+    unsigned waitSamples = 0, appSamples = 0, endSamples = 0;
+    XrDuration displayPeriod = 0;
     bool capturePending = false;
     unsigned captureAttempts = 0;
     // At most two stereo frames. Only owned copies and value metadata survive
@@ -450,13 +457,51 @@ void InspectFrame(Session& s, const XrFrameEndInfo* info) {
         s.capturePending = false; s.captureAttempts = 0; s.captureFrames.clear();
     }
 }
+// Optional CPU wall-time diagnostics. They do not change runtime pacing or
+// imply GPU execution time. App-span samples require serial same-thread calls.
+XrResult XRAPI_CALL WaitFrame(XrSession handle, const XrFrameWaitInfo* info, XrFrameState* state) {
+    auto s = Lookup(sessions, handle);
+    if (!s) return XR_ERROR_HANDLE_INVALID;
+    if (!s->instance->config.frameTiming) return s->instance->waitFrame(handle, info, state);
+    const auto start = std::chrono::steady_clock::now();
+    const auto r = s->instance->waitFrame(handle, info, state);
+    const auto returned = std::chrono::steady_clock::now();
+    std::lock_guard lock(s->mutex);
+    s->waitMs += std::chrono::duration<double, std::milli>(returned - start).count();
+    ++s->waitSamples;
+    s->waitReturned = returned;
+    s->waitThread = r == XR_SUCCESS ? GetCurrentThreadId() : 0;
+    if (r == XR_SUCCESS && state) s->displayPeriod = state->predictedDisplayPeriod;
+    return r;
+}
 XrResult XRAPI_CALL EndFrame(XrSession handle, const XrFrameEndInfo* info) {
     auto s = Lookup(sessions, handle);
     if (!s) return XR_ERROR_HANDLE_INVALID;
     // Forward every projection and extension chain unchanged.
     // File IO only touches owned copies and happens after the original submission.
+    const bool timing = s->instance->config.frameTiming;
+    const auto before = timing ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point{};
     const auto r = s->instance->endFrame(handle, info);
+    const auto after = timing ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point{};
     std::lock_guard lock(s->mutex);
+    if (timing) {
+        s->endMs += std::chrono::duration<double, std::milli>(after - before).count();
+        ++s->endSamples;
+        if (s->waitThread == GetCurrentThreadId() && before >= s->waitReturned) {
+            s->appMs += std::chrono::duration<double, std::milli>(before - s->waitReturned).count();
+            ++s->appSamples;
+        }
+        s->waitThread = 0;
+        if (s->endSamples >= s->instance->config.logEvery) {
+            Log("frame_timing frame=%llu wait_samples=%u app_samples=%u end_samples=%u wait_ms=%.3f app_ms=%.3f end_ms=%.3f display_period_ms=%.3f",
+                (unsigned long long)s->frames, s->waitSamples, s->appSamples, s->endSamples,
+                s->waitSamples ? s->waitMs / s->waitSamples : 0.,
+                s->appSamples ? s->appMs / s->appSamples : 0., s->endMs / s->endSamples,
+                s->displayPeriod / 1000000.);
+            s->waitMs = s->appMs = s->endMs = 0;
+            s->waitSamples = s->appSamples = s->endSamples = 0;
+        }
+    }
     if (r == XR_SUCCESS) {
         try { InspectFrame(*s, info); }
         catch (...) { Log("frame_inspection_failed exception; original frame already submitted"); s->capturePending = false; s->captureFrames.clear(); }
@@ -501,6 +546,7 @@ XrResult XRAPI_CALL GetProc(XrInstance instance, const char* name, PFN_xrVoidFun
         HOOK("xrAcquireSwapchainImage", AcquireImage)
         HOOK("xrWaitSwapchainImage", WaitImage)
         HOOK("xrReleaseSwapchainImage", ReleaseImage)
+        HOOK("xrWaitFrame", WaitFrame)
         HOOK("xrEndFrame", EndFrame)
     }
 #undef HOOK
@@ -521,7 +567,7 @@ XrResult XRAPI_CALL CreateInstance(const XrInstanceCreateInfo* info, const XrApi
             Resolve(*i, "xrCreateSwapchain", i->createSwapchain) && Resolve(*i, "xrDestroySwapchain", i->destroySwapchain) &&
             Resolve(*i, "xrEnumerateSwapchainImages", i->enumerateImages) && Resolve(*i, "xrAcquireSwapchainImage", i->acquireImage) &&
             Resolve(*i, "xrWaitSwapchainImage", i->waitImage) && Resolve(*i, "xrReleaseSwapchainImage", i->releaseImage) &&
-            Resolve(*i, "xrEndFrame", i->endFrame);
+            Resolve(*i, "xrWaitFrame", i->waitFrame) && Resolve(*i, "xrEndFrame", i->endFrame);
         Resolve(*i,"xrLocateViews",i->locateViews);
         if(i->active) InstallD3D9Trace();
         Log("TTWVRNeuralRendering 0.1.0 build=ttwvr-capture-1 active=%d mode=graphics capture=%d runtime_selection=unchanged",

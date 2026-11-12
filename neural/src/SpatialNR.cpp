@@ -2,6 +2,7 @@
 #include "SpatialNR.h"
 #include "DepthTransfer.h"
 #include "HostProtocol.h"
+#include "GpuTimeline.h"
 #include "MenuControl.h"
 #include "MenuInput.h"
 #include "NativeGuides.h"
@@ -38,6 +39,7 @@ struct Client {
   HANDLE mapping = nullptr, request = nullptr, reply = nullptr,
          process = nullptr;
   HostProtocol *p = nullptr;
+  GpuTimeline *timeline = nullptr;
   bool profile = false, stopSent = false;
   std::wstring name;
   uint64_t started = 0, leftAppliedFrame = ~uint64_t(0),
@@ -74,6 +76,15 @@ struct Client {
     p->bloomHandle = reinterpret_cast<uintptr_t>(bloom.handle);
     p->parentPid = GetCurrentProcessId();
     p->motionHandle = reinterpret_cast<uintptr_t>(motion.handle);
+    const auto ini = Directory() + L"\\TTWVRNeuralRendering.ini";
+    if (GetPrivateProfileIntW(L"diagnostics", L"gpu_handoff", 0, ini.c_str())) {
+      auto candidate = new GpuTimeline;
+      try {
+        candidate->Init(d); timeline = candidate;
+        p->inputTimeline = timeline->InputHandle(); p->outputTimeline = timeline->OutputHandle();
+        Log("gpu_handoff_ready mode=opaque_timeline experimental=1");
+      } catch (const std::exception &e) { Log("gpu_handoff_unavailable reason=%s fallback=cpu", e.what()); }
+    }
     request = CreateEventW(nullptr, FALSE, FALSE, (name + L"-request").c_str());
     reply = CreateEventW(nullptr, FALSE, FALSE, (name + L"-reply").c_str());
     if (!request || !reply)
@@ -293,12 +304,12 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
     Check(d->StretchRect(bloom.Get(), nullptr, client->bloom.surface.Get(),
                          nullptr, D3DTEXF_NONE));
     const auto beforeDepth = stamp();
-    if (!TransferDepthBits(d, depth.Get(), client->depth.surface.Get()))
+    if (!TransferDepthBits(d, depth.Get(), client->depth.surface.Get(), !client->timeline))
       throw std::runtime_error("depth bit transport");
     const auto afterDepth = stamp();
-    // TransferDepthBits flushes D3D9's CS/submission queues and waits on a
-    // same-queue Vulkan fence after all earlier color/motion/bloom copies.
-    // A second D3D9 event query would submit and wait again without new work.
+    // The default path waits for the depth/copy fence. The optional timeline
+    // path signals the same queue below; the helper waits on that signal
+    // before decoding any shared inputs.
     const auto afterWait = afterDepth;
     auto *p = client->p;
     p->frame = frame;
@@ -309,6 +320,7 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
     p->jitterY = guides.jitterY;
     std::memcpy(p->clipToPrevious, guides.clipToPrevious,
                 sizeof(p->clipToPrevious));
+    if (client->timeline) client->timeline->SignalInput(++p->serial);
     p->command = 1;
     p->result = 0;
     if (!SetEvent(client->request))
@@ -317,10 +329,12 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
     if (WaitForMultipleObjects(2, waits, FALSE, 5000) != WAIT_OBJECT_0 + 1 ||
         p->result != 1)
       throw std::runtime_error("NR request timeout/failure");
+    if (client->timeline) client->timeline->WaitOutput(p->serial);
     const auto afterHelper = stamp();
-    // This is the first write to the game's HDR. Failure before this point
-    // leaves it untouched. The helper owns only private copies, including on
-    // timeout.
+    // This is the first write to the game's HDR. The CPU path has completed
+    // the helper writes; the timeline path has enqueued a wait after the helper
+    // confirmed submission of its output signal. Failure before that handoff
+    // retains the original HDR. No unconfirmed future signal is ever waited on.
     Check(d->StretchRect(client->color.surface.Get(), nullptr, hdr.Get(),
                          nullptr, D3DTEXF_NONE));
     if (capture)

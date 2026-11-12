@@ -71,6 +71,17 @@ distance remains under investigation. **No Super Resolution upscaling or
 frame generation is implemented.** NVIDIA SDKs and runtime DLLs are separate
 dependencies under NVIDIA's terms; original addon code is GPL-3.0-only.
 
+## Neural performance update
+
+An optional GPU handoff removes CPU completion waits between the 32-bit game
+and 64-bit neural helper. It preserves eye resolution and NR/DLAA settings.
+In one matched simulated corridor test, NR rose from **23.5 to 38.6 FPS** and
+NR + DLAA from **16.0 to 39.2 FPS** at 2944×2208 per eye. These are not headset
+FPS predictions. See the [measurements, Proton research, setup and rollback](docs/proton-neural-performance.md).
+The setting is experimental and defaults off pending headset validation.
+A standalone frame-generation backend test passed under Proton; generated
+frames are **not integrated into TTWVR**.
+
 ## Tested status
 
 The Linux patches produced clear, smooth Quest 3 gameplay at the original

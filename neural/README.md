@@ -62,10 +62,11 @@ large camera changes reset history. The older spatial NR experiment remains
 available with zero motion and a reset on every evaluation. None of these tests
 establish headset comfort or quality across untested scenes.
 
-Shared-texture handoffs currently wait for GPU completion on the CPU. Images do
-not travel through CPU memory during processing, but these waits add latency.
-D3D11/D3D12 synchronization inside the 64-bit helper uses GPU fences. The broken
-cross-bitness Wine shared-fence experiment is not used.
+Shared-texture handoffs wait for GPU completion on the CPU by default. The
+[optional GPU handoff](#optional-gpu-handoff) replaces those completion waits
+with opaque Vulkan timeline dependencies. Images remain on the GPU in either
+mode. D3D11/D3D12 synchronization inside the 64-bit helper uses GPU fences;
+the broken cross-bitness Wine D3D12-fence experiment is not used.
 
 ## Build
 
@@ -82,7 +83,8 @@ cmake --build /path/to/build32
 cmake -S neural -B /path/to/build64 -G Ninja \
   -DCMAKE_TOOLCHAIN_FILE=cmake/mingw64.cmake -DCMAKE_BUILD_TYPE=Release \
   -DNGX_COMMON_INCLUDE=/path/to/nvidia-common/include \
-  -DNGX_NR_INCLUDE=/path/to/nvidia-nr/include
+  -DNGX_NR_INCLUDE=/path/to/nvidia-nr/include \
+  -DVULKAN_INCLUDE_DIR=/path/to/Vulkan-Headers/include
 cmake --build /path/to/build64
 
 cmake -S neural -B /path/to/build-native -G Ninja
@@ -94,6 +96,12 @@ The actual OpenXR entry points are tested for ownership, failed waits/releases,
 array slices, burst capture, asynchronous writes and bypass behavior. The
 standalone `shared_texture_probe.exe` and `d3d9_texture_probe.exe` verify GPU
 transport under Proton; they deliberately read pixels back for verification.
+`timeline_texture_probe.exe` builds for both bitnesses and verifies 32
+asynchronous D3D9→D3D11→D3D9 HDR/depth round trips with deferred pixel readback.
+Run the x86 executable with the absolute Windows path of its x64 counterpart
+in an isolated prefix. `tests/opaque_timeline_probe.cpp` separately checks the
+raw semaphore mechanism without DXVK or game assets.
+
 `replay_probe.exe` processes captured stereo HDR outside the game. Its identity
 mode verifies the conversion route; it does not claim an NR evaluation.
 
@@ -269,8 +277,8 @@ Expand beyond the validated Vault 101 scene and fixed render dimensions. Check
 scene transitions, weapons, transparencies, HUD/text, moving thin geometry,
 flicker, ghosting and eye disagreement over longer sequences. Measure GPU and
 application time under real WiVRn/Quest use; the simulated runtime cannot validate
-streaming latency or comfort. This prototype adds rendering cost and is not a
-frame-rate improvement.
+streaming latency or comfort. NR/DLAA add rendering work. The optional GPU
+handoff reduces synchronization overhead; it does not make the effects free.
 
 Additional references:
 
@@ -280,3 +288,21 @@ Additional references:
   and motion rules are not assumed valid for TTWVR.
 - [DLSS5-Feeder](https://github.com/jlrouzies-fr/DLSS5-Feeder): cross-bitness
   architecture reference. No third-party injector binaries were installed from it.
+
+## Optional GPU handoff
+
+The [November performance investigation](../docs/proton-neural-performance.md)
+adds an experimental opaque Vulkan timeline handoff. In the runtime INI:
+
+```ini
+[diagnostics]
+gpu_handoff=1
+```
+
+Restart the game after changing this setting. Install the matching layer/helper
+pair: protocol 4 is 232 bytes and refuses older helpers. Set `gpu_handoff=0`
+and restart to restore CPU completion waits. Distributed defaults keep it off.
+This changes synchronization, not NR/DLAA quality or rendering dimensions.
+Do not combine it with the historical monotonic-D3D12-fence binary patch.
+`frame_timing=1` optionally logs averaged OpenXR wait/application/end spans;
+`gpu_timing=1` separately samples NGX GPU execution. Both default off.

@@ -115,3 +115,11 @@ These are compatibility and local GPU checks, not a new headset performance or
 comfort benchmark. The earlier reported DLAA softness/haze remains under
 investigation; this update does not claim to fix it. The addon keeps TTWVR's stock
 upscaler disabled; the changed upstream upscaler host has not been revalidated.
+
+## Later neural performance build
+
+The [GPU handoff update](proton-neural-performance.md) uses a new layer/helper
+protocol. When installing that build, replace **both** the x86 layer and x64
+`neural_host.exe` with a matching pair while the game is closed. The 1.1.3 menu
+bootstrap remains compatible. Keep your INIs and use the linked opt-in/rollback
+instructions; this does not enable stock DLSS/FSR or establish a DLAA haze fix.

@@ -1,5 +1,13 @@
 # Changes
 
+## Neural GPU handoff and Proton research — 2026-11-12
+
+- Add an opt-in opaque Vulkan timeline handoff between the 32-bit game and 64-bit NGX helper, preserving GPU ordering without CPU completion waits. Matching protocol-4 layer/helper required; distributed default remains off.
+- Materialize deferred DXVK depth clears before external copies; verify HDR/depth/output across 32 asynchronous round trips with deferred readback and zero pixel mismatches.
+- Reuse the helper completion query, avoid implicit polling flushes, and batch output synchronization with the resolve.
+- Add optional OpenXR CPU-span timing and document matched full-resolution tests, capture evidence, current Proton/NR findings and rollback in [the investigation](docs/proton-neural-performance.md).
+- Verify the reference FG backend in the isolated Proton prefix; no TTWVR frame generation or Super Resolution integration is enabled. DLAA haze still needs headset assessment.
+
 ## TTWVR 1.1.3 deployment and resource guide — 2026-11-12
 
 - Record the completed Fluorine upgrade, unchanged settings/saves and rollback backup.

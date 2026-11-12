@@ -25,6 +25,7 @@ Config ReadConfig() {
     c.inspectBindings = GetPrivateProfileIntW(L"capture", L"inspect_bindings", 1, path.c_str()) != 0;
     c.captureCandidates = GetPrivateProfileIntW(L"capture", L"capture_candidates", 1, path.c_str()) != 0;
     c.burstFrames = std::clamp(GetPrivateProfileIntW(L"capture", L"burst_frames", 1, path.c_str()), 1u, 2u);
+    c.frameTiming = GetPrivateProfileIntW(L"diagnostics", L"frame_timing", 0, path.c_str()) != 0;
     c.logEvery = std::clamp(GetPrivateProfileIntW(L"diagnostics", L"log_every_frames", 600, path.c_str()), 60u, 36000u);
     return c;
 }

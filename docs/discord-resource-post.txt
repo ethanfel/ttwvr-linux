@@ -1,9 +1,9 @@
 DISCORD RESOURCE POST — TTWVR ON LINUX
-Updated for the supplied TTWVR 1.1.3 build, 2026-11-12.
+Updated for TTWVR 1.1.3 and the neural GPU handoff, 2026-11-12.
 
 Suggested forum title: TTWVR on Linux — Fluorine + WiVRn setup and rendering addon
 
-Copy the three messages below separately, without the separator labels.
+Copy the four messages below separately, without the separator labels.
 Each message is under 2,000 UTF-16 code units. Paths in the Steam command are
 examples to replace; the linked guide contains the full configuration.
 
@@ -30,7 +30,7 @@ A Linux guide and compatibility patches for **Tale of Two Wastelands** in VR, us
 
 Binary patches check exact hashes; newer Proton builds are not automatically compatible. This manual setup includes build steps. Obtain games/mods separately.
 
-**Updating to 1.1.3:** update TTWVR plus the matching addon DLL and OpenXR layer together. Preserve your INIs and retain the old mod for rollback. The Steam command stays unchanged. The archive's metadata still says 1.1.2; its DLL hash identifies the supported build.
+**Updating to 1.1.3:** update TTWVR plus the matching addon DLL, OpenXR layer and helper together. Preserve your INIs and retain the old mod for rollback. The Steam command stays unchanged. The archive's metadata still says 1.1.2; its DLL hash identifies the supported build.
 **Upgrade guide:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/ttwvr-1.1.3.md>
 
 **TTW requirements:** <https://thebestoftimes.moddinglinked.com/intro.html>
@@ -90,3 +90,28 @@ NR/DLAA apply live. **MSAA needs a restart**, including switching back to Off/DL
 Credits: KUPOkinz, the TTW team, Fluorine and WiVRn. Neural addon reference: TF2VRNeuralRendering. Original addon code: GPL-3.0-only. NVIDIA SDKs/runtime DLLs are separate dependencies under NVIDIA's terms; game/mod binaries are not bundled.
 
 ===== END MESSAGE 3 =====
+
+===== MESSAGE 4 — COPY BELOW =====
+
+**Experimental neural performance update**
+
+The addon now offers a GPU handoff between the 32-bit game and 64-bit neural helper. It replaces CPU completion waits with GPU dependencies while retaining full eye resolution and the chosen NR/DLAA settings.
+
+Matched simulated corridor test: NR **23.5 → 38.6 FPS**, NR + DLAA **16.0 → 39.2 FPS**, DLAA **35.8 → 38.6 FPS**. Headset gains still need checking.
+
+**Measurements, Proton research and rollback:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/proton-neural-performance.md>
+
+Close the game/helper, back up the installed files, and install the matching new `TTWVRNeuralRenderingLayer.dll` + `neural_host.exe`. Keep your existing runtime INI and NVIDIA DLLs. Layer/helper protocol versions must match.
+
+Add to the runtime INI, then restart:
+```ini
+[diagnostics]
+gpu_handoff=1
+```
+Set it to `0` and restart to restore CPU completion waits. The distributed default remains off. Keep the same Steam command and Fluorine profile.
+
+**Evidence:** 32 asynchronous HDR/depth round trips passed 393,216 pixel checks with zero mismatches. In-game comparisons use the same corridor and full 2944×2208 eye targets on simulated Monado; they do not predict WiVRn/Quest FPS or comfort. Both eyes and consecutive frames are checked separately from timing.
+
+**Frame generation:** the reference backend works in a synthetic Proton test, but TTWVR still has no generated stereo-frame delivery. FG remains disabled. This update also does not enable the stock upscaler or establish a fix for DLAA's distant haze.
+
+===== END MESSAGE 4 =====
