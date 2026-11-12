@@ -1,0 +1,832 @@
+{
+  "date": "2026-11-12",
+  "status": "experimental isolated author native Vulkan FSR; regular launch unchanged",
+  "gpu": "RTX 5090",
+  "runtime": "local simulated Monado null compositor",
+  "nominal_hz": 90,
+  "physical_headset_validated": false,
+  "frame_generation": false,
+  "addon_processing": false,
+  "ttwvr_original_sha256": "4c45d6e5adb5da76dd3d08bf0639d360761d3dc50d891ea0bd19b51e4fb006a0",
+  "ttwvr_candidate_sha256": "f8a8eb95070eaaee0041fd8901f69e1150abea3cf8115ac7206c24a153c2dedf",
+  "mapped_stock_wine": [
+    {
+      "path": "/media/p5/tales_2_wasteland/local/neural-test/compat/pfx/drive_c/windows/syswow64/d3d11.dll",
+      "sha256": "09e23a2003e03d616858e0c2ded02456b4908b3e17fb66f760ff507ec38e753c"
+    },
+    {
+      "path": "/media/unraid/vm/Steam/steamapps/common/Proton - Experimental/files/lib/wine/x86_64-unix/win32u.so",
+      "sha256": "d2f34ac08f9768a75457957b28a50c4f517cb919489f02f9e07e364c7ec8a75c"
+    }
+  ],
+  "motion_validation": {
+    "native_control": [
+      {
+        "eye": 0,
+        "frames": [
+          1800,
+          1801,
+          7020
+        ],
+        "output": [
+          2944,
+          2208
+        ],
+        "center_roi": [
+          1104,
+          828,
+          736,
+          552
+        ],
+        "center_translation_changed": 0.9943116926591052,
+        "center_consecutive_changed": 0.13964782214870824,
+        "center_nonblack": 1.0,
+        "capture_sha256": [
+          "047f9ffd7f7b5c5dcf9f3aba785ab7d1126404960b863e2323597b07adaaa406",
+          "57a5c089ad9cdeb8996f7146308f2bc92a7b1de7f44dbbc69f641c4a4e5d7442",
+          "56447be7d63303cca86bd869e03f70dfd4b3e1cfa9abe0c66a6bb3f4fafe6c8d"
+        ]
+      },
+      {
+        "eye": 1,
+        "frames": [
+          1800,
+          1801,
+          7020
+        ],
+        "output": [
+          2944,
+          2208
+        ],
+        "center_roi": [
+          1104,
+          828,
+          736,
+          552
+        ],
+        "center_translation_changed": 0.992997302299937,
+        "center_consecutive_changed": 0.13596063720856963,
+        "center_nonblack": 1.0,
+        "capture_sha256": [
+          "0a7870aebcc0e682832269464f4a857ead53cee01b4d76fb586fa3a30fb44d17",
+          "eaf828fb96f9e83d887ad507d8edbcd56bb65cda0152a6d527cd77c9e599acf6",
+          "f0321e211b5762c1eed255820120462f14f12a1f4d432527a1701000ef0193e1"
+        ]
+      }
+    ],
+    "quality_fp16": [
+      {
+        "eye": 0,
+        "frames": [
+          840,
+          841,
+          7320
+        ],
+        "output": [
+          2944,
+          2208
+        ],
+        "center_roi": [
+          1104,
+          828,
+          736,
+          552
+        ],
+        "center_translation_changed": 0.9993501890359168,
+        "center_consecutive_changed": 0.3774934034341525,
+        "center_nonblack": 0.999997538594833,
+        "capture_sha256": [
+          "e2780d070fcefdbaf66ae5c4ce475e6f6c0b78e9a8c68db0af68dd1821a57427",
+          "3cffcfd208a2caec1b983465c2ca1806d5bceed3805943deb6185c9b781468a6",
+          "4ff6a989cd43e1b60f56921099562c62447d14f04632bb4115c161b5bdc16118"
+        ]
+      },
+      {
+        "eye": 1,
+        "frames": [
+          840,
+          841,
+          7320
+        ],
+        "output": [
+          2944,
+          2208
+        ],
+        "center_roi": [
+          1104,
+          828,
+          736,
+          552
+        ],
+        "center_translation_changed": 0.9992394258034026,
+        "center_consecutive_changed": 0.375403670447385,
+        "center_nonblack": 0.999997538594833,
+        "capture_sha256": [
+          "a5a88ed705ce1b71912f400839ea3c52fedfa495aad1c0adaa919df015b54bd6",
+          "6c8600362e134221ab2cec8c63ccf1dd4ae67e295c9eb8cb8f2ece33c7d3e633",
+          "ec7a35423b6b132a96d1fcc1e34ae501604e49c96cb466ee64e554b58781ec6c"
+        ]
+      }
+    ],
+    "balanced_fp16": [
+      {
+        "eye": 0,
+        "frames": [
+          1710,
+          1711,
+          8730
+        ],
+        "output": [
+          2944,
+          2208
+        ],
+        "center_roi": [
+          1104,
+          828,
+          736,
+          552
+        ],
+        "center_translation_changed": 0.999052359010712,
+        "center_consecutive_changed": 0.3705694706994329,
+        "center_nonblack": 1.0,
+        "capture_sha256": [
+          "435b5da940cf4bd9bf57bcbb7367da4bd74bc9583eeae3a0b9ed29b2856c4ef4",
+          "4cab1a4748b42ab51fd54bad16cdfc6501268741abde8cf2870c21e8c960bed4",
+          "0d298f44d2816c8a5d3a79490d1373738a89c674bd8202686694011728d6df6b"
+        ]
+      },
+      {
+        "eye": 1,
+        "frames": [
+          1710,
+          1711,
+          8730
+        ],
+        "output": [
+          2944,
+          2208
+        ],
+        "center_roi": [
+          1104,
+          828,
+          736,
+          552
+        ],
+        "center_translation_changed": 0.9988923676748582,
+        "center_consecutive_changed": 0.36718996140516696,
+        "center_nonblack": 1.0,
+        "capture_sha256": [
+          "0ce3386277417f276cd808ac869441e88c4d71374af8f29e3e2a3804533e5188",
+          "48e9c01751cb9e9c5887efa6e7e3de9e0491c8b5c6007741816436c64d07c95d",
+          "47c1d2c02d911491d94713024721f333bb87ab4ae16561b320f16e8d12f6afeb"
+        ]
+      }
+    ],
+    "quality_fp32_stock_wine": [
+      {
+        "eye": 0,
+        "frames": [
+          1770,
+          1771,
+          3630
+        ],
+        "output": [
+          2944,
+          2208
+        ],
+        "center_roi": [
+          1104,
+          828,
+          736,
+          552
+        ],
+        "center_translation_changed": 0.9995052575614367,
+        "center_consecutive_changed": 0.3646571754883428,
+        "center_nonblack": 1.0,
+        "capture_sha256": [
+          "7ac0558c689e63c3d0268483a611618a6a319f0adb6b624356a7a4d4c43ab16a",
+          "0e846abe9621c6d22d448c4289363fa8c252a9f18787502105c33e0cf11e3567",
+          "05a01ab2fe0e8bb249e976342bc939f52bf8c7bb15320dcfe9317333a5d19f9c"
+        ]
+      },
+      {
+        "eye": 1,
+        "frames": [
+          1770,
+          1771,
+          3630
+        ],
+        "output": [
+          2944,
+          2208
+        ],
+        "center_roi": [
+          1104,
+          828,
+          736,
+          552
+        ],
+        "center_translation_changed": 0.9995052575614367,
+        "center_consecutive_changed": 0.3606377008506616,
+        "center_nonblack": 1.0,
+        "capture_sha256": [
+          "2a25c23b6c2c3ecbbfe290643730eae87a7cfbaefa8518779acbf6a9668e0b72",
+          "8c92e90489b5eb16457af42ff0ee9c610fd2f3e70e1c0aa4dff96cf5e480a355",
+          "c4fb9186fda3d984fab5484a98f81443b033ea602edaaf6b367266070c8f8d20"
+        ]
+      }
+    ]
+  },
+  "patch_generator_checks": [
+    {
+      "tool": "experimental_native_fsr.py",
+      "reproduced_sha256": "f8a8eb95070eaaee0041fd8901f69e1150abea3cf8115ac7206c24a153c2dedf",
+      "refused_overwrite": true,
+      "refused_wrong_source": true,
+      "source_unchanged": true
+    },
+    {
+      "tool": "experimental_opaque_fences.py",
+      "reproduced_sha256": "09e23a2003e03d616858e0c2ded02456b4908b3e17fb66f760ff507ec38e753c",
+      "refused_overwrite": true,
+      "refused_wrong_source": true,
+      "source_unchanged": true
+    }
+  ],
+  "fence_probe": {
+    "round_trips": 64,
+    "initial": 7,
+    "final": 515,
+    "child_exit": 0,
+    "parent_log": "Parent (32-bit): signalled 7\nChild exit: 0x00000000\nPASS: 64 cross-process GPU fence round trips, 7 -> 515\n",
+    "child_log": "Child (64-bit): importing parent's shared fence\nChild: completed 64 monotonic round trips\n"
+  },
+  "timings": {
+    "native_original_control": {
+      "fps": 39.749577489962945,
+      "seconds": 30.771328442002414,
+      "frame_samples": 21,
+      "gpu_samples": [
+        "27, 94.55, 4617",
+        "34, 94.43, 4617",
+        "35, 95.93, 4617",
+        "35, 96.71, 4617",
+        "27, 91.85, 4617",
+        "27, 93.26, 4617",
+        "27, 96.71, 4617",
+        "35, 98.91, 4617",
+        "35, 95.37, 4617",
+        "35, 97.16, 4617",
+        "35, 91.08, 4617",
+        "26, 88.54, 4617",
+        "35, 88.61, 4617",
+        "36, 95.89, 4617",
+        "35, 95.31, 4617",
+        "43, 92.25, 4617",
+        "43, 93.45, 4617",
+        "35, 97.44, 4617",
+        "28, 99.72, 4617",
+        "28, 98.35, 4617",
+        "35, 96.25, 4617",
+        "27, 92.52, 4617",
+        "28, 92.24, 4617",
+        "46, 92.25, 4617",
+        "28, 95.28, 4617",
+        "35, 93.35, 4636",
+        "35, 93.10, 4628",
+        "36, 97.92, 4628",
+        "35, 98.91, 4628",
+        "35, 95.48, 4628"
+      ],
+      "gpu_utilization_mean": 33.36666666666667,
+      "gpu_power_watts_mean": 94.76066666666667,
+      "gpu_memory_mib_mean": 4619.1,
+      "wait_ms": 12.648238095238096,
+      "app_ms": 10.845666666666666,
+      "end_ms": 0.7320952380952381,
+      "display_period_ms": 22.222,
+      "matched_comparison": true
+    },
+    "quality_fp16_stock_wine": {
+      "fps": 52.50403853965058,
+      "seconds": 30.810207876987988,
+      "frame_samples": 27,
+      "gpu_samples": [
+        "8, 65.63, 6914",
+        "16, 78.75, 6914",
+        "10, 74.29, 6914",
+        "13, 87.98, 6914",
+        "16, 89.74, 6914",
+        "17, 91.15, 6914",
+        "7, 75.49, 6914",
+        "16, 76.69, 6914",
+        "13, 88.52, 6914",
+        "12, 91.59, 6914",
+        "12, 82.13, 6914",
+        "12, 83.53, 6914",
+        "17, 81.17, 6914",
+        "12, 79.87, 6914",
+        "13, 91.40, 6914",
+        "13, 87.44, 6914",
+        "11, 74.56, 6914",
+        "12, 76.17, 6914",
+        "15, 80.68, 6914",
+        "13, 87.16, 6914",
+        "10, 87.94, 6914",
+        "11, 75.44, 6914",
+        "8, 66.43, 6914",
+        "9, 75.86, 6914",
+        "12, 75.85, 6914",
+        "11, 81.63, 6914",
+        "11, 83.48, 6914",
+        "10, 85.27, 6914",
+        "18, 86.76, 6914",
+        "12, 88.84, 6914"
+      ],
+      "gpu_utilization_mean": 12.333333333333334,
+      "gpu_power_watts_mean": 81.71466666666667,
+      "gpu_memory_mib_mean": 6914.0,
+      "wait_ms": 7.374074074074074,
+      "app_ms": 10.48874074074074,
+      "end_ms": 0.6808148148148149,
+      "display_period_ms": 13.168592592592594,
+      "matched_comparison": true
+    },
+    "balanced_fp16_stock_wine": {
+      "fps": 61.65882092821302,
+      "seconds": 30.791180965999956,
+      "frame_samples": 32,
+      "gpu_samples": [
+        "13, 92.84, 6579",
+        "13, 89.64, 6579",
+        "11, 90.82, 6579",
+        "15, 93.90, 6579",
+        "12, 89.91, 6579",
+        "14, 89.53, 6579",
+        "7, 88.30, 6579",
+        "16, 87.23, 6579",
+        "7, 79.40, 6579",
+        "7, 83.30, 6579",
+        "14, 91.77, 6579",
+        "10, 89.86, 6579",
+        "13, 88.03, 6579",
+        "18, 91.03, 6579",
+        "13, 89.27, 6579",
+        "16, 95.14, 6579",
+        "15, 95.94, 6579",
+        "19, 98.39, 6579",
+        "16, 89.96, 6579",
+        "16, 89.60, 6579",
+        "15, 97.48, 6579",
+        "16, 95.27, 6579",
+        "14, 90.74, 6579",
+        "18, 98.41, 6579",
+        "13, 91.88, 6579",
+        "13, 93.38, 6579",
+        "15, 91.73, 6579",
+        "7, 72.88, 6579",
+        "8, 73.88, 6579",
+        "17, 96.09, 6579"
+      ],
+      "gpu_utilization_mean": 13.366666666666667,
+      "gpu_power_watts_mean": 90.18666666666667,
+      "gpu_memory_mib_mean": 6579.0,
+      "wait_ms": 4.89475,
+      "app_ms": 9.8886875,
+      "end_ms": 0.65671875,
+      "display_period_ms": 11.45821875,
+      "matched_comparison": true
+    },
+    "quality_fp32_diagnostic_wine": {
+      "fps": 50.61582589784748,
+      "seconds": 30.801202552989707,
+      "frame_samples": 26,
+      "gpu_samples": [
+        "14, 90.59, 7000",
+        "8, 78.06, 7000",
+        "11, 79.91, 7000",
+        "12, 84.18, 7000",
+        "13, 87.27, 7000",
+        "10, 84.79, 7000",
+        "8, 77.98, 7000",
+        "14, 87.36, 7000",
+        "14, 87.13, 7000",
+        "12, 87.51, 7000",
+        "14, 83.38, 7000",
+        "8, 81.55, 7000",
+        "12, 80.84, 7000",
+        "13, 84.23, 7000",
+        "9, 73.33, 7000",
+        "13, 87.98, 7000",
+        "16, 87.38, 7000",
+        "13, 87.79, 7000",
+        "8, 84.88, 7000",
+        "13, 86.77, 7000",
+        "13, 87.68, 7000",
+        "13, 87.86, 7000",
+        "12, 87.64, 7000",
+        "11, 88.53, 7000",
+        "7, 77.95, 7000",
+        "12, 81.22, 7000",
+        "13, 90.74, 7000",
+        "12, 89.75, 7000",
+        "12, 90.26, 7000",
+        "15, 91.07, 7000"
+      ],
+      "gpu_utilization_mean": 11.833333333333334,
+      "gpu_power_watts_mean": 85.187,
+      "gpu_memory_mib_mean": 7000.0,
+      "wait_ms": 7.729307692307692,
+      "app_ms": 10.560038461538461,
+      "end_ms": 0.6481923076923077,
+      "display_period_ms": 12.820384615384617,
+      "matched_comparison": false
+    },
+    "performance_fp32_live_unmatched_view": {
+      "fps": 42.5244682799008,
+      "seconds": 30.794845616008388,
+      "frame_samples": 22,
+      "gpu_samples": [
+        "8, 71.29, 6624",
+        "9, 68.77, 6624",
+        "7, 66.80, 6624",
+        "7, 68.28, 6624",
+        "7, 67.92, 6624",
+        "6, 66.72, 6624",
+        "8, 67.54, 6624",
+        "12, 79.33, 6624",
+        "8, 71.78, 6624",
+        "7, 75.30, 6624",
+        "7, 71.61, 6624",
+        "7, 69.00, 6624",
+        "11, 75.08, 6624",
+        "7, 72.87, 6624",
+        "9, 71.92, 6624",
+        "12, 82.54, 6624",
+        "13, 78.78, 6624",
+        "9, 74.90, 6624",
+        "9, 74.21, 6624",
+        "9, 75.64, 6624",
+        "7, 75.25, 6624",
+        "13, 80.26, 6624",
+        "11, 82.60, 6624",
+        "9, 70.63, 6624",
+        "16, 82.57, 6624",
+        "14, 86.24, 6624",
+        "10, 80.52, 6624",
+        "11, 76.82, 6624",
+        "12, 76.90, 6624",
+        "13, 77.07, 6624"
+      ],
+      "gpu_utilization_mean": 9.6,
+      "gpu_power_watts_mean": 74.638,
+      "gpu_memory_mib_mean": 6624.0,
+      "wait_ms": 11.265454545454546,
+      "app_ms": 10.975409090909091,
+      "end_ms": 0.6381363636363636,
+      "display_period_ms": 15.151363636363637,
+      "matched_comparison": false
+    }
+  },
+  "counters": {
+    "native_original_control": {
+      "pid": 1117068,
+      "ttwvr_sha256": "4c45d6e5adb5da76dd3d08bf0639d360761d3dc50d891ea0bd19b51e4fb006a0",
+      "notice": "non-atomic status counters; pixels require separate validation",
+      "render_width": 0,
+      "render_height": 0,
+      "output_width": 0,
+      "output_height": 0,
+      "posted": 0,
+      "shown": 0,
+      "not_produced": 0,
+      "slot_busy": 0,
+      "resets": 0,
+      "worker_posts": 0,
+      "legacy_posts": 0,
+      "ready_when_shown": 0,
+      "show_checks": 0,
+      "upscaler": 1,
+      "native_fsr_frames_since_status_reset": 0,
+      "helper_mode_label": "DLSS",
+      "copy_refused": false,
+      "native_fsr_enabled": false,
+      "native_fsr_failed": false,
+      "native_fsr_initialized": false,
+      "fsr_fp16_allowed": false,
+      "native_fsr_active": false,
+      "native_enabled": 0,
+      "native_failed": 0,
+      "native_ready": 0,
+      "fp16_allowed": 0,
+      "native_frame_count": 0,
+      "native_gpu_samples": 0,
+      "native_gpu_sum_ms": 0.0,
+      "native_gpu_max_ms": 0.0,
+      "fp32_environment": false
+    },
+    "quality_fp16": {
+      "pid": 1095315,
+      "ttwvr_sha256": "f8a8eb95070eaaee0041fd8901f69e1150abea3cf8115ac7206c24a153c2dedf",
+      "notice": "non-atomic status counters; pixels require separate validation",
+      "render_width": 1984,
+      "render_height": 1488,
+      "output_width": 2944,
+      "output_height": 2208,
+      "posted": 593,
+      "shown": 592,
+      "not_produced": 0,
+      "slot_busy": 0,
+      "resets": 1,
+      "worker_posts": 593,
+      "legacy_posts": 0,
+      "ready_when_shown": 592,
+      "show_checks": 592,
+      "upscaler": 2,
+      "native_fsr_frames_since_status_reset": 593,
+      "helper_mode_label": "DLSS",
+      "copy_refused": false,
+      "native_fsr_enabled": true,
+      "native_fsr_failed": false,
+      "native_fsr_initialized": true,
+      "fsr_fp16_allowed": true,
+      "native_fsr_active": true,
+      "native_enabled": 1,
+      "native_failed": 0,
+      "native_ready": 1,
+      "fp16_allowed": 1,
+      "native_frame_count": 593,
+      "native_gpu_samples": 589,
+      "native_gpu_sum_ms": 273.0681280000001,
+      "native_gpu_max_ms": 0.5114879999999999,
+      "fp32_environment": false
+    },
+    "balanced_fp16": {
+      "pid": 1103150,
+      "ttwvr_sha256": "f8a8eb95070eaaee0041fd8901f69e1150abea3cf8115ac7206c24a153c2dedf",
+      "notice": "non-atomic status counters; pixels require separate validation",
+      "render_width": 1728,
+      "render_height": 1296,
+      "output_width": 2944,
+      "output_height": 2208,
+      "posted": 1460,
+      "shown": 1459,
+      "not_produced": 0,
+      "slot_busy": 0,
+      "resets": 1,
+      "worker_posts": 1460,
+      "legacy_posts": 0,
+      "ready_when_shown": 1459,
+      "show_checks": 1459,
+      "upscaler": 2,
+      "native_fsr_frames_since_status_reset": 1460,
+      "helper_mode_label": "DLSS",
+      "copy_refused": false,
+      "native_fsr_enabled": true,
+      "native_fsr_failed": false,
+      "native_fsr_initialized": true,
+      "fsr_fp16_allowed": true,
+      "native_fsr_active": true,
+      "native_enabled": 1,
+      "native_failed": 0,
+      "native_ready": 1,
+      "fp16_allowed": 1,
+      "native_frame_count": 1460,
+      "native_gpu_samples": 1456,
+      "native_gpu_sum_ms": 617.6746559999996,
+      "native_gpu_max_ms": 0.46399999999999997,
+      "fp32_environment": false
+    },
+    "quality_fp32_stock_wine": {
+      "pid": 1075881,
+      "ttwvr_sha256": "f8a8eb95070eaaee0041fd8901f69e1150abea3cf8115ac7206c24a153c2dedf",
+      "notice": "non-atomic status counters; pixels require separate validation",
+      "render_width": 1984,
+      "render_height": 1488,
+      "output_width": 2944,
+      "output_height": 2208,
+      "posted": 1545,
+      "shown": 1543,
+      "not_produced": 0,
+      "slot_busy": 0,
+      "resets": 1,
+      "worker_posts": 1544,
+      "legacy_posts": 0,
+      "ready_when_shown": 1544,
+      "show_checks": 1544,
+      "helper_mode_label": "DLSS",
+      "copy_refused": false,
+      "upscaler": 2,
+      "native_enabled": 1,
+      "native_failed": 0,
+      "native_ready": 1,
+      "fp16_allowed": 0,
+      "native_frame_count": 1545,
+      "native_gpu_samples": 1541,
+      "native_gpu_sum_ms": 727.9135040000011,
+      "native_gpu_max_ms": 0.526912,
+      "fp32_environment": true
+    },
+    "performance_fp32_live": {
+      "pid": 1075881,
+      "ttwvr_sha256": "f8a8eb95070eaaee0041fd8901f69e1150abea3cf8115ac7206c24a153c2dedf",
+      "notice": "non-atomic status counters; pixels require separate validation",
+      "render_width": 1472,
+      "render_height": 1104,
+      "output_width": 2944,
+      "output_height": 2208,
+      "posted": 3576,
+      "shown": 3575,
+      "not_produced": 0,
+      "slot_busy": 0,
+      "resets": 2,
+      "worker_posts": 3576,
+      "legacy_posts": 0,
+      "ready_when_shown": 3575,
+      "show_checks": 3575,
+      "helper_mode_label": "DLSS",
+      "copy_refused": false,
+      "upscaler": 2,
+      "native_enabled": 1,
+      "native_failed": 0,
+      "native_ready": 1,
+      "fp16_allowed": 0,
+      "native_frame_count": 3576,
+      "native_gpu_samples": 3572,
+      "native_gpu_sum_ms": 1684.0280640000008,
+      "native_gpu_max_ms": 0.835968,
+      "fp32_environment": true
+    }
+  },
+  "notes": [
+    "Native FSR 3.1.4 uses the author central crop and peripheral composition, unlike our full-frame D3D12 path.",
+    "A live-preset Performance sample had an altered viewpoint/avatar intrusion and is excluded from matched comparisons.",
+    "A software-breakpoint attempt inside 32-bit D3D11 caused a debug exception and did not yield a valid fence trace.",
+    "Normal half-precision Quality/Balanced and full-precision native FSR produce complete moving center images.",
+    "The helper label remains DLSS while native FSR renders; native counters and captures are checked independently.",
+    "No physical headset, outdoor, long-session or DLSS freshness fix is claimed.",
+    "Off is not a native-bypass setting in this author build: it selected DLSS, which still showed zero pixel change on headset translation. The original plugin was used for the real native control."
+  ],
+  "restoration": {
+    "private_files_restored": 6,
+    "private_d3d11_cache_restored": true,
+    "regular_files_checked": 65,
+    "regular_changed": [],
+    "installed_wine_sha256": "d2f34ac08f9768a75457957b28a50c4f517cb919489f02f9e07e364c7ec8a75c",
+    "normal_launch_changed": false,
+    "wivrn_default_changed": false,
+    "titanfall_launched": false
+  },
+  "static_patch_audit": [
+    {
+      "name": "Initialize embedded Vulkan FSR",
+      "rva": "0x52103b",
+      "bytes": 5,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "FSR startup trampoline",
+      "rva": "0x555500",
+      "bytes": 27,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkImage",
+      "rva": "0x552890",
+      "bytes": 32,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkImage",
+      "rva": "0x55287b",
+      "bytes": 8,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkImage",
+      "rva": "0x552a60",
+      "bytes": 29,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkImage",
+      "rva": "0x724ca0",
+      "bytes": 8,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkPipeline",
+      "rva": "0x722360",
+      "bytes": 33,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkPipeline",
+      "rva": "0x7222f7",
+      "bytes": 5,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkPipeline",
+      "rva": "0x722390",
+      "bytes": 32,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkPipeline",
+      "rva": "0x7264da",
+      "bytes": 8,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkPipeline",
+      "rva": "0x7223c0",
+      "bytes": 29,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkPipeline",
+      "rva": "0x7236d3",
+      "bytes": 5,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkBuffer / GetResource",
+      "rva": "0x724320",
+      "bytes": 33,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkBuffer / GetResource",
+      "rva": "0x724122",
+      "bytes": 6,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkBuffer / GetResource",
+      "rva": "0x724350",
+      "bytes": 32,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkBuffer / GetResource",
+      "rva": "0x7263f3",
+      "bytes": 7,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkBuffer / GetResource",
+      "rva": "0x724380",
+      "bytes": 31,
+      "executable": true,
+      "relocation_overlap": false
+    },
+    {
+      "name": "VkBuffer / GetResource",
+      "rva": "0x724b65",
+      "bytes": 6,
+      "executable": true,
+      "relocation_overlap": false
+    }
+  ],
+  "dlss_opaque_motion": [
+    {
+      "eye": 0,
+      "frames": [
+        2910,
+        2911,
+        5610
+      ],
+      "full_changed": 0.0,
+      "center_changed": 0.0,
+      "consecutive": 0.0
+    },
+    {
+      "eye": 1,
+      "frames": [
+        2910,
+        2911,
+        5610
+      ],
+      "full_changed": 0.0,
+      "center_changed": 0.0,
+      "consecutive": 0.0
+    }
+  ]
+}

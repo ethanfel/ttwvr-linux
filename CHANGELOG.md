@@ -1,5 +1,12 @@
 # Changes
 
+## Author-path native Vulkan FSR experiment — 2026-11-12
+
+- Initialize TTWVR 1.1.3's embedded FSR 3.1.4 backend and preserve 64-bit Vulkan image, pipeline and constant-buffer handles through its 32-bit FidelityFX structures.
+- Replace the broad diagnostic Wine overlay with a private DXVK opaque-timeline export change; retain real GPU synchronization and unmodified Wine. Pass 64 cross-process GPU fence round trips.
+- Verify complete consecutive stereo images and motion in the reconstructed center; record [candidate hashes, measurements and limits](docs/native-vulkan-fsr.md). Keep normal Fluorine launches unchanged.
+- Publish exact-build patch generators, the equivalent DXVK source patch and native-FSR diagnostic counters. No game/mod/runtime binaries are distributed.
+
 ## DLSS Balanced and Performance — 2026-11-12
 
 - Add live Off / Quality / Balanced / Performance choices in the native **DLSS SR** row and CLI. Preserve existing enabled settings; omitted mode defaults to Quality.

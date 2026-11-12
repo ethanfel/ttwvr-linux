@@ -1,5 +1,9 @@
 # Bundled DXVK / DLSS retest — TTWVR 1.1.3
 
+**Follow-up:** the [native Vulkan FSR repair](native-vulkan-fsr.md) now produces
+complete, moving stereo output with stock Wine and a scoped DXVK fence change.
+The stale-DLSS findings below remain unresolved.
+
 **Not ready for use under Proton. No performance improvement is validated.**
 The author's worker path loads after two guarded compatibility edits, and its
 64-bit helper can evaluate DLSS through D3D11 in an isolated fence experiment.

@@ -1,5 +1,9 @@
 # FSR 3.1.5 through the Linux rendering addon
 
+For work on the author's embedded Vulkan renderer, see the separate
+[native FSR 3.1.4 experiment](native-vulkan-fsr.md). The two paths have different
+transport, processing regions and controls.
+
 FSR Quality, Balanced and Performance are available in **VR Settings → FSR SR**.
 The addon uses the AMD runtime supplied with TTWVR 1.1.3 through its existing
 D3D11/D3D12 GPU transport. The original TTWVR DLL and ordinary Proton remain in

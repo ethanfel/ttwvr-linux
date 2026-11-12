@@ -49,7 +49,10 @@ registration stays intact.
 
 The [bundled DXVK / DLSS 1.1.3 retest](docs/bundled-renderer-113.md) reaches NGX
 evaluation but produces stale eye images under the diagnostic fence workaround.
-Its higher submission rate is not a validated performance gain.
+Its higher submission rate is not a validated performance gain. The separate
+[author's native Vulkan FSR experiment](docs/native-vulkan-fsr.md) now produces
+complete, moving stereo images after startup and 64-bit-handle repairs, using
+a scoped DXVK fence change with stock Wine. It remains outside normal launches.
 
 ## In-game rendering controls
 
@@ -111,7 +114,8 @@ confirmed, without a new headset frame-time measurement.
 120 Hz describes headset refresh, not 120 game FPS. Other hardware, sustained
 outdoor performance, complete controller/Pip-Boy checks and the final 90 Hz
 configuration still need validation. The addon keeps TTWVR's built-in DLSS/FSR
-path disabled; its updated 1.1.3 host has not been revalidated.
+path disabled. The separate [native Vulkan FSR experiment](docs/native-vulkan-fsr.md)
+has simulated-headset validation; the author's DLSS result is still unresolved.
 
 [Tested versions and evidence](docs/compatibility.md) · [Changes](CHANGELOG.md)
 

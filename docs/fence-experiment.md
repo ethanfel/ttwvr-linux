@@ -67,3 +67,12 @@ the FSR control changes about 85%. An apparent 64 FPS result is therefore
 not a usable performance improvement. The diagnostic remains unsuitable for
 normal launches; shared-image transfer and complete synchronization semantics
 are still unresolved.
+
+## Narrower native-FSR follow-up
+
+The [author-path FSR experiment](native-vulkan-fsr.md) now uses an isolated
+32-bit DXVK change to export opaque Vulkan timeline handles. It runs with the
+original Wine library and passed 64 parent/child GPU fence round trips. This
+still requires increasing fence values and is not a general D3D fence fix.
+Native FSR output was repaired separately; the old DLSS freshness failure is
+not considered fixed.

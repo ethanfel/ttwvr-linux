@@ -1,5 +1,5 @@
 // Reproduce TTWVR's cross-process D3D11 fence import without game or VR assets.
-// Build as both i686 and x86_64. Run probe32.exe <Windows path to probe64.exe>.
+// Build as both i686 and x86_64. Run probe32.exe <Windows path to probe64.exe> [rounds].
 #include <windows.h>
 #include <d3d11_4.h>
 #include <cstdio>
@@ -38,11 +38,14 @@ static void await_value(ID3D11Fence *fence, UINT64 value) {
 
 int wmain(int argc, wchar_t **argv) {
     SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
-    const bool child = argc == 4 && !std::wcscmp(argv[1], L"--child");
-    if (!child && argc != 2) {
-        std::fprintf(stderr, "Usage: probe32.exe <Windows path to probe64.exe>\n");
+    const bool child = argc == 5 && !std::wcscmp(argv[1], L"--child");
+    if (!child && argc != 2 && argc != 3) {
+        std::fprintf(stderr, "Usage: probe32.exe <Windows path to probe64.exe> [rounds 1..1000]\n");
         return 2;
     }
+    unsigned rounds = (child || argc == 3)
+        ? std::wcstoul(argv[child ? 4 : 2], nullptr, 10) : 1;
+    if (rounds < 1 || rounds > 1000) return 2;
     // Proton launches do not always forward console stdout. Keep each process's
     // small result log in the caller-selected working directory as well.
     if (!std::freopen(child ? "fence-probe-child.txt" : "fence-probe-parent.txt",
@@ -71,11 +74,15 @@ int wmain(int argc, wchar_t **argv) {
                                  0, FALSE, DUPLICATE_SAME_ACCESS), "DuplicateHandle");
         std::printf("Child (%zu-bit): importing parent's shared fence\n", sizeof(void*) * 8);
         check(device->OpenSharedFence(local, IID_PPV_ARGS(&fence)), "OpenSharedFence");
-        await_value(fence, 7);
-        check(context4->Signal(fence, 11), "Child Signal(11)");
-        context4->Flush();
-        await_value(fence, 11);
-        std::puts("Child: received 7, signalled 11");
+        for (unsigned round = 0; round < rounds; ++round) {
+            UINT64 incoming = 7 + 8 * round;
+            await_value(fence, incoming);
+            check(context4->Wait(fence, incoming), "Child GPU Wait");
+            check(context4->Signal(fence, incoming + 4), "Child Signal");
+            context4->Flush();
+            await_value(fence, incoming + 4);
+        }
+        std::printf("Child: completed %u monotonic round trips\n", rounds);
         CloseHandle(local);
         CloseHandle(process);
     } else {
@@ -89,15 +96,24 @@ int wmain(int argc, wchar_t **argv) {
         await_value(fence, 7);
         std::printf("Parent (%zu-bit): signalled 7\n", sizeof(void*) * 8);
         wchar_t command[32768];
-        int length = std::swprintf(command, 32768, L"\"%ls\" --child %lu %llu",
+        int length = std::swprintf(command, 32768, L"\"%ls\" --child %lu %llu %u",
                                   argv[1], GetCurrentProcessId(),
-                                  (unsigned long long)(uintptr_t)shared);
+                                  (unsigned long long)(uintptr_t)shared, rounds);
         if (length < 0 || length >= 32768) return 2;
         STARTUPINFOW startup = {};
         startup.cb = sizeof(startup);
         PROCESS_INFORMATION info = {};
         wincheck(CreateProcessW(argv[1], command, nullptr, nullptr, FALSE, 0,
                                 nullptr, nullptr, &startup, &info), "CreateProcess(child)");
+        for (unsigned round = 0; round < rounds; ++round) {
+            UINT64 reply = 11 + 8 * round;
+            await_value(fence, reply);
+            if (round + 1 < rounds) {
+                check(context4->Wait(fence, reply), "Parent GPU Wait");
+                check(context4->Signal(fence, reply + 4), "Parent Signal");
+                context4->Flush();
+            }
+        }
         if (WaitForSingleObject(info.hProcess, 20000) != WAIT_OBJECT_0) {
             std::fprintf(stderr, "Probe child timed out; terminating only this test child\n");
             TerminateProcess(info.hProcess, 4);
@@ -107,8 +123,9 @@ int wmain(int argc, wchar_t **argv) {
         wincheck(GetExitCodeProcess(info.hProcess, &exit_code), "GetExitCodeProcess");
         std::printf("Child exit: 0x%08lx\n", exit_code);
         if (exit_code) return 1;
-        await_value(fence, 11);
-        std::puts("PASS: cross-process GPU fence round trip 7 -> 11");
+        await_value(fence, 11 + 8 * (rounds - 1));
+        std::printf("PASS: %u cross-process GPU fence round trips, 7 -> %u\n",
+                    rounds, 11 + 8 * (rounds - 1));
         CloseHandle(info.hThread);
         CloseHandle(info.hProcess);
         CloseHandle(shared);

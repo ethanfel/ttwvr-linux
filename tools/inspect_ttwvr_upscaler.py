@@ -12,6 +12,7 @@ from pathlib import Path
 import struct
 
 SUPPORTED = {
+    "f8a8eb95070eaaee0041fd8901f69e1150abea3cf8115ac7206c24a153c2dedf",
     "4c45d6e5adb5da76dd3d08bf0639d360761d3dc50d891ea0bd19b51e4fb006a0",
     "b82d341690cf0068b561803dca22a4ac07ea8042e6437c68f3ab9a85fcd16530",
 }
@@ -24,6 +25,8 @@ COUNTERS = {
     "resets": 0x19CA4D0, "worker_posts": 0x19CA804,
     "legacy_posts": 0x19CAA08, "ready_when_shown": 0x19CAA0C,
     "show_checks": 0x19CAA20,
+    "upscaler": 0x1998828,
+    "native_fsr_frames_since_status_reset": 0x19ED644,
 }
 
 
@@ -56,6 +59,13 @@ def inspect(pid):
                   for name, rva in COUNTERS.items()}
         result["helper_mode_label"] = read(0x19CA508, 96).split(b"\0")[0].decode(errors="replace")
         result["copy_refused"] = bool(read(0x1998E52, 1)[0])
+        for name, rva in (("native_fsr_enabled", 0x1998830),
+                          ("native_fsr_failed", 0x1998831),
+                          ("native_fsr_initialized", 0x19ED2EC),
+                          ("fsr_fp16_allowed", 0x1B20C18)):
+            result[name] = bool(read(rva, 1)[0])
+        result["native_fsr_active"] = (result["upscaler"] == 2
+            and result["native_fsr_enabled"] and not result["native_fsr_failed"])
     finally:
         os.close(fd)
     return {"pid": pid, "ttwvr_sha256": digest,
