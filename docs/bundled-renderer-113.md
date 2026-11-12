@@ -1,15 +1,10 @@
 # Bundled DXVK / DLSS retest — TTWVR 1.1.3
 
-**Follow-up:** the [native Vulkan FSR repair](native-vulkan-fsr.md) now produces
-complete, moving stereo output with stock Wine and a scoped DXVK fence change.
-The stale-DLSS findings below remain unresolved.
-
-**Not ready for use under Proton. No performance improvement is validated.**
-The author's worker path loads after two guarded compatibility edits, and its
-64-bit helper can evaluate DLSS through D3D11 in an isolated fence experiment.
-However, the displayed DLSS eye images remain stale when the simulated headset
-moves. The apparently higher frame rate must not be presented as a working gain.
-The normal Fluorine launcher and rendering addon remain unchanged.
+**Superseded by a working isolated repair:** [author DLSS with full-size shared
+output](author-dlss.md) now passes consecutive stereo and movement checks with
+stock Wine. [Native Vulkan FSR](native-vulkan-fsr.md) is also working separately.
+The findings below preserve the earlier failed experiment and rejected timing;
+they do not describe the newly repaired candidate. Normal launches are unchanged.
 
 ## Why investigate this path?
 

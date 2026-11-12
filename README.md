@@ -47,12 +47,12 @@ The OpenXR/DXVK overlays apply to the VR launch without replacing Steam's
 installed Proton files. Runtime selection is per launch; WiVRn's default
 registration stays intact.
 
-The [bundled DXVK / DLSS 1.1.3 retest](docs/bundled-renderer-113.md) reaches NGX
-evaluation but produces stale eye images under the diagnostic fence workaround.
-Its higher submission rate is not a validated performance gain. The separate
-[author's native Vulkan FSR experiment](docs/native-vulkan-fsr.md) now produces
-complete, moving stereo images after startup and 64-bit-handle repairs, using
-a scoped DXVK fence change with stock Wine. It remains outside normal launches.
+The author's bundled-renderer experiments now produce fresh stereo output with
+[DLSS](docs/author-dlss.md) and [native Vulkan FSR](docs/native-vulkan-fsr.md).
+The DLSS fix keeps full-size shared output when direct headset-image sharing
+is unavailable; FSR needs startup and 64-bit-handle repairs. Both use a scoped
+DXVK fence change with stock Wine. These paths remain isolated from normal
+launches and still need physical-headset validation.
 
 ## In-game rendering controls
 
@@ -115,7 +115,7 @@ confirmed, without a new headset frame-time measurement.
 outdoor performance, complete controller/Pip-Boy checks and the final 90 Hz
 configuration still need validation. The addon keeps TTWVR's built-in DLSS/FSR
 path disabled. The separate [native Vulkan FSR experiment](docs/native-vulkan-fsr.md)
-has simulated-headset validation; the author's DLSS result is still unresolved.
+and [author DLSS repair](docs/author-dlss.md) have simulated-headset validation.
 
 [Tested versions and evidence](docs/compatibility.md) · [Changes](CHANGELOG.md)
 

@@ -12,6 +12,8 @@ from pathlib import Path
 import struct
 
 SUPPORTED = {
+    "8384261c4b5fafd90a7fe860ccb7e1e24953a653c2fdbeafb8bd46ab34485f64",
+    "ee9e2e1b1d2ae120244ca53f033327ee8bad83fb43a7ffa1b79753c17e50270f",
     "f8a8eb95070eaaee0041fd8901f69e1150abea3cf8115ac7206c24a153c2dedf",
     "4c45d6e5adb5da76dd3d08bf0639d360761d3dc50d891ea0bd19b51e4fb006a0",
     "b82d341690cf0068b561803dca22a4ac07ea8042e6437c68f3ab9a85fcd16530",
@@ -59,7 +61,9 @@ def inspect(pid):
                   for name, rva in COUNTERS.items()}
         result["helper_mode_label"] = read(0x19CA508, 96).split(b"\0")[0].decode(errors="replace")
         result["copy_refused"] = bool(read(0x1998E52, 1)[0])
-        for name, rva in (("native_fsr_enabled", 0x1998830),
+        for name, rva in (("direct_output_capability", 0x19987B1),
+                          ("direct_output_active", 0x19987B0),
+                          ("native_fsr_enabled", 0x1998830),
                           ("native_fsr_failed", 0x1998831),
                           ("native_fsr_initialized", 0x19ED2EC),
                           ("fsr_fp16_allowed", 0x1B20C18)):

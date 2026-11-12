@@ -1,9 +1,9 @@
 DISCORD RESOURCE POST — TTWVR ON LINUX
-Updated for TTWVR 1.1.3, native Vulkan FSR research and the rendering addon, 2026-11-12.
+Updated for TTWVR 1.1.3, author DLSS/Vulkan FSR research and the rendering addon, 2026-11-12.
 
 Suggested forum title: TTWVR on Linux — Fluorine + WiVRn setup and rendering addon
 
-Copy the eight messages below separately, without the separator labels.
+Copy the nine messages below separately, without the separator labels.
 Each message is under 2,000 UTF-16 code units. Paths in the Steam command are
 examples to replace; the linked guide contains the full configuration.
 
@@ -179,9 +179,26 @@ A private DXVK change handles the bridge's increasing shared GPU timelines. **St
 
 Fresh runs on RTX 5090 / simulated Monado at 90 Hz measured **native 39.7 app FPS; FSR Quality 52.5 (~82 W); Balanced 61.7 (~90 W)**, all with **2944×2208 output per eye**. This is not a Quest/WiVRn headset benchmark, and the author's cropped processing is a different workload from our helper path.
 
-**Experimental and isolated:** the regular Fluorine launch stays unchanged. Do not combine both processing paths or overwrite loaded DLLs. Headset motion/comfort, ghosting, fog, Pip-Boy text and long sessions still need review. The separate DLSS result is unresolved; frame generation is off here.
+**Experimental and isolated:** the regular Fluorine launch stays unchanged. Do not combine both processing paths or overwrite loaded DLLs. Headset motion/comfort, ghosting, fog, Pip-Boy text and long sessions still need review. The DLSS repair follows in message 9; frame generation is off here.
 
 Exact-build patch generators, source notes, captures, setup and measurements:
 <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/native-vulkan-fsr.md>
 
 ===== END MESSAGE 8 =====
+
+===== MESSAGE 9 — COPY BELOW =====
+
+**Author's DLSS path: frozen output fixed**
+
+The author's bundled Vulkan renderer and D3D11 DLSS helper now produce fresh stereo output under Proton. DLSS itself was working; the plugin selected direct headset output without usable imported headset images, leaving only 16×16 fallback textures. The patch keeps full-size shared output instead.
+
+Both eyes, consecutive frames and simulated head movement pass in Quality, Balanced and Performance. Successful NGX evaluations alternate per-eye features. No CPU image readback is added to normal rendering, and stock Wine stays intact. An optional combined patch also retains the native Vulkan FSR repair.
+
+At 2944×2208 output per eye, RTX 5090 / simulated Monado with its reported interval held at 90 Hz measured **native 52.1 app FPS; DLSS Quality 67.4; Balanced 62.1; Performance 57.2**. These are individual samples, not a headset forecast. Adaptive runtime pacing can change the result; full timings, GPU power and caveats are documented. The author reconstructs a central crop and composites the periphery.
+
+**Experimental and isolated:** regular Fluorine launches remain unchanged. Headset comfort, peripheral coverage, ghosting, fog, text and long sessions still need testing. Frame generation remains off for this author-path test. No game/mod/NVIDIA DLLs are distributed.
+
+Exact-build patch generator, captures, setup and evidence:
+<https://github.com/ethanfel/ttwvr-linux/blob/main/docs/author-dlss.md>
+
+===== END MESSAGE 9 =====

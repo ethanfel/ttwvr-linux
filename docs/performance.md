@@ -4,8 +4,9 @@
 > and fence experiments below remain disabled. For the current native setup,
 > use the [Fluorine installation guide](installation.md).
 
-The [updated bundled-renderer 1.1.3 retest](bundled-renderer-113.md) now reaches
-D3D11 NGX evaluation, but fails movement validation with stale DLSS eye images.
+The [later author-DLSS repair](author-dlss.md) resolves the 1.1.3 stale-output
+failure using full-size shared textures and a scoped DXVK fence change. It has
+isolated stereo/movement validation and remains outside normal launches.
 
 The subsequent [DXVK memory-pool fix and 120 Hz result](dxvk-pools.md)
 improve performance at the original resolution, independently of DLSS.

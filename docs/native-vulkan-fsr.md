@@ -11,6 +11,10 @@ WiVRn runtime registration are preserved. No physical-headset validation of
 these new patches is claimed. Frame generation and our NR/DLAA/SR processing
 are disabled during these tests.
 
+**Later DLSS follow-up:** the [full-size shared-output repair](author-dlss.md)
+resolves the frozen DLSS result recorded below. An optional combined candidate
+retains these native-FSR repairs. The earlier FSR measurements remain unchanged.
+
 ## Repairs
 
 The supplied archive is named `TTWVR1.1.3.zip`; the original plugin identifies

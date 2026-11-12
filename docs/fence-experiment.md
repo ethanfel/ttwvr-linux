@@ -74,5 +74,6 @@ The [author-path FSR experiment](native-vulkan-fsr.md) now uses an isolated
 32-bit DXVK change to export opaque Vulkan timeline handles. It runs with the
 original Wine library and passed 64 parent/child GPU fence round trips. This
 still requires increasing fence values and is not a general D3D fence fix.
-Native FSR output was repaired separately; the old DLSS freshness failure is
-not considered fixed.
+Native FSR output was repaired separately. A further [DLSS shared-output
+repair](author-dlss.md) now resolves the stale-image result above with stock Wine;
+the old diagnostic timing remains invalid.

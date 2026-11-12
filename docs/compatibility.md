@@ -35,7 +35,7 @@ patches do require the matching Proton files.
 | Headset gameplay and tracking | Passed with the OpenXR bridge patch |
 | Earlier full-resolution performance | 59.8 FPS capture at 120 Hz with Windows MO2; user reported clear, very smooth gameplay. Not a Fluorine benchmark. |
 | Capture resolution | 2944×2208 per eye, `Resolution=150%` in isolated tests; the upgrade preserves the regular profile's chosen resolution |
-| TTWVR built-in DLSS / FSR upscaler | Disabled in normal addon setup; [native Vulkan FSR experiment](native-vulkan-fsr.md) produces fresh stereo output; bundled DLSS remains unresolved |
+| TTWVR built-in DLSS / FSR upscaler | Disabled in normal addon setup; [native Vulkan FSR experiment](native-vulkan-fsr.md) produces fresh stereo output; [author DLSS repair](author-dlss.md) also passes consecutive stereo and movement checks in isolation |
 | Rendering Addon in Fluorine | Installed; native VR Settings rows, gamepad navigation, live NR/DLAA/SR/FG, restart for MSAA |
 | Scene MSAA 2×/4×/8× | Matching full-size color/depth sample counts verified in isolated GPU runs |
 | NR and native-resolution DLAA | Both eyes/consecutive frames verified in isolated gameplay captures; DLAA softness/haze at distance remains under investigation |
@@ -50,6 +50,8 @@ TTWVR uses **OpenXR directly**. xrizer is used by Proton's earlier VR startup
 probe. No global OpenXR/OpenVR runtime change is required by the launcher.
 
 ## Evidence
+
+- [Author DLSS output-routing repair and simulated results](author-dlss.md)
 
 - [DLSS SR and queued stereo FG evidence](sr-frame-generation.md)
 - [TTWVR 1.1.3 compatibility and menu update](ttwvr-1.1.3.md)

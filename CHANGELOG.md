@@ -1,5 +1,11 @@
 # Changes
 
+## Author DLSS shared-output repair — 2026-11-12
+
+- Repair the author renderer's stale DLSS output by retaining full-size shared textures when direct headset images are unavailable. Keep the bundled Vulkan worker, D3D11 NGX helper and scoped opaque GPU fences.
+- Verify fresh consecutive stereo output and head motion for Quality, Balanced and Performance. Record successful alternating NGX evaluations and distinguish fresh NGX reconstruction from the broken 16×16 fallback output.
+- Add an exact-build patch generator, optional native-FSR combination, hashes, captures and [performance evidence](docs/author-dlss.md). Preserve regular Fluorine launches and stock Wine; no vendor DLLs distributed.
+
 ## Author-path native Vulkan FSR experiment — 2026-11-12
 
 - Initialize TTWVR 1.1.3's embedded FSR 3.1.4 backend and preserve 64-bit Vulkan image, pipeline and constant-buffer handles through its 32-bit FidelityFX structures.
