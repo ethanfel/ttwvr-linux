@@ -112,8 +112,9 @@ neural settings menu and loaded a copied save (confirmed by the user). The
 simulated-headset run used full 2944×2208 eye images. DLAA logs included
 `dlaa_evaluate ... output_applied=1` for both eyes on consecutive frames.
 NR was off and DLAA was on, matching the existing installation settings.
-This is not a headset latency, streaming, visual-quality or FPS benchmark.
-A physical WiVRn check remains necessary after changing the manager.
+The user subsequently confirmed that the native setup works in normal use.
+This is functional confirmation; headset latency, streaming quality and frame
+times were not measured during this migration.
 
 For the optional real save-mount integration check, run as the desktop user:
 
