@@ -20,7 +20,7 @@ patches do require the matching Proton files.
 | xrizer | `0.6.r5.g63fc7eb`, 64-bit |
 | Native manager | Fluorine 0.4.1, FUSE backend |
 | Historical manager | Windows MO2 2.5.2 portable; [archived workflow](archive/mo2/README.md) |
-| TTW / TTWVR | 3.4 / 1.1.0 |
+| TTW / TTWVR | 3.4 / 1.1.0 and supplied 1.1.3 archive |
 | xNVSE | 6.4.9 |
 | DXVK source | `cf0a0d90f8965147741ad17dcd0b263817572ab3`, with the pool patch |
 
@@ -34,10 +34,10 @@ patches do require the matching Proton files.
 | Headset gameplay and tracking | Passed with the OpenXR bridge patch |
 | Earlier full-resolution performance | 59.8 FPS capture at 120 Hz with Windows MO2; user reported clear, very smooth gameplay. Not a Fluorine benchmark. |
 | Rendering settings | Original 2944×2208 eye targets, `Resolution=150%` |
-| TTWVR built-in DLSS / FSR upscaler | Not working; old renderer/fence experiments disabled |
-| Rendering Addon in Fluorine | Installed; native Settings → VR rows, gamepad navigation, live NR/DLAA, restart for MSAA |
+| TTWVR built-in DLSS / FSR upscaler | Disabled in this addon setup; original path not revalidated on 1.1.3 |
+| Rendering Addon in Fluorine | Installed; native VR Settings rows, gamepad navigation, live NR/DLAA, restart for MSAA |
 | Scene MSAA 2×/4×/8× | Matching full-size color/depth sample counts verified in isolated GPU runs |
-| NR and native-resolution DLAA | Both eyes/consecutive frames verified in isolated gameplay captures; latest DLAA motion correction needs physical-headset confirmation |
+| NR and native-resolution DLAA | Both eyes/consecutive frames verified in isolated gameplay captures; DLAA softness/haze at distance remains under investigation |
 | Blood-effect depth copy | Warnings remain |
 | Complete controls / calibration / Pip-Boy checks | Pending |
 | Long sessions, outdoor benchmarks, other hardware | Pending |
@@ -48,6 +48,7 @@ probe. No global OpenXR/OpenVR runtime change is required by the launcher.
 
 ## Evidence
 
+- [TTWVR 1.1.3 compatibility and menu update](ttwvr-1.1.3.md)
 - [Native Fluorine configuration, save mount and migration validation](native-fluorine.md)
 - [Rendering Addon controls, jitter correction and stereo tests](../neural/docs/VR-SETTINGS.md)
 - [OpenXR patch and regression results](openxr-layers.md)

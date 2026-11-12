@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// Experimental adapter to the exact, hash-verified TTWVR 1.1.0 motion renderer.
+// Experimental adapter to the exact, hash-verified TTWVR motion renderer.
 // Does not activate TTWVR's upscaler or alter its on-disk binary.
 #include "NativeGuides.h"
 #include "GuideMath.h"
 #include "SceneCapture.h"
 #include "SpatialNR.h"
-#include "VRSettings.h"
 #include "Support.h"
+#include "TTWVRBuild.h"
+#include "VRSettings.h"
 #include <MinHook.h>
 #include <algorithm>
 #include <chrono>
@@ -31,6 +32,7 @@ Ready ready = nullptr;
 Depth depth = nullptr;
 Size size = nullptr;
 unsigned char *base = nullptr;
+const TTWVRBuild *layout = nullptr;
 bool enabled = false, captureProbe = false, profile = false;
 bool jitterProbe = false, applyJitter = false;
 TemporalGuides guides[2];
@@ -63,13 +65,13 @@ void MatrixJson(FILE *out, const float *m) {
 void __cdecl HookEyeSetup(unsigned eye, bool activeUpscaler) {
   eyeSetup(eye, activeUpscaler);
   if (!NativeGuidesEnabled() || activeUpscaler || eye > 1 || !sceneDepth ||
-      *reinterpret_cast<int *>(base + 0xef72a4) >= 0)
+      *reinterpret_cast<int *>(base + layout->activeEye) >= 0)
     return;
-  auto *d = *reinterpret_cast<IDirect3DDevice9 **>(base + 0x19710e8);
+  auto *d = *reinterpret_cast<IDirect3DDevice9 **>(base + layout->device);
   if (d)
     reinterpret_cast<void(__cdecl *)(IDirect3DDevice9 *, unsigned, float,
-                                     float)>(base + 0x51cc90)(d, eye, jitterX,
-                                                              jitterY);
+                                     float)>(base + layout->motionPrepare)(
+        d, eye, jitterX, jitterY);
 }
 bool __cdecl HookReady() { return preparing ? true : ready(); }
 IDirect3DSurface9 *__cdecl HookDepth() {
@@ -101,11 +103,12 @@ bool __cdecl HookPrepare(IDirect3DDevice9 *d, const unsigned *eyes,
     Log("native_guides_prepare attempts=%llu prepared=%llu result=%d count=%u "
         "depth=%p config=%u",
         (unsigned long long)attempts, (unsigned long long)prepared, result,
-        count, sceneDepth.Get(), unsigned(*(base + 0xf9d848 + 0xe8)));
+        count, sceneDepth.Get(), unsigned(*(base + layout->settings + 0xe8)));
   return result;
 }
 } // namespace
-bool InstallNativeGuides(HMODULE module) {
+bool InstallNativeGuides(HMODULE module, const TTWVRBuild &build) {
+  layout = &build;
   const auto ini = Directory() + L"\\TTWVRNeuralRendering.ini";
   // Install on the verified TTWVR binary even when initially off. Hook work
   // stays gated by NativeGuidesEnabled; off -> on no longer needs a restart.
@@ -121,11 +124,12 @@ bool InstallNativeGuides(HMODULE module) {
     void *detour;
     void **original;
   };
-  Hook hooks[] = {{0x521d50, (void *)HookPrepare, (void **)&prepare},
-                  {0x50b5b0, (void *)HookReady, (void **)&ready},
-                  {0x50ee90, (void *)HookDepth, (void **)&depth},
-                  {0x559510, (void *)HookSize, (void **)&size},
-                  {0x564de0, (void *)HookEyeSetup, (void **)&eyeSetup}};
+  Hook hooks[] = {
+      {layout->guidesPrepare, (void *)HookPrepare, (void **)&prepare},
+      {layout->guidesReady, (void *)HookReady, (void **)&ready},
+      {layout->guidesDepth, (void *)HookDepth, (void **)&depth},
+      {layout->guidesSize, (void *)HookSize, (void **)&size},
+      {layout->eyeSetup, (void *)HookEyeSetup, (void **)&eyeSetup}};
   std::vector<void *> added;
   for (auto &h : hooks) {
     auto *address = base + h.rva;
@@ -168,7 +172,8 @@ bool GetTemporalGuides(uint64_t frame, unsigned eye, TemporalGuides &out) {
 }
 bool NativeJitter(float &x, float &y) {
   if (!NativeGuidesEnabled() || !applyJitter ||
-      *reinterpret_cast<int *>(base + 0xef72a4) < 0 || *(base + 0x19ae10b))
+      *reinterpret_cast<int *>(base + layout->activeEye) < 0 ||
+      *(base + layout->motionRendering))
     return false;
   x = jitterX;
   y = jitterY;
@@ -177,7 +182,7 @@ bool NativeJitter(float &x, float &y) {
 void NativeGuidesObserveScene(IDirect3DDevice9 *d, uint64_t frame) {
   if (!NativeGuidesEnabled())
     return;
-  const int eye = *reinterpret_cast<int *>(base + 0xef72a4);
+  const int eye = *reinterpret_cast<int *>(base + layout->activeEye);
   if (eye < 0 || eye > 1)
     return;
   auto &camera = cameras[eye];
@@ -258,12 +263,13 @@ void NativeGuidesBeforeTone(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
       currentDesc.Width == Width && currentDesc.Height == Height &&
       currentDesc.Format == D3DFMT_D24S8)
     sceneDepth = current;
-  const int active = *reinterpret_cast<int *>(base + 0xef72a4);
+  const int active = *reinterpret_cast<int *>(base + layout->activeEye);
   const bool sample = profile && frame % 120 == 0;
   const auto start = sample ? std::chrono::steady_clock::now()
                             : std::chrono::steady_clock::time_point{};
   if (active == int(eye))
-    reinterpret_cast<void(__cdecl *)(IDirect3DDevice9 *)>(base + 0x51dce0)(d);
+    reinterpret_cast<void(__cdecl *)(IDirect3DDevice9 *)>(
+        base + layout->motionSubmit)(d);
   if (sample)
     Log("guide_cpu_timing frame=%llu eye=%u camera_draws=%u camera_ms=%.3f "
         "motion_submit_ms=%.3f",
@@ -272,8 +278,8 @@ void NativeGuidesBeforeTone(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
         std::chrono::duration<double, std::milli>(
             std::chrono::steady_clock::now() - start)
             .count());
-  auto *surface =
-      *reinterpret_cast<IDirect3DSurface9 **>(base + 0x19ae8f0 + eye * 4);
+  auto *surface = *reinterpret_cast<IDirect3DSurface9 **>(
+      base + layout->motionSurfaces + eye * 4);
   if (capture && surface) {
     CaptureExtraSurface(d, surface,
                         CaptureDirectory() + L"\\motion-frame-" +

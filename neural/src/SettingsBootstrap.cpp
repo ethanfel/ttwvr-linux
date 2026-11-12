@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Minimal xNVSE ABI: no commands/opcodes or save serialization are registered.
+#include "TTWVRBuild.h"
 #include <MinHook.h>
-#include <array>
-#include <bcrypt.h>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -40,44 +39,6 @@ void Log(const char *text) {
     std::fclose(f);
   }
 }
-bool Verified(HMODULE module) {
-  wchar_t path[32768]{};
-  GetModuleFileNameW(module, path, 32768);
-  auto file = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, nullptr,
-                          OPEN_EXISTING, 0, nullptr);
-  if (file == INVALID_HANDLE_VALUE)
-    return false;
-  BCRYPT_ALG_HANDLE alg = nullptr;
-  BCRYPT_HASH_HANDLE hash = nullptr;
-  bool ok = BCryptOpenAlgorithmProvider(&alg, BCRYPT_SHA256_ALGORITHM, nullptr,
-                                        0) >= 0;
-  if (ok)
-    ok = BCryptCreateHash(alg, &hash, nullptr, 0, nullptr, 0, 0) >= 0;
-  std::array<unsigned char, 65536> data{};
-  DWORD got = 0;
-  while (ok) {
-    if (!ReadFile(file, data.data(), data.size(), &got, nullptr)) {
-      ok = false;
-      break;
-    }
-    if (!got)
-      break;
-    ok = BCryptHashData(hash, data.data(), got, 0) >= 0;
-  }
-  std::array<unsigned char, 32> digest{};
-  if (ok)
-    ok = BCryptFinishHash(hash, digest.data(), digest.size(), 0) >= 0;
-  if (hash)
-    BCryptDestroyHash(hash);
-  if (alg)
-    BCryptCloseAlgorithmProvider(alg, 0);
-  CloseHandle(file);
-  char hex[65]{};
-  for (unsigned i = 0; i < 32; ++i)
-    std::snprintf(hex + i * 2, 3, "%02x", digest[i]);
-  return ok && !std::strcmp(hex, "8a3a71b48d362984fe346c73b68dfbd476d6e138d6831"
-                                 "f26f10c6f506cd03880");
-}
 void __cdecl HookForce(void *setting, unsigned value, const char *name) {
   if (name && !std::strcmp(name, "iMultiSample")) {
     value = samples;
@@ -99,7 +60,8 @@ void __cdecl OnMessage(Message *message) {
   if (!message || message->type != 0 || forceInt)
     return; // xNVSE PostLoad
   auto module = GetModuleHandleW(L"TTWVR.dll");
-  if (!module || !Verified(module)) {
+  const auto *layout = ttwvrnr::IdentifyTTWVRBuild(module);
+  if (!layout) {
     Log("bootstrap_bypass unsupported_or_missing_ttwvr=1");
     return;
   }
@@ -112,16 +74,17 @@ void __cdecl OnMessage(Message *message) {
   }
   auto *base = reinterpret_cast<unsigned char *>(module);
   if (MH_Initialize() != MH_OK ||
-      MH_CreateHook(base + 0x4f5a00, (void *)HookForce, (void **)&forceInt) !=
-          MH_OK ||
-      MH_EnableHook(base + 0x4f5a00) != MH_OK) {
+      MH_CreateHook(base + layout->forceInt, (void *)HookForce,
+                    (void **)&forceInt) != MH_OK ||
+      MH_EnableHook(base + layout->forceInt) != MH_OK) {
     Log("bootstrap_bypass hook_failed=1");
     return;
   }
   char line[128];
-  std::snprintf(line, sizeof(line),
-                "bootstrap_ready ttwvr_hash_verified=1 msaa_requested=%u",
-                samples);
+  std::snprintf(
+      line, sizeof(line),
+      "bootstrap_ready ttwvr_hash_verified=1 msaa_requested=%u version=%s",
+      samples, layout->version);
   Log(line);
 }
 } // namespace

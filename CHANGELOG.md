@@ -1,5 +1,13 @@
 # Changes
 
+## TTWVR 1.1.3 compatibility — 2026-11-12
+
+- Support the supplied 1.1.3 DLL with a shared hash-selected hook table, retaining 1.1.0 support and rejection of unknown builds.
+- Keep addon controls inside the new top-level VR Settings entry; verify stock option labels before hiding upscaler rows.
+- Adapt the native D3D9 device, motion-guide and MSAA startup hooks to the new build. Rendering algorithms and final resolution are unchanged.
+- Preserve the separate DLAA haze investigation; this compatibility update does not claim to fix it.
+- Document [upgrade steps and validation](docs/ttwvr-1.1.3.md).
+
 ## Fluorine-first documentation and MO2 archive — 2026-11-12
 
 - Make native Fluorine/FUSE the primary installation, Steam launch and addon workflow.

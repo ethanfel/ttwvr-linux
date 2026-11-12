@@ -24,9 +24,9 @@
 | Low FPS after installing the fixes | Confirm both DXVK paths in `instance/ttwvr-linux.ini`. The earlier Quest 3 capture used 120 Hz; it was not a Fluorine benchmark. |
 | 90 Hz gives about 45 FPS | Possible at the observed frame times; refresh rate does not impose a universal half-rate cap. |
 | Original DLSS/FSR upscaler does not work | Known limitation. The separate addon provides DLAA/MSAA and NR; leave the old renderer/fence experiments disabled. |
-| Rendering controls absent from Settings → VR | Check the [addon installation](../neural/docs/STEAM.md), enabled Fluorine mod, matching layer/helper, private 32-bit registration and `neural_rendering=true`. Only the verified TTWVR 1.1.0 binary is accepted. |
+| Rendering controls absent from VR Settings | Check the [addon installation](../neural/docs/STEAM.md), enabled Fluorine mod, matching layer/helper, private 32-bit registration and `neural_rendering=true`. Verified TTWVR 1.1.0 and the supplied 1.1.3 build are supported; 1.1.3 needs the updated layer and startup addon together. |
 | MSAA choice says `(restart)` | Quit and relaunch Fallout. MSAA changes require a restart, including returning to Off/DLAA; active MSAA prevents NR/DLAA processing. |
-| DLAA blurs after movement | Use the current layer/helper containing the [jitter correction](../neural/docs/VR-SETTINGS.md#dlaa-correction). Physical-headset confirmation remains pending; AA Off or MSAA provides a comparison. |
+| DLAA blurs after movement | Use the current layer/helper containing the [jitter correction](../neural/docs/VR-SETTINGS.md#dlaa-correction). The user still reports softness/haze at distance; this remains under investigation. Compare AA Off or MSAA. Updating TTWVR is not a demonstrated fix for this. |
 
 ## Useful logs
 

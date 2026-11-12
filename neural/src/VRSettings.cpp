@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// Extend only the hash-verified TTWVR 1.1.0 native StartMenu options.
+// Extend only the hash-verified TTWVR native StartMenu options.
 #include "VRSettings.h"
 #include "MenuControl.h"
 #include "Support.h"
+#include "TTWVRBuild.h"
 #include <MinHook.h>
 #include <algorithm>
 #include <array>
@@ -29,6 +30,7 @@ using Append = unsigned(__thiscall *)(void *, Option **);
 using Build = void(__cdecl *)();
 Build build = nullptr;
 unsigned char *ttwvr = nullptr;
+const TTWVRBuild *layout = nullptr;
 std::atomic<bool> installed{false};
 std::atomic<unsigned> actualSamples{0};
 std::array<Option *, 7> rows{};
@@ -54,7 +56,7 @@ unsigned AaIndex(const LiveSettings &s) {
   return s.dlaa ? 1 : 0;
 }
 bool IsEditing() {
-  return reinterpret_cast<bool(__cdecl *)()>(ttwvr + 0x3f2120)();
+  return reinterpret_cast<bool(__cdecl *)()>(ttwvr + layout->menuEditing)();
 }
 void Sync(Option *row) {
   const auto s = ReadLiveSettings();
@@ -225,10 +227,20 @@ void Extend() {
 
   // Hide the unavailable built-in upscaler controls, retaining objects and
   // callback pointers owned by TTWVR so its cleanup remains valid.
-  for (unsigned rva : {0x183afdc, 0x183afe0, 0x183afe4}) {
-    auto *p = *reinterpret_cast<Option **>(ttwvr + rva);
-    if (!p || p->flags != 0x40000000) {
+  for (unsigned i = 0; i < layout->upscalerRows.size(); ++i) {
+    auto *p = *reinterpret_cast<Option **>(ttwvr + layout->upscalerRows[i]);
+    if (!p || !p->name || p->flags != 0x40000000) {
       Log("native_vr_menu_refused invalid_original_row=1");
+      return;
+    }
+    // Resolution/Sharpness have dynamic percentage labels. Verify identity as
+    // well as flags before hiding rows; adjacent stock options share flags.
+    const bool expected = i == 0   ? !std::strcmp(p->name, "Upscaler")
+                          : i == 1 ? !std::strcmp(p->name, "Upscaler Level")
+                                   : !std::strncmp(p->name, "Sharpness", 9) &&
+                                         (p->name[9] == 0 || p->name[9] == ' ');
+    if (!expected) {
+      Log("native_vr_menu_refused original_row_name=%s index=%u", p->name, i);
       return;
     }
   }
@@ -254,11 +266,12 @@ void Extend() {
     }
   for (auto *p : rows)
     reinterpret_cast<Append>(0x7cb2e0)(reinterpret_cast<void *>(0x11dab50), &p);
-  for (unsigned rva : {0x183afdc, 0x183afe0, 0x183afe4})
+  for (auto rva : layout->upscalerRows)
     (*reinterpret_cast<Option **>(ttwvr + rva))->flags = 0;
   auto **data = *reinterpret_cast<Option ***>(0x11dab54);
   auto count = *reinterpret_cast<unsigned *>(0x11dab58);
-  auto *firstOriginal = *reinterpret_cast<Option **>(ttwvr + 0x183afdc);
+  auto *firstOriginal =
+      *reinterpret_cast<Option **>(ttwvr + layout->upscalerRows[0]);
   for (unsigned i = 0; i + rows.size() < count; ++i)
     if (data[i] == firstOriginal) {
       std::rotate(data + i, data + count - rows.size(), data + count);
@@ -290,21 +303,23 @@ void ObserveMSAATarget(IDirect3DSurface9 *surface) {
         desc.Width, desc.Height);
   }
 }
-bool InstallVRSettings(HMODULE module, IDirect3DDevice9 *device) {
+bool InstallVRSettings(HMODULE module, IDirect3DDevice9 *device,
+                       const TTWVRBuild &buildLayout) {
+  layout = &buildLayout;
   if (!GetModuleHandleW(L"TTWVRRenderingAddon.dll"))
     return false;
   ttwvr = reinterpret_cast<unsigned char *>(module);
   (void)device; // Presentation buffers are single-sampled even with scene MSAA.
-  auto *address = ttwvr + 0x3f0aa0;
+  auto *address = ttwvr + layout->menuBuild;
   if (MH_CreateHook(address, (void *)HookBuild, (void **)&build) != MH_OK ||
       MH_EnableHook(address) != MH_OK)
     return false;
   // OpenXR can initialize before or after the first menu construction.
-  if (*reinterpret_cast<Option **>(ttwvr + 0x183afdc))
+  if (*reinterpret_cast<Option **>(ttwvr + layout->upscalerRows[0]))
     Extend();
   // This is the same verified settings object used by NativeGuides. Disable
   // the nonfunctional built-in upscaler for this session.
-  *(ttwvr + 0xf9d848 + 0x8c) = 0;
+  *(ttwvr + layout->settings + 0x8c) = 0;
   Log("native_vr_settings_hook_ready=1 builtin_upscaler=off msaa_actual=%u",
       actualSamples.load());
   return true;

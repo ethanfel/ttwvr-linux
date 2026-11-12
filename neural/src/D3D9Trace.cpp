@@ -7,11 +7,11 @@
 #include "SceneJitter.h"
 #include "SpatialNR.h"
 #include "Support.h"
+#include "TTWVRBuild.h"
 #include "VRSettings.h"
 #include <MinHook.h>
 #include <array>
 #include <atomic>
-#include <bcrypt.h>
 #include <cstdio>
 #include <cstring>
 #include <d3d9.h>
@@ -268,61 +268,22 @@ bool InstallD3D9Trace() {
   const auto mh = MH_Initialize();
   if (mh != MH_OK && mh != MH_ERROR_ALREADY_INITIALIZED)
     return false;
-  // Read-only accessor verified in the supplied TTWVR 1.1.0, never another
-  // build. Its getter is MOV EAX,[module+0x19710e8]; RET. Creating another D3D9
-  // device overwrites this TTWVR global and leaves the mod pointing at a dead
-  // device.
+  // Borrow the game's device only from an exact, reviewed DLL build.
+  // Creating another D3D9 device would overwrite TTWVR's device global.
   auto module = GetModuleHandleW(L"TTWVR.dll");
-  if (!module)
-    return false;
-  wchar_t path[32768]{};
-  if (!GetModuleFileNameW(module, path, 32768))
-    return false;
-  HANDLE file = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, nullptr,
-                            OPEN_EXISTING, 0, nullptr);
-  if (file == INVALID_HANDLE_VALUE)
-    return false;
-  BCRYPT_ALG_HANDLE algorithm = nullptr;
-  BCRYPT_HASH_HANDLE hash = nullptr;
-  bool ok = BCryptOpenAlgorithmProvider(&algorithm, BCRYPT_SHA256_ALGORITHM,
-                                        nullptr, 0) >= 0;
-  if (ok)
-    ok = BCryptCreateHash(algorithm, &hash, nullptr, 0, nullptr, 0, 0) >= 0;
-  std::array<unsigned char, 65536> bytes{};
-  DWORD read = 0;
-  while (ok) {
-    if (!ReadFile(file, bytes.data(), bytes.size(), &read, nullptr)) {
-      ok = false;
-      break;
-    }
-    if (!read)
-      break;
-    ok = BCryptHashData(hash, bytes.data(), read, 0) >= 0;
-  }
-  std::array<unsigned char, 32> digest{};
-  if (ok)
-    ok = BCryptFinishHash(hash, digest.data(), digest.size(), 0) >= 0;
-  if (hash)
-    BCryptDestroyHash(hash);
-  if (algorithm)
-    BCryptCloseAlgorithmProvider(algorithm, 0);
-  CloseHandle(file);
-  // Keep the readable expected value in the diagnostic as well.
-  const char *expectedHex =
-      "8a3a71b48d362984fe346c73b68dfbd476d6e138d6831f26f10c6f506cd03880";
-  char actual[65]{};
-  for (unsigned i = 0; i < 32; ++i)
-    std::snprintf(actual + 2 * i, 3, "%02x", digest[i]);
-  if (!ok || std::strcmp(actual, expectedHex)) {
-    Log("d3d9_trace_refused reason=ttwvr_hash actual=%s", actual);
+  const auto *layout = IdentifyTTWVRBuild(module);
+  if (!layout) {
+    Log("d3d9_trace_refused reason=unsupported_ttwvr_build");
     return false;
   }
+  Log("ttwvr_build_verified version=%s sha256=%s", layout->version,
+      layout->sha256);
   auto *base = reinterpret_cast<unsigned char *>(module);
-  auto *getter = base + 0x4f5770;
+  auto *getter = base + layout->deviceGetter;
   uintptr_t address = 0;
   std::memcpy(&address, getter + 1, sizeof(address));
   if (getter[0] != 0xa1 || getter[5] != 0xc3 ||
-      address != reinterpret_cast<uintptr_t>(base + 0x19710e8))
+      address != reinterpret_cast<uintptr_t>(base + layout->device))
     return false;
   IDirect3DDevice9 *device = nullptr;
   std::memcpy(&device, reinterpret_cast<void *>(address), sizeof(device));
@@ -371,8 +332,8 @@ bool InstallD3D9Trace() {
     }
   // Borrowed device, owned by TTWVR. No reference or state is changed.
   if (ready) {
-    InstallNativeGuides(module);
-    InstallVRSettings(module, device);
+    InstallNativeGuides(module, *layout);
+    InstallVRSettings(module, device, *layout);
   }
   Log("d3d9_trace_ready=%d capture_only=1", ready);
   return ready;

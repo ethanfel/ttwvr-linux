@@ -3,7 +3,7 @@
 [← README](../README.md) · [Troubleshooting](troubleshooting.md) ·
 [Fluorine configuration](native-fluorine.md)
 
-This is the primary manual setup for **TTW 3.4 / TTWVR 1.1.0**, using
+This is the primary manual setup for **TTW 3.4 / TTWVR 1.1.3**, using
 **Fluorine 0.4.1 with FUSE**. Fluorine runs natively on Linux; Fallout runs through
 Proton. The tested migration started with an existing working TTW installation.
 The fresh setup below uses the same native instance and launch configuration.
@@ -22,7 +22,7 @@ then verify the Linux fixes and launch settings below. The old MO2 setup is
 | TTW, YUPTTW, xNVSE and required utilities/presets | [The Best of Times](https://thebestoftimes.moddinglinked.com/intro.html) |
 | Native TTW conversion tool | [TTW Linux Installer](https://github.com/SulfurNitride/TTW_Linux_Installer) |
 | FNV4GB **for Proton**, tested 1.5 | [Author's download page](https://www.nexusmods.com/newvegas/mods/62552?tab=files) |
-| Tale of Two Realities / TTWVR 1.1.0 | [KUPOkinz's Flat2VR thread](https://discord.com/channels/747967102895390741/1560413111423344730), Discord access required |
+| Tale of Two Realities / TTWVR 1.1.3 | [KUPOkinz's Flat2VR thread](https://discord.com/channels/747967102895390741/1560413111423344730), Discord access required |
 | WiVRn and xrizer | [WiVRn](https://github.com/WiVRn/WiVRn), [xrizer](https://github.com/Supreeeme/xrizer#download--usage) |
 
 Install Python 3, Git, curl, bubblewrap (`/usr/bin/bwrap`) and the FUSE support
@@ -133,7 +133,7 @@ After base VR works, follow the **[Rendering Addon installation](../neural/docs/
 Install it as a mod in Fluorine's VR profile, with the matching layer/helper and
 private-prefix registration. Your Steam command remains the same.
 
-Open **Settings → VR** for Off/DLAA/MSAA 2×/4×/8× and NR tuning. NR/DLAA settings
+Open **VR Settings** for Off/DLAA/MSAA 2×/4×/8× and NR tuning. NR/DLAA settings
 apply live; MSAA requires a restart and currently excludes NR/DLAA. NVIDIA
 runtime files must be obtained separately. The addon defaults to effects off.
 See [tested behavior and limits](../neural/docs/VR-SETTINGS.md).

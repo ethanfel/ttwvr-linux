@@ -5,7 +5,8 @@
 struct IDirect3DDevice9;
 struct IDirect3DSurface9;
 namespace ttwvrnr {
-bool InstallNativeGuides(HMODULE verifiedModule);
+struct TTWVRBuild;
+bool InstallNativeGuides(HMODULE verifiedModule, const TTWVRBuild &layout);
 bool NativeGuidesEnabled();
 struct TemporalGuides {
   float clipToPrevious[16]{};

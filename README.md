@@ -35,7 +35,7 @@ hashes. A newer Proton Experimental build is not automatically compatible.
 | [Native D3DCompiler 47](docs/linux-fixes.md#1-native-shader-compiler) | Fix the observed save-loading crash |
 | [Private OpenXR bridge patch](docs/openxr-layers.md) | Keep gameplay visible after the VR menu |
 | [DXVK eye-buffer pool patch](docs/dxvk-pools.md) | Improve performance at the original eye resolution |
-| [TTWVR Rendering Addon](neural/docs/STEAM.md) | Add AA and neural rendering controls directly to **Settings → VR** |
+| [TTWVR Rendering Addon](neural/docs/STEAM.md) | Add AA and neural rendering controls directly to **VR Settings** |
 
 The OpenXR/DXVK overlays apply to the VR launch without replacing Steam's
 installed Proton files. Runtime selection is per launch; WiVRn's default
@@ -44,7 +44,8 @@ registration stays intact.
 ## In-game rendering controls
 
 Install the optional **TTWVR Rendering Addon** as a mod in Fluorine, with its
-matching OpenXR layer and helper. In **Settings → VR**, after Resolution:
+matching OpenXR layer and helper. TTWVR 1.1.3 places **VR Settings** on the
+main/pause menu; 1.1.0 uses **Settings → VR**. The addon rows follow Resolution:
 
 - **Anti-aliasing:** Off, native-resolution DLAA, MSAA 2×/4×/8×.
 - **Neural Rendering:** enable, model A/B, processing scale, strength, tone and detail.
@@ -53,13 +54,14 @@ NR/DLAA changes apply live. MSAA changes require a game restart and currently
 exclude NR/DLAA. The unavailable original upscaler controls are hidden by the
 addon. All effects default off; final eye resolution is unchanged.
 
+[Upgrade to TTWVR 1.1.3](docs/ttwvr-1.1.3.md) ·
 **[Addon setup](neural/docs/STEAM.md)** ·
 [Controls, DLAA correction and validation](neural/docs/VR-SETTINGS.md) ·
 [Source, build and licensing](neural/README.md)
 
 NVIDIA NR and DLAA remain experimental. Both eyes and consecutive gameplay
-frames have been verified in isolated GPU tests; the latest DLAA motion fix
-still needs physical-headset confirmation. **No Super Resolution upscaling or
+frames have been verified in isolated GPU tests. Reported DLAA softness/haze at
+distance remains under investigation. **No Super Resolution upscaling or
 frame generation is implemented.** NVIDIA SDKs and runtime DLLs are separate
 dependencies under NVIDIA's terms; original addon code is GPL-3.0-only.
 

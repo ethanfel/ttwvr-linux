@@ -1,7 +1,7 @@
 # TTWVR Rendering Addon for Fluorine
 
 The optional addon for the [native Fluorine setup](../docs/installation.md) adds
-**Off/DLAA/MSAA 2×/4×/8× and NR controls directly to Settings → VR**. Install it
+**Off/DLAA/MSAA 2×/4×/8× and NR controls directly to VR Settings**. Install it
 as a mod in the VR profile with the matching OpenXR layer and helper. NR/DLAA
 changes apply live; MSAA needs a restart and currently excludes NR/DLAA.
 [Install in Fluorine](docs/STEAM.md) · [Controls and latest validation](docs/VR-SETTINGS.md).
@@ -22,8 +22,8 @@ under NVIDIA's terms; they are not included here. See
 
 ## What runs
 
-New Vegas is a **32-bit D3D9** application on DXVK. TTWVR 1.1.0 submits its finished
-eye images through D3D11 OpenXR. The port therefore uses a 32-bit capture/scene
+New Vegas is a **32-bit D3D9** application on DXVK. The supported TTWVR builds submit the
+finished eye images through D3D11 OpenXR. The port therefore uses a 32-bit capture/scene
 hook and a separate 64-bit D3D11/D3D12 NGX helper.
 
 The verified interception point is immediately before the final HDR tone-mapping
@@ -166,7 +166,7 @@ in Fluorine, and disable the older `TTWVR Neural Menu` mod. Update the
 matching x86 OpenXR layer and x64 helper while the game is closed.
 See [installation and rollback](docs/STEAM.md).
 
-Open **Settings → VR**. The addon adds these controls after Resolution:
+Open **VR Settings**. The addon adds these controls after Resolution:
 
 - **Anti-aliasing:** Off, DLAA, MSAA 2×, 4× or 8×.
 - **Neural Rendering:** Off/On, independently of DLAA.
@@ -180,7 +180,7 @@ single-sampled scene depth. Selecting MSAA turns both off; selecting NR clears
 the requested MSAA mode for the next launch. Final eye resolution is unchanged.
 The unavailable built-in Upscaler, Upscaler Level and Sharpness rows are hidden.
 
-The addon requires xNVSE, the matching OpenXR layer, and the verified TTWVR 1.1.0
+The addon requires xNVSE, the matching OpenXR layer, and a verified TTWVR 1.1.0 or 1.1.3
 binary. It adds no ESP and changes no saves or TTWVR DLL on disk. Its startup
 plugin prevents TTWVR from forcing the selected MSAA level back to zero. Actual
 MSAA is detected from scene HDR targets, not the single-sampled final buffer.
@@ -224,7 +224,7 @@ if explicitly requested with `native_motion_probe=1`.
 `DISABLE_TTWVR_NEURAL_RENDERING=1` bypasses the layer entirely for that launch.
 Never replace a DLL/executable while it is loaded.
 
-The scene adapter is deliberately restricted to the verified TTWVR 1.1.0 binary,
+The scene adapter is deliberately restricted to the verified TTWVR 1.1.0/1.1.3 binaries,
 shader hash, formats and dimensions. Unknown layouts fail closed. Prototype GPU
 D3D9 transport resources are retained for process lifetime; each reload releases
 the helper's NGX features and starts fresh per-eye histories. A helper that fails

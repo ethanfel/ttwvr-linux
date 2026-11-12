@@ -9,7 +9,7 @@ The Steam entry point remains `tools/launch_fluorine.py`; no new Steam command
 is needed. The isolated development setup is separate and does not enable the
 addon in a regular installation automatically.
 
-The addon provides **Settings → VR** controls for DLAA, MSAA and NR. It requires
+The addon provides **VR Settings** controls for DLAA, MSAA and NR. It requires
 the matching x86 OpenXR layer and x64 helper even if you start by selecting MSAA.
 Obtain NVIDIA SDKs/runtime DLLs separately for neural processing; they are not
 bundled with this GPL-3.0-only addon.
@@ -60,7 +60,7 @@ does not launch Windows MO2. Flat launches do not enable this opt-in manifest.
 
 ## Use the controls
 
-Launch from Steam as usual and open **Settings → VR**. The new rows follow
+Launch from Steam as usual and open **VR Settings**. The new rows follow
 Resolution. Each row saves immediately; NR/DLAA and tuning apply live during
 a brief bypass while the helper rebuilds. **MSAA requires restarting Fallout**;
 pending selections say `(restart)`, including switching back to Off/DLAA.
@@ -90,7 +90,7 @@ also retained its exact hash: NR/DLAA remain off, with model B/25%, strength 20%
 and tone/detail 100% preserved. The addon starts with MSAA off. No captures,
 simulated-pose control or test automation were installed. Steam command,
 OpenXR registration, NVIDIA dependencies and WiVRn's default runtime stay as
-configured. Select the desired AA mode in Settings → VR on the next launch.
+configured. Select the desired AA mode in VR Settings on the next launch.
 The DLAA correction still needs confirmation in the user's physical headset.
 
 ## Historical Windows MO2 deployment

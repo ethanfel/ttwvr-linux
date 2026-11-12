@@ -1,6 +1,6 @@
 # Native VR settings, MSAA and DLAA motion correction
 
-The **TTWVR Rendering Addon** adds its controls directly to **Settings → VR**,
+The **TTWVR Rendering Addon** adds its controls directly to **VR Settings**,
 after Resolution. It is an independently enableable Fluorine mod containing
 an xNVSE startup DLL and the legacy fallback scripts. Its matching OpenXR layer
 and 64-bit neural helper remain in the private runtime directory. Build/install
@@ -31,18 +31,28 @@ features and MSAA default off in the distributed configuration.
 
 ## Compatibility and implementation
 
-Only TTWVR 1.1.0 with SHA-256
-`8a3a71b48d362984fe346c73b68dfbd476d6e138d6831f26f10c6f506cd03880`
-is accepted. No TTWVR/game binary is edited on disk.
+The layer and startup plugin share an exact-hash version table:
 
-- The layer wraps TTWVR's native option builder at RVA `0x3f0aa0`, using its
-  edit-state predicate at `0x3f2120`. It verifies the game constructor and vector
+| Supplied build | TTWVR.dll SHA-256 |
+|---|---|
+| 1.1.0 | `8a3a71b48d362984fe346c73b68dfbd476d6e138d6831f26f10c6f506cd03880` |
+| TTWVR1.1.3.zip | `4c45d6e5adb5da76dd3d08bf0639d360761d3dc50d891ea0bd19b51e4fb006a0` |
+
+The 1.1.3 archive's `meta.ini` still says 1.1.2; its actual DLL hash selects
+compatibility. Unknown builds are rejected. No TTWVR/game binary is edited on
+disk. See [the upgrade and validation note](../../docs/ttwvr-1.1.3.md).
+
+In 1.1.3, **VR Settings** is a main/pause-menu entry beside Settings. In 1.1.0,
+open **Settings → VR**. The addon follows the original version's menu structure.
+
+- The layer wraps TTWVR's native option builder at RVA `0x3f0aa0` / `0x40b730`, using its
+  edit-state predicate at `0x3f2120` / `0x40d180` (1.1.0 / 1.1.3). It verifies the game constructor and vector
   append signatures before allocating engine-owned UserOption rows. Both the
   original append routine and the observed utility-optimized version are accepted.
-- Original upscaler objects remain allocated for TTWVR ownership. Their menu
+- Original upscaler objects remain allocated for TTWVR ownership. Their names and flags are checked before their menu
   flags are cleared, and our rows are inserted after Resolution. Initialization
   is idempotent. Unknown signatures retain the original menu/fallback.
-- The xNVSE plugin intercepts TTWVR's integer-setting override at RVA `0x4f5a00`
+- The xNVSE plugin intercepts TTWVR's integer-setting override at RVA `0x4f5a00` / `0x510ae0`
   after verifying its hash. It substitutes only the `iMultiSample` value, using
   `Data/NVSE/Plugins/TTWVRRenderingAddon.ini` → `[antialiasing] msaa_samples`.
   Accepted values are 0, 2, 4 and 8. It registers no script opcode or save data.
@@ -83,7 +93,7 @@ The original installation, Titanfall files and WiVRn registration were protected
 The HMD was also temporarily held stationary **in the test process only**, without
 editing the shared runtime, to compare motion and settling.
 
-- Native menu: engine gamepad navigation reached Settings → VR, scrolled all
+- Native menu: engine gamepad navigation reached VR Settings, scrolled all
   addon rows, saved AA changes and enabled DLAA live. Original built-in upscaler
   rows were absent. AA/NR rows appear directly after Resolution.
 - MSAA 4×: frames **810/811**, both final eyes 2944×2208. The D3D9 trace contains

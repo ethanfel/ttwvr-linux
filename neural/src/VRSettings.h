@@ -3,7 +3,9 @@
 #include <d3d9.h>
 #include <windows.h>
 namespace ttwvrnr {
-bool InstallVRSettings(HMODULE module, IDirect3DDevice9 *device);
+struct TTWVRBuild;
+bool InstallVRSettings(HMODULE module, IDirect3DDevice9 *device,
+                       const TTWVRBuild &layout);
 bool NativeVRSettingsInstalled();
 unsigned CurrentMsaaSamples();
 void ObserveMSAATarget(IDirect3DSurface9 *surface);
