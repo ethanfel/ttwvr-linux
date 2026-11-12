@@ -31,12 +31,12 @@ def container_path(path):
     return "/run/host" + value if value == "/usr" or value.startswith("/usr/") else value
 
 
-def wants_vr(mode, command, mo2):
+def wants_vr(mode, command, mo2=None, instance=None):
     if mode != "auto":
         return mode == "vr"
     # Prefer MO2's explicit CLI profile over the last selected profile.
     profile = None
-    arguments = command[command.index(str(mo2)) + 1:]
+    arguments = command[command.index(str(mo2)) + 1:] if mo2 else []
     for i, arg in enumerate(arguments):
         if arg in ("-p", "--profile") and i + 1 < len(arguments):
             profile = arguments[i + 1]
@@ -44,25 +44,37 @@ def wants_vr(mode, command, mo2):
             profile = arg.partition("=")[2]
     if profile is None:
         config = configparser.RawConfigParser()
-        config.read(mo2.parent / "ModOrganizer.ini")
+        config.read((instance or mo2.parent) / "ModOrganizer.ini")
         profile = config.get("General", "selected_profile", fallback="")
         if profile.startswith("@ByteArray(") and profile.endswith(")"):
             profile = profile[len("@ByteArray("):-1]
     return profile != "TTW - Flat"
 
 
+def steam_runtime_indices(command):
+    return [i for i, arg in enumerate(command)
+            if Path(arg).name == "_v2-entry-point" or
+            (Path(arg).name == "run" and
+             Path(arg).parent.name.startswith("SteamLinuxRuntime_"))]
+
+
 def use_imported_openxr(command):
     """Let pressure-vessel import the host selection, then use its rewritten JSON."""
-    entries = [i for i, arg in enumerate(command)
-               if Path(arg).name == "_v2-entry-point"]
+    entries = steam_runtime_indices(command)
     protons = [i for i, arg in enumerate(command) if Path(arg).name == "proton"]
     if not entries:
         return command  # Direct Proton launch uses the host manifest as supplied.
     if len(entries) != 1 or len(protons) != 1:
         raise ValueError("cannot identify one Proton command inside the Steam runtime")
     index = protons[0]
-    if index <= entries[0] or command[index - 1] != "--":
+    if index <= entries[0] or "--" not in command[entries[0] + 1:index]:
         raise ValueError("unexpected Steam runtime command structure")
+    delimiter = command.index("--", entries[0] + 1, index)
+    inner = command[delimiter + 1:index]
+    # Fluorine inserts env assignments inside SLR before invoking Proton.
+    if inner and (inner[0] != "/usr/bin/env" or
+                  any("=" not in arg or arg.startswith("-") for arg in inner[1:])):
+        raise ValueError("unexpected command before Proton inside the Steam runtime")
     # The importer reads XR_RUNTIME_JSON outside the container and creates a
     # manifest with container library paths in XDG_CONFIG_DIRS. The host value
     # must stop overriding that manifest once inside the container.
@@ -110,11 +122,17 @@ def private_fallback_resolution(command, original, patched):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--mo2", type=Path, required=True)
+    manager = parser.add_mutually_exclusive_group(required=True)
+    manager.add_argument("--mo2", type=Path)
+    manager.add_argument("--native-instance", type=Path,
+                         help="native MO2-compatible instance; preserve its prepared game command")
     parser.add_argument("--state-dir", type=Path, required=True)
+    parser.add_argument("--steam-runtime", type=Path,
+                        help="Steam Linux Runtime directory when a native manager cannot locate it")
     parser.add_argument("--xrizer", type=Path, default=Path("/opt/xrizer"))
     parser.add_argument("--xr-runtime", type=Path,
-                        default=Path("/usr/share/openxr/1/openxr_wivrn.json"))
+                        default=Path(os.environ.get("TTWVR_XR_RUNTIME_JSON",
+                                                    "/usr/share/openxr/1/openxr_wivrn.json")))
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--mode", choices=("auto", "flat", "vr"), default="auto",
                         help="auto disables VR for the TTW - Flat profile; restart MO2 when changing mode")
@@ -129,39 +147,59 @@ def main():
     command = args.command[1:] if args.command[:1] == ["--"] else args.command
     if not command:
         parser.error("supply Steam's command after --")
-    mo2 = args.mo2.expanduser().resolve()
+    mo2 = args.mo2.expanduser().resolve() if args.mo2 else None
+    instance = args.native_instance.expanduser().resolve() if args.native_instance else mo2.parent
     state = args.state_dir.expanduser().resolve()
     xrizer = args.xrizer.expanduser().resolve()
     runtime = args.xr_runtime.expanduser().resolve()
     try:
-        command = replace_game(command, mo2)
-        vr = wants_vr(args.mode, command, mo2)
+        if mo2:
+            command = replace_game(command, mo2)
+        else:
+            matches = [arg for arg in command
+                       if arg.replace("\\", "/").rsplit("/", 1)[-1].lower()
+                       in {"falloutnv.exe", "falloutnvlauncher.exe", "nvse_loader.exe"}]
+            if len(matches) != 1:
+                raise ValueError("expected exactly one Fallout/NVSE executable in native launch")
+        vr = wants_vr(args.mode, command, mo2, instance)
+        if args.steam_runtime:
+            steam_runtime = args.steam_runtime.expanduser().resolve()
+            entry = steam_runtime / "_v2-entry-point"
+            if not entry.is_file():
+                raise ValueError(f"Steam runtime entry point not found: {entry}")
+            entries = steam_runtime_indices(command)
+            if entries:
+                if len(entries) != 1 or Path(command[entries[0]]).parent.resolve() != steam_runtime:
+                    raise ValueError("supplied Steam runtime differs from the prepared command")
+            else:
+                command = [str(entry), "--verb=waitforexitandrun", "--", *command]
         compatibility = configparser.RawConfigParser()
-        compatibility.read(mo2.parent / "ttwvr-linux.ini")
+        compatibility.read(instance / "ttwvr-linux.ini")
         vr_wow64 = compatibility.getboolean("VR", "wow64", fallback=False)
         vr_compiler = compatibility.getboolean("VR", "native_d3dcompiler47", fallback=False)
         vr_neural = compatibility.getboolean("VR", "neural_rendering", fallback=False)
         bridge_setting = compatibility.get("VR", "openxr_bridge", fallback="")
         bridge = args.openxr_bridge or (Path(bridge_setting) if bridge_setting else None)
         if bridge and not bridge.is_absolute():
-            bridge = mo2.parent / bridge
+            bridge = instance / bridge
         fallback_paths = []
         for key in ("fallback_resolution_source", "fallback_resolution_patch"):
             value = compatibility.get("VR", key, fallback="")
             path = Path(value).expanduser() if value else None
             if path and not path.is_absolute():
-                path = mo2.parent / path
+                path = instance / path
             fallback_paths.append(path.resolve() if path else None)
         dxvk_paths = []
         for key in ("dxvk_renderer", "dxvk_syswow64"):
             value = compatibility.get("VR", key, fallback="")
             path = Path(value).expanduser() if value else None
             if path and not path.is_absolute():
-                path = mo2.parent / path
+                path = instance / path
             dxvk_paths.append(path.resolve() if path else None)
     except (ValueError, configparser.Error) as exc:
         parser.error(str(exc))
-    for path in ((mo2, runtime) if vr else (mo2,)):
+    manager_file = mo2 or instance / "ModOrganizer.ini"
+    for path in ((manager_file, runtime) if vr else (manager_file,)):
         if not path.is_file():
             parser.error(f"required file not found: {path}")
     if vr and not any((xrizer / "bin" / arch / "vrclient.so").is_file()
@@ -190,7 +228,7 @@ def main():
         parser.error(str(exc))
 
     bindings = [p for p in os.environ.get("PRESSURE_VESSEL_FILESYSTEMS_RW", "").split(":") if p]
-    for path in [str(state), str(mo2.parent)] + ([str(xrizer)] if vr else []):
+    for path in [str(state), str(instance)] + ([str(xrizer)] if vr else []):
         if path not in bindings:
             bindings.append(path)
     changes = {

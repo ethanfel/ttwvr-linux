@@ -1,5 +1,12 @@
 # Changes
 
+## Native Fluorine launch integration — 2026-11-12
+
+- Preserve Fluorine’s prepared game command and FUSE mod deployment while applying the existing VR patches.
+- Support a Steam runtime in a secondary library and per-launch simulated runtime selection.
+- Keep the desktop user ID through profile-save mounts so Steam uses the correct WiVRn socket directory.
+- Add a native Steam entry point, migration/rollback documentation and save-mount integration checks.
+
 ## 2026-11-11
 
 - **Connected the neural addon to regular Steam VR launches:** an opt-in manifest

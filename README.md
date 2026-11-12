@@ -18,9 +18,9 @@ Ryzen 9 5950X. This is an initial gameplay result, not a sustained benchmark.
 
 **[Follow the installation guide →](docs/installation.md)**
 
-[Amethyst provides a native Linux manager and TTW setup wizard](docs/installation.md#native-manager-alternative).
-The VR patch launcher in this repository currently targets MO2; Amethyst VR
-integration has not been tested here.
+[Fluorine provides a native Linux manager](docs/native-fluorine.md) with an
+MO2-compatible instance and a tested FUSE/Proton launch path for TTWVR.
+[Amethyst](docs/installation.md#native-manager-alternative) remains an untested alternative.
 
 The patches currently require **Proton Experimental
 `experimental-11.0-20261105c-x86_64`**. They verify file hashes and reject other

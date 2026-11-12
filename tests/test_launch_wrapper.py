@@ -50,14 +50,16 @@ os.execvpe(command[0], command, os.environ)
         path.chmod(0o700)
         return str(path)
 
-    def launch(self, command, *options, environment=None):
+    def launch(self, command, *options, environment=None, native=False):
         env = os.environ.copy()
         env.pop('PROTON_USE_WOW64', None)
         env.pop('WINEDLLOVERRIDES', None)
         env.update(environment or {})
         env['TTW_TEST_IMPORT'] = str(self.root / "imported-runtime")
         return subprocess.run(
-            [sys.executable, str(WRAPPER), '--mo2', str(self.mo2),
+            [sys.executable, str(WRAPPER),
+             *(['--native-instance', str(self.mo2.parent)] if native
+               else ['--mo2', str(self.mo2)]),
              '--state-dir', str(self.state), '--xrizer', str(self.xrizer),
              '--xr-runtime', str(self.runtime), *options, '--', *command],
             env=env, text=True, capture_output=True,
@@ -195,6 +197,61 @@ os.execvpe(command[0], command, os.environ)
         result = self.launch([self.proton, 'waitforexitandrun', self.game],
                              '--mode', 'flat')
         self.assertEqual(result.returncode, 0, result.stderr)
+
+
+    def test_native_instance_preserves_game_and_arguments(self):
+        (self.mo2.parent / 'ModOrganizer.ini').write_text(
+            '[General]\nselected_profile=@ByteArray(TTW - VR)\n')
+        literal = 'spaces, $HOME and `literal`'
+        result = self.launch([self.proton, 'waitforexitandrun', self.game, literal], native=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)['args'], ['waitforexitandrun', self.game, literal])
+
+    def test_native_flat_profile_keeps_vr_disabled(self):
+        (self.mo2.parent / 'ModOrganizer.ini').write_text(
+            '[General]\nselected_profile=@ByteArray(TTW - Flat)\n')
+        self.runtime.unlink()
+        result = self.launch([self.proton, 'waitforexitandrun', self.game], native=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)['no_vr'], '1')
+
+    def test_fluorine_slr_env_preserves_runtime_import_order(self):
+        (self.mo2.parent / 'ModOrganizer.ini').write_text('[General]\n')
+        run = self.root / 'SteamLinuxRuntime_4/run'
+        run.parent.mkdir()
+        run.write_bytes(Path(self.entry).read_bytes())
+        run.chmod(0o700)
+        result = self.launch([str(run), '--filesystem=/a path', '--', '/usr/bin/env',
+                              'SteamAppId=22380', self.proton, 'waitforexitandrun', self.game],
+                             native=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual((self.root / 'imported-runtime').read_text(), str(self.runtime))
+        child = json.loads(result.stdout)
+        self.assertIsNone(child['xr'])
+        self.assertEqual(child['args'], ['waitforexitandrun', self.game])
+
+    def test_native_rejects_ambiguous_launch_before_writing(self):
+        (self.mo2.parent / 'ModOrganizer.ini').write_text('[General]\n')
+        result = self.launch([self.proton, 'waitforexitandrun', self.game, self.game], native=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(self.state.exists())
+
+
+    def test_explicit_steam_runtime_wraps_native_proton_once(self):
+        (self.mo2.parent / 'ModOrganizer.ini').write_text('[General]\n')
+        runtime = self.root / 'SteamLinuxRuntime_4'
+        runtime.mkdir()
+        entry = runtime / '_v2-entry-point'
+        entry.write_bytes(Path(self.entry).read_bytes())
+        entry.chmod(0o700)
+        for wrapped in (False, True):
+            command = [self.proton, 'waitforexitandrun', self.game]
+            if wrapped:
+                command = [str(entry), '--verb=waitforexitandrun', '--', *command]
+            result = self.launch(command, '--steam-runtime', str(runtime), native=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIsNone(json.loads(result.stdout)['xr'])
+            self.assertEqual((self.root / 'imported-runtime').read_text(), str(self.runtime))
 
 
 if __name__ == '__main__':

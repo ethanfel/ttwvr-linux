@@ -1,0 +1,20 @@
+#!/usr/bin/python3
+"""Preserve the desktop UID only for Fluorine 0.4.1's profile-save mount."""
+import os
+import sys
+
+
+def command_for_host(arguments):
+    expected = ["--user", "--mount", "-r", "--", "/bin/sh", "-c",
+                'mount --bind "$1" "$2" && shift 2 && exec "$@"', "_mo2bind"]
+    if len(arguments) >= 11 and arguments[:8] == expected:
+        # Bubblewrap creates the same private bind mount, preserves the caller's
+        # UID and drops namespace capabilities before starting the game wrapper.
+        return ["/usr/bin/bwrap", "--bind", "/", "/", "--dev-bind", "/dev", "/dev",
+                "--bind", arguments[8], arguments[9], "--", *arguments[10:]]
+    return ["/usr/bin/unshare", *arguments]
+
+
+if __name__ == "__main__":
+    command = command_for_host(sys.argv[1:])
+    os.execv(command[0], command)
