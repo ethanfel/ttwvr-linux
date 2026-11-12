@@ -7,6 +7,8 @@ This is the primary manual setup for **TTW 3.4 / TTWVR 1.1.3**, using
 **Fluorine 0.4.1 with FUSE**. Fluorine runs natively on Linux; Fallout runs through
 Proton. The tested migration started with an existing working TTW installation.
 The fresh setup below uses the same native instance and launch configuration.
+For an existing VR setup, follow the [1.1.3 upgrade steps](ttwvr-1.1.3.md), including
+the matching addon/layer update and preservation of settings.
 
 Already have working TTW in Windows MO2? Start with the
 [migration checklist](native-fluorine.md#migrate-an-existing-mo2-installation),

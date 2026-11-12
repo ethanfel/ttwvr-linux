@@ -20,7 +20,7 @@ patches do require the matching Proton files.
 | xrizer | `0.6.r5.g63fc7eb`, 64-bit |
 | Native manager | Fluorine 0.4.1, FUSE backend |
 | Historical manager | Windows MO2 2.5.2 portable; [archived workflow](archive/mo2/README.md) |
-| TTW / TTWVR | 3.4 / 1.1.0 and supplied 1.1.3 archive |
+| TTW / TTWVR | 3.4 / supplied 1.1.3 installed; verified 1.1.0 remains supported |
 | xNVSE | 6.4.9 |
 | DXVK source | `cf0a0d90f8965147741ad17dcd0b263817572ab3`, with the pool patch |
 
@@ -29,11 +29,12 @@ patches do require the matching Proton files.
 | Check | Result |
 |---|---|
 | Native Fluorine launch and migrated save | Passed; confirmed by the user, without a new measured headset benchmark |
+| TTWVR 1.1.3 upgrade | Installed with adapted addon/layer; 53 checked settings/save files unchanged. Revised menu, stereo NR/DLAA and MSAA 4× passed isolated tests; headset confirmation pending. |
 | Flat TTW intro and utilities | Passed in the original setup; retained through migration |
 | VR save loading | Passed with native D3DCompiler 47 |
 | Headset gameplay and tracking | Passed with the OpenXR bridge patch |
 | Earlier full-resolution performance | 59.8 FPS capture at 120 Hz with Windows MO2; user reported clear, very smooth gameplay. Not a Fluorine benchmark. |
-| Rendering settings | Original 2944×2208 eye targets, `Resolution=150%` |
+| Capture resolution | 2944×2208 per eye, `Resolution=150%` in isolated tests; the upgrade preserves the regular profile's chosen resolution |
 | TTWVR built-in DLSS / FSR upscaler | Disabled in this addon setup; original path not revalidated on 1.1.3 |
 | Rendering Addon in Fluorine | Installed; native VR Settings rows, gamepad navigation, live NR/DLAA, restart for MSAA |
 | Scene MSAA 2×/4×/8× | Matching full-size color/depth sample counts verified in isolated GPU runs |

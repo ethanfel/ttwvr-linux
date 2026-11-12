@@ -1,5 +1,12 @@
 # Changes
 
+## TTWVR 1.1.3 deployment and resource guide — 2026-11-12
+
+- Record the completed Fluorine upgrade, unchanged settings/saves and rollback backup.
+- Publish a [copy-ready Discord resource post](docs/discord-resource-post.txt), with three messages below 2,000 UTF-16 units each.
+- Clarify the new menu entry, paired addon/layer upgrade, isolated validation and pending headset checks.
+- Mark the initial addon settings as historical and distinguish the disabled stock upscaler from its untested updated host.
+
 ## TTWVR 1.1.3 compatibility — 2026-11-12
 
 - Support the supplied 1.1.3 DLL with a shared hash-selected hook table, retaining 1.1.0 support and rejection of unknown builds.

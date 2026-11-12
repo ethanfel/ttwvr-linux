@@ -22,10 +22,16 @@ confirmed working in normal use. Windows MO2 is no longer part of the main guide
 [Move an existing MO2 setup →](docs/native-fluorine.md#migrate-an-existing-mo2-installation)
 · [Fluorine configuration and launch commands](docs/native-fluorine.md)
 · [Troubleshooting](docs/troubleshooting.md)
+· [Copy-ready Discord resource post](docs/discord-resource-post.txt)
 
 The tested manager is **Fluorine 0.4.1 with FUSE**. The binary patches require
 **Proton Experimental `experimental-11.0-20261105c-x86_64`** and reject unknown
 hashes. A newer Proton Experimental build is not automatically compatible.
+
+The supplied **TTWVR 1.1.3** build is now installed in the tested Fluorine instance
+with the adapted addon. The update preserved settings and saves; isolated GPU
+checks passed for its revised menu, stereo NR/DLAA and MSAA 4×. Physical-headset
+confirmation of 1.1.3 remains pending. [Upgrade steps and evidence](docs/ttwvr-1.1.3.md).
 
 ## What this project adds
 
@@ -51,8 +57,8 @@ main/pause menu; 1.1.0 uses **Settings → VR**. The addon rows follow Resolutio
 - **Neural Rendering:** enable, model A/B, processing scale, strength, tone and detail.
 
 NR/DLAA changes apply live. MSAA changes require a game restart and currently
-exclude NR/DLAA. The unavailable original upscaler controls are hidden by the
-addon. All effects default off; final eye resolution is unchanged.
+exclude NR/DLAA. The addon hides and disables the original upscaler controls.
+All effects default off; final eye resolution is unchanged.
 
 [Upgrade to TTWVR 1.1.3](docs/ttwvr-1.1.3.md) ·
 **[Addon setup](neural/docs/STEAM.md)** ·
@@ -75,8 +81,8 @@ confirmed, without a new headset frame-time measurement.
 
 120 Hz describes headset refresh, not 120 game FPS. Other hardware, sustained
 outdoor performance, complete controller/Pip-Boy checks and the final 90 Hz
-configuration still need validation. TTWVR's built-in DLSS/FSR path remains
-unavailable in this setup.
+configuration still need validation. The addon keeps TTWVR's built-in DLSS/FSR
+path disabled; its updated 1.1.3 host has not been revalidated.
 
 [Tested versions and evidence](docs/compatibility.md) · [Changes](CHANGELOG.md)
 

@@ -1,0 +1,92 @@
+DISCORD RESOURCE POST — TTWVR ON LINUX
+Updated for the supplied TTWVR 1.1.3 build, 2026-11-12.
+
+Suggested forum title: TTWVR on Linux — Fluorine + WiVRn setup and rendering addon
+
+Copy the three messages below separately, without the separator labels.
+Each message is under 2,000 UTF-16 code units. Paths in the Steam command are
+examples to replace; the linked guide contains the full configuration.
+
+===== MESSAGE 1 — COPY BELOW =====
+
+**TTWVR on Linux — native Fluorine + WiVRn**
+
+A Linux guide and compatibility patches for **Tale of Two Wastelands** in VR, using KUPOkinz's **Tale of Two Realities (TTWVR)**. Fluorine manages mods natively; Proton runs Fallout.
+
+**Project:** <https://github.com/ethanfel/ttwvr-linux>
+**Installation:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/installation.md>
+
+**What it adds**
+• Fluorine/FUSE launch integration with separate flat and VR profiles.
+• Fixes for the observed save-loading crash and black headset image after the menu.
+• A DXVK memory-pool patch for performance at the original eye resolution.
+• Optional MSAA, DLAA and Neural Rendering controls in **VR Settings**.
+
+**Requirements / tested versions**
+• English New Vegas Ultimate Edition and Fallout 3 GOTY, with all DLC.
+• TTW 3.4, its required utilities, and the supplied TTWVR 1.1.3 build; 1.1.0 remains supported.
+• Fluorine 0.4.1 with FUSE, WiVRn and xrizer.
+• Proton Experimental **`experimental-11.0-20261105c-x86_64`**, Steam Linux Runtime 4.
+
+Binary patches check exact hashes; newer Proton builds are not automatically compatible. This manual setup includes build steps. Obtain games/mods separately.
+
+**Updating to 1.1.3:** update TTWVR plus the matching addon DLL and OpenXR layer together. Preserve your INIs and retain the old mod for rollback. The Steam command stays unchanged. The archive's metadata still says 1.1.2; its DLL hash identifies the supported build.
+**Upgrade guide:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/ttwvr-1.1.3.md>
+
+**TTW requirements:** <https://thebestoftimes.moddinglinked.com/intro.html>
+**Fluorine:** <https://github.com/SulfurNitride/Fluorine-Manager/releases/tag/v0.4.1>
+**Original TTWVR thread:** <https://discord.com/channels/747967102895390741/1560413111423344730>
+
+===== END MESSAGE 1 =====
+
+===== MESSAGE 2 — COPY BELOW =====
+
+**Setup and Steam launch**
+
+1. Launch both unmodded games once, then close them. Prepare a dedicated Fluorine instance and game/prefix copies; preserve your existing saves.
+2. Install TTW and the required utilities using the guide. Use **FNV4GB for Proton**, the native TTW converter, and the internal game identifier **`TTW`**.
+3. Create **`TTW - Flat`** with profile-specific INIs/saves. Verify “All utilities installed!”, reach gameplay and test a save.
+4. Duplicate it as **`TTW - VR`**. Install TTWVR only in this profile. Copy a save together with its matching `.nvse` companion if continuing an existing game.
+5. Apply the native D3DCompiler 47, OpenXR bridge and DXVK pool fixes. Put their settings in **`instance/ttwvr-linux.ini`**, beside `ModOrganizer.ini`.
+6. Configure the executable's **Wrapper options inside Fluorine**, then set Steam's Launch Options below. Both stages are required.
+
+**Patch commands:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/linux-fixes.md>
+**Wrapper and native launch setup:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/native-fluorine.md>
+
+Steam → New Vegas → Properties → Launch Options; replace every example path:
+```text
+python3 "/path/to/ttwvr-linux/tools/launch_fluorine.py" --manager "/path/to/fluorine-manager/fluorine-manager" --instance "/path/to/ttwvr/instance" --config-home "/path/to/ttwvr/config" --data-home "/path/to/ttwvr/share" -- %command%
+```
+
+Connect the headset to WiVRn, then launch from Steam. The default selects **TTW - VR** and runs the executable named **Tale of Two Wastelands**.
+
+Add `--manager-only` before `-- %command%` to manage mods without launching. For flat play, close Fallout and Fluorine, then use `--profile "TTW - Flat"` there instead.
+
+===== END MESSAGE 2 =====
+
+===== MESSAGE 3 — COPY BELOW =====
+
+**Optional Rendering Addon**
+
+After base VR works, install **TTWVR Rendering Addon** in Fluorine's VR profile with its matching OpenXR layer/helper and private-prefix registration. Set `neural_rendering=true` in the instance compatibility INI. Keep your Steam command.
+
+**Addon setup:** <https://github.com/ethanfel/ttwvr-linux/blob/main/neural/docs/STEAM.md>
+
+In **1.1.3**, open **VR Settings** directly from the main/pause menu, beside Settings. In 1.1.0, use **Settings → VR**. Our controls follow Resolution:
+• **Anti-aliasing:** Off, native-resolution DLAA, MSAA 2×/4×/8×.
+• **Neural Rendering:** on/off, model A/B, processing scale, strength, tone and detail.
+
+NR/DLAA apply live. **MSAA needs a restart**, including switching back to Off/DLAA, and currently excludes NR/DLAA. Distributed defaults leave effects off. NR processing scale preserves final eye resolution.
+
+**Validation and limits**
+• 1.1.3: gamepad menu/Back/resume, both eyes on consecutive NR/DLAA frames, and MSAA 4× after restart passed isolated Monado GPU tests. Physical-headset confirmation of this update is pending.
+• The addon hides/disables the stock DLSS/FSR path; the updated upstream host has not been revalidated. No Super Resolution or frame generation is implemented.
+• DLAA softness/haze at distance remains under investigation; 1.1.3 is not a demonstrated fix.
+• Earlier headset testing used RTX 5090, Ryzen 9 5950X and Quest 3. Other hardware and sustained performance need testing.
+
+**Troubleshooting:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/troubleshooting.md>
+**Archived MO2 setup:** <https://github.com/ethanfel/ttwvr-linux/tree/main/docs/archive/mo2>
+
+Credits: KUPOkinz, the TTW team, Fluorine and WiVRn. Neural addon reference: TF2VRNeuralRendering. Original addon code: GPL-3.0-only. NVIDIA SDKs/runtime DLLs are separate dependencies under NVIDIA's terms; game/mod binaries are not bundled.
+
+===== END MESSAGE 3 =====

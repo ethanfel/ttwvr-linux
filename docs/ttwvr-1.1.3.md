@@ -43,6 +43,20 @@ Saves, profile INIs, rendering resolution and NR/DLAA/MSAA selections need no
 migration. To roll back, stop the game, select the previous TTWVR mod and restore
 its matching addon/layer backup. Do not replace DLLs while a game has them loaded.
 
+## Deployment completed, 2026-11-12
+
+The verified port at commit `4feb91a` was installed in the regular Fluorine
+instance with the game and manager stopped. The VR profile now enables the
+separate 1.1.3 mod and disables 1.1.0; the old folder and a rollback backup remain.
+The x86 addon and OpenXR layer were updated together. The existing x64 helper
+matched the build and needed no replacement.
+
+All **53 checked settings/save files** retained their hashes, including the
+previous TTWVR INI, neural runtime preferences, profile INIs and saves. The flat
+profile's mod list was also preserved. Steam launch options, WiVRn registration
+and the Titanfall installation were unchanged. This records a completed local
+installation, not a physical-headset validation of the new version.
+
 ## Implementation review
 
 The layer and startup DLL share one exact-hash layout table in
