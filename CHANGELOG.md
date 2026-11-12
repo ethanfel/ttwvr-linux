@@ -1,5 +1,13 @@
 # Changes
 
+## Fluorine-first documentation and MO2 archive — 2026-11-12
+
+- Make native Fluorine/FUSE the primary installation, Steam launch and addon workflow.
+- Clarify instance configuration paths, private prefixes and the two launcher stages.
+- Preserve the previous Windows MO2 installation, patch, troubleshooting and addon guides in [the legacy archive](docs/archive/mo2/README.md), with migration/rollback guidance.
+- Distinguish the earlier MO2 performance captures from native migration validation.
+- Retain shared launcher filenames and existing MO2 support; this documentation update changes no runtime behavior.
+
 ## Native VR rendering settings and DLAA correction — 2026-11-12
 
 - Package the rendering controls as a separately enableable addon in Fluorine/MO2.

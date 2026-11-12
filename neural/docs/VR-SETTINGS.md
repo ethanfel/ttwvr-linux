@@ -1,7 +1,7 @@
 # Native VR settings, MSAA and DLAA motion correction
 
 The **TTWVR Rendering Addon** adds its controls directly to **Settings → VR**,
-after Resolution. It is an independently enableable Fluorine/MO2 mod containing
+after Resolution. It is an independently enableable Fluorine mod containing
 an xNVSE startup DLL and the legacy fallback scripts. Its matching OpenXR layer
 and 64-bit neural helper remain in the private runtime directory. Build/install
 steps are in [the README](../README.md#in-game-controls) and [Steam setup](STEAM.md).

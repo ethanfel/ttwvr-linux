@@ -86,13 +86,15 @@ dxvk_renderer=../performance-candidates/dxvk-pool32
 dxvk_syswow64=../dxvk-test-syswow64
 ```
 
-Paths resolve beside MO2. The renderer directory must contain the three built
+Paths resolve against the instance directory passed to `--native-instance`
+for Fluorine (historically, beside Windows MO2). The relative paths above
+record the original test layout; set them to your own private patch files. The renderer directory must contain the three built
 DLLs and `hashes.json`, a JSON object mapping their filenames to SHA-256 hashes
 recorded when preparing the build. This checks file integrity against that
 local manifest; it does not authenticate arbitrary third-party builds. The
 private Windows directory is a complete copy of this prefix's `syswow64`,
 with symlinks preserved and **without hard-linking regular files** to the real
-prefix. Prepare it while the game and MO2 are closed.
+prefix. Prepare it while the game and Fluorine are closed.
 
 The wrapper rejects any different installed Proton renderer hashes, changed
 candidate files, missing settings, and attempts to use the real prefix as the
@@ -101,7 +103,7 @@ only. Flat ignores both settings. Fourteen checks pass, including tampered
 files, real-prefix aliases, and Flat isolation.
 
 Rollback: remove both `dxvk_renderer` and `dxvk_syswow64` entries and restart
-MO2. Original prefix and Proton DLLs require no restoration. Keep the proven
+through the native Fluorine launcher. Original prefix and Proton DLLs require no restoration. Keep the proven
 OpenXR and native compiler fixes. The lower-resolution and DLSS experiments
 remain disabled. All eight saves still match their pre-test hashes.
 

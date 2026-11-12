@@ -1,5 +1,9 @@
 # Simulated TTWVR investigation — 2026-11-11
 
+> Historical experiment with Windows MO2. For the active native manager setup,
+> use the [Fluorine installation guide](installation.md). The shared compiler
+> patch steps are in [Linux fixes](linux-fixes.md).
+
 Current status is in [compatibility.md](compatibility.md); the original binary
 hashes are in [investigation.md](investigation.md#supplied-build).
 Tests use Proton Experimental 11.0-100, its WoW64 mode, Steam Linux Runtime 4,

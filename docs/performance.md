@@ -1,5 +1,9 @@
 # Performance investigation — 2026-11-11
 
+> Historical Windows MO2 experiments. The reduced-resolution, custom-renderer
+> and fence experiments below remain disabled. For the current native setup,
+> use the [Fluorine installation guide](installation.md).
+
 The subsequent [DXVK memory-pool fix and 120 Hz result](dxvk-pools.md)
 improve performance at the original resolution, independently of DLSS.
 

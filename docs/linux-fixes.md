@@ -2,7 +2,7 @@
 
 [← Installation](installation.md#4-apply-the-linux-fixes)
 
-For the supported Proton build only. **Close New Vegas and MO2 first.**
+For the supported Proton build only. **Close New Vegas and Fluorine first.**
 Use Bash and run the sections in order, in the same terminal. Replace these
 paths; `TTW_FIXES` should be a new directory outside the game and prefix:
 
@@ -10,13 +10,15 @@ paths; `TTW_FIXES` should be a new directory outside the game and prefix:
 set -euo pipefail
 export TTW_REPO='/path/to/ttwvr-linux'
 export TTW_PROTON='/path/to/steamapps/common/Proton - Experimental'
-export TTW_PREFIX='/path/to/steamapps/compatdata/22380/pfx'
+export TTW_PREFIX='/path/to/ttwvr/compat/pfx'
 export TTW_FIXES='/path/to/ttwvr-fixes'
 mkdir -p "$TTW_FIXES"
 ```
 
 If a command fails, stop there and resolve it before continuing. These steps
 prepare private files; the final INI enables them for the VR launcher.
+`TTW_PREFIX` must be the prefix configured in Fluorine, which may differ from
+Steam's original `compatdata/22380/pfx`.
 
 ## 1. Native shader compiler
 
@@ -118,8 +120,10 @@ The local `hashes.json` checks your built files' integrity.
 
 ## Enable the fixes
 
-Create `ttwvr-linux.ini` beside `ModOrganizer.exe`, using the actual absolute
-path chosen for `TTW_FIXES`. If the file already exists, update its `[VR]`
+Create **`instance/ttwvr-linux.ini`** beside the native instance's
+`ModOrganizer.ini`, using the actual absolute path chosen for `TTW_FIXES`.
+This is the directory passed to the wrapper's `--native-instance`, not the
+Fluorine application directory. If the file already exists, update its `[VR]`
 section. Shell variables such as `$TTW_FIXES` do not expand inside the INI.
 
 ```ini

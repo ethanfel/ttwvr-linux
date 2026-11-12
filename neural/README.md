@@ -1,6 +1,12 @@
-# TTWVR neural rendering prototype
+# TTWVR Rendering Addon for Fluorine
 
-**Native-resolution DLAA, spatial NR and temporal NR run in the isolated Linux test game.**
+The optional addon for the [native Fluorine setup](../docs/installation.md) adds
+**Off/DLAA/MSAA 2×/4×/8× and NR controls directly to Settings → VR**. Install it
+as a mod in the VR profile with the matching OpenXR layer and helper. NR/DLAA
+changes apply live; MSAA needs a restart and currently excludes NR/DLAA.
+[Install in Fluorine](docs/STEAM.md) · [Controls and latest validation](docs/VR-SETTINGS.md).
+
+**Native-resolution DLAA, spatial NR and temporal NR have processed both eyes in the isolated Linux test game.**
 Both eyes were captured with DLAA alone, temporal NR alone and both combined
 in the loaded Vault 101 scene on consecutive frames,
 at the original **2944 × 2208 per eye**. The temporal motion path is experimental;
@@ -94,8 +100,10 @@ mode verifies the conversion route; it does not claim an NR evaluation.
 ## Installation and testing
 
 For development and validation, use a copied Proton prefix, game executables,
-MO2 configuration, profile and saves. Large immutable assets may be read-only links. ESM/ESP files must be copies:
-MO2 changes their timestamps. The test mount namespace must protect the originals.
+manager configuration, profile and saves. Large immutable assets may be read-only
+links. ESM/ESP files must be copies: the manager can change their timestamps.
+The test mount namespace must protect the originals. Historical isolated tests
+used Windows MO2; the regular installation now uses Fluorine.
 Keep WiVRn's default registration and Titanfall files unchanged.
 
 Place these together in the private layer directory:
@@ -154,7 +162,7 @@ cmake --build /path/to/build32 --target rendering_addon
 ```
 
 Install the resulting `TTWVR Rendering Addon` folder as a mod in the VR profile
-in Fluorine or MO2, and disable the older `TTWVR Neural Menu` mod. Update the
+in Fluorine, and disable the older `TTWVR Neural Menu` mod. Update the
 matching x86 OpenXR layer and x64 helper while the game is closed.
 See [installation and rollback](docs/STEAM.md).
 

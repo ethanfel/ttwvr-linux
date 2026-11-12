@@ -1,56 +1,114 @@
-# Native Linux manager: Fluorine
+# Fluorine configuration and launch reference
 
-[← Installation](installation.md)
+[← Installation](installation.md) · [Troubleshooting](troubleshooting.md) ·
+[MO2 archive](archive/mo2/README.md)
 
-The native launch integration targets [Fluorine Manager v0.4.1](https://github.com/SulfurNitride/Fluorine-Manager/releases/tag/v0.4.1),
-using its FUSE backend and built-in TTW game plugin. Fluorine is a native Qt/C++
-port of MO2. Its executable is `ModOrganizer-core`, and some dialogs still say
-“ModOrganizer”; this does not imply Windows MO2 is running.
+The primary integration targets
+[Fluorine Manager v0.4.1](https://github.com/SulfurNitride/Fluorine-Manager/releases/tag/v0.4.1),
+its **FUSE** backend and built-in **TTW** game plugin. Fluorine is a native Qt/C++
+port of MO2. Its running executable is `ModOrganizer-core`, and some dialogs
+still say “ModOrganizer”; that is expected in the native application.
 
-## Copy the working installation first
+Use the official release's `fluorine-manager` launcher. The tested Linux x86_64
+v0.4.1 tarball has SHA256
+`df4a734363aff2e5eaf0dc05a68c87f3281293ae07838f68553cd309c52b4585`;
+the source tag is `8a4f2aced385a842f0b3989ae84279959760d64d`.
+These identify the tested release, not every future compatible build.
 
-Close the game and manager. Preserve the original MO2 directory and Steam launch
-option. Make independent copies (not hardlinks) of `mods`, `profiles` including
-saves, `overwrite`, `ModOrganizer.ini` and `ttwvr-linux.ini`. Create fresh
-`downloads`, `cache` and `logs` directories. Copy the game directory, Proton
-compatdata and private DXVK `syswow64` directory for an isolated first test.
-Do not point two running managers at the same game/Data directory.
+## Instance layout and configuration
 
-Install the official Fluorine release. The Linux x86_64 v0.4.1 tarball used here
-has SHA256 `df4a734363aff2e5eaf0dc05a68c87f3281293ae07838f68553cd309c52b4585`.
-The matching source tag resolves to `8a4f2aced385a842f0b3989ae84279959760d64d`.
-No game, mod or NVIDIA runtime binaries are included in this repository.
+One dedicated workspace keeps the paths explicit:
 
-Use dedicated XDG config/data directories for this instance. Configure Fluorine
-with the copied prefix, supported Proton build, Steam app ID 22380 and FUSE.
-Its global `fluorine/config.json` prefix and Proton paths take precedence over
-instance settings; verify both point to the copies. Use the internal game
-identifier `TTW`, adjust the managed game directory and all instance paths,
-and point executable entries to the copied `FalloutNV.exe`. Keep profile INIs,
-saves, mod order and plugin order intact. The tested profile enabled 25 of 26
-mods and all 18 TTW masters.
+```text
+ttwvr/
+  game/                         managed New Vegas copy
+  compat/pfx/                   private Proton prefix, inside copied compatdata
+  config/fluorine/config.json    dedicated Fluorine global settings
+  share/                        dedicated Fluorine XDG data
+  instance/
+    ModOrganizer.ini            native instance configuration
+    ttwvr-linux.ini              this project's VR patch/opt-in settings
+    mods/
+    profiles/TTW - Flat/
+    profiles/TTW - VR/
+    overwrite/
+    downloads/
+  fixes/                        private compiler/OpenXR/DXVK files
+  neural-runtime/               optional layer, helper and NVIDIA dependencies
+  state/                        launcher logs
+```
 
-A registry path mismatch prompt is expected when the game is copied. Accept
-it only after checking the manager uses the copied prefix and the managed path
-is the intended game copy.
+The repository and Fluorine application can live elsewhere. Paths in commands
+are examples; replace them with absolute paths for your installation. The
+manager's prefix path ends in `/pfx`, not the parent compatdata directory.
 
-If using the neural addon, copy its runtime separately and update the **copied
-prefix's** OpenXR layer manifest registration to the new manifest. Keep the
-addon opt-in and existing NR/DLAA settings. Do not overwrite loaded DLLs.
+For an existing installation, use the [migration checklist](#migrate-an-existing-mo2-installation).
+For a fresh instance, Fluorine 0.4.1 provides `create-portable`:
+
+```sh
+env XDG_CONFIG_HOME="/path/to/ttwvr/config" \
+    XDG_DATA_HOME="/path/to/ttwvr/share" \
+    "/path/to/fluorine-manager/fluorine-manager" create-portable \
+    --name instance --output "/path/to/ttwvr" \
+    --game TTW --game-path "/path/to/ttwvr/game" \
+    --prefix "/path/to/ttwvr/compat/pfx" \
+    --proton "/path/to/steamapps/common/Proton - Experimental"
+```
+
+This creates instance configuration and an empty `Default` profile. It does not
+install TTW, patch Fallout or prepare the game's prefix. The CLI arguments were
+checked against the pinned Fluorine source; full gameplay validation here used
+the migrated instance. Do not run it over an existing instance.
+
+Open the new instance with the launcher below using
+`--manager-only --profile Default`. In Fluorine, create **TTW - Flat** and **TTW - VR** as described in the
+installation guide. For subsequent launches, use the desired TTW profile.
+
+Configure the supported Proton build, the private prefix, Steam app ID **22380**,
+**FUSE**, and executable **Tale of Two Wastelands** pointing to the managed
+`FalloutNV.exe`, with its working directory set to the managed game directory.
+Enable Proton for that executable. Its wrapper is specified in the next section.
+
+Fluorine's global `config/fluorine/config.json` prefix and Proton settings take
+precedence over instance settings. Verify that both resolve to the intended
+installation. The relevant global values are:
+
+```json
+{
+  "app_id": 22380,
+  "prefix_path": "/path/to/ttwvr/compat/pfx",
+  "proton_name": "Proton - Experimental",
+  "proton_path": "/path/to/steamapps/common/Proton - Experimental"
+}
+```
+
+These are the relevant keys, not a command to replace an existing configuration.
+Use the same dedicated `--config-home` and `--data-home` for every launch.
+The instance stores its native settings under `[fluorine]` in
+`ModOrganizer.ini`, including `vfs_backend=fuse` and the matching prefix/Proton
+paths. Leave optional io_uring/passthrough features at their defaults for the
+initial setup; the validated configuration did not require them.
 
 ## Game wrapper inside Fluorine
 
 In each executable's **Wrapper options**, enter one line:
 
 ```text
-/usr/bin/python3 /path/to/ttwvr-linux/tools/steam_mo2.py --native-instance /path/to/native/instance --state-dir /path/to/native/state --steam-runtime "/path/to/SteamLinuxRuntime_4" -- %command%
+/usr/bin/python3 "/path/to/ttwvr-linux/tools/steam_mo2.py" --native-instance "/path/to/ttwvr/instance" --state-dir "/path/to/ttwvr/state" --steam-runtime "/path/to/SteamLinuxRuntime_4" --xrizer "/opt/xrizer" -- %command%
 ```
+
+This is an executable **Wrapper options** value inside Fluorine, not the Steam
+Launch Options command. Despite its historical name, `steam_mo2.py` in
+`--native-instance` mode does not start Windows MO2. Its legacy `--mo2` mode
+is documented only in the [archive](archive/mo2/README.md).
 
 Here `%command%` is expanded by Fluorine. The wrapper preserves its prepared
 Fallout/NVSE command, applies the existing hash-checked VR patches and reads
 `ttwvr-linux.ini` from the native instance. Set that file's patch paths to the
 correct copies. Relative paths are resolved against the instance directory.
-`TTW - Flat` disables VR automatically; `TTW - VR` enables the existing VR path.
+`TTW - Flat` disables VR automatically; `TTW - VR` enables the VR path.
+Keep these exact profile names. The xrizer directory must contain
+`bin/linux64/vrclient.so`; replace `/opt/xrizer` if installed elsewhere.
 
 The explicit Steam runtime handles Fluorine 0.4.1 failing to find a runtime in
 a secondary Steam library. An already prepared matching runtime is retained
@@ -66,11 +124,11 @@ Neither path changes the desktop's default runtime registration.
 Launch the dedicated instance using:
 
 ```sh
-python3 /path/to/ttwvr-linux/tools/launch_fluorine.py \
-  --manager /path/to/fluorine-manager \
-  --instance /path/to/native/instance \
-  --config-home /path/to/native/config \
-  --data-home /path/to/native/share
+python3 "/path/to/ttwvr-linux/tools/launch_fluorine.py" \
+  --manager "/path/to/fluorine-manager/fluorine-manager" \
+  --instance "/path/to/ttwvr/instance" \
+  --config-home "/path/to/ttwvr/config" \
+  --data-home "/path/to/ttwvr/share"
 ```
 
 This selects `TTW - VR` and runs `Tale of Two Wastelands`. Add `--manager-only`
@@ -111,7 +169,10 @@ On 2026-11-12 the native FUSE launch loaded xNVSE, TTW and TTWVR, displayed the
 neural settings menu and loaded a copied save (confirmed by the user). The
 simulated-headset run used full 2944×2208 eye images. DLAA logs included
 `dlaa_evaluate ... output_applied=1` for both eyes on consecutive frames.
-NR was off and DLAA was on, matching the existing installation settings.
+At that migration checkpoint NR was off and DLAA was on. The later
+[Rendering Addon deployment](../neural/docs/STEAM.md#native-rendering-addon-deployment-2026-11-12)
+retained the subsequently saved state with both features off; the two records
+describe different checkpoints.
 The user subsequently confirmed that the native setup works in normal use.
 This is functional confirmation; headset latency, streaming quality and frame
 times were not measured during this migration.
@@ -130,6 +191,33 @@ these overrides.
 A separate game copy is not automatically updated when Steam updates its
 original installation. Treat it as a pinned installation and reconcile updates
 with both game and manager closed; revalidate patch hashes before use.
+
+## Migrate an existing MO2 installation
+
+Close the game and manager. Preserve the original MO2 directory and Steam launch
+option. Make independent copies (not hardlinks) of `mods`, `profiles` including
+saves, `overwrite`, `ModOrganizer.ini` and `ttwvr-linux.ini`. Create fresh
+`downloads`, `cache` and `logs` directories. Copy the game directory, Proton
+compatdata and private DXVK `syswow64` directory for an isolated first test.
+Do not point two running managers at the same game/Data directory.
+
+Use dedicated XDG config/data directories for this instance. Configure Fluorine
+with the copied prefix, supported Proton build, Steam app ID 22380 and FUSE.
+Its global `fluorine/config.json` prefix and Proton paths take precedence over
+instance settings; verify both point to the copies. Use the internal game
+identifier `TTW`, adjust the managed game directory and all instance paths,
+and point executable entries to the copied `FalloutNV.exe`. Keep profile INIs,
+saves, mod order and plugin order intact. The tested profile enabled 25 of 26
+mods and all 18 TTW masters.
+
+A registry path mismatch prompt is expected when the game is copied. Accept
+it only after checking the manager uses the copied prefix and the managed path
+is the intended game copy.
+
+If using the neural addon, copy its runtime separately and update the **copied
+prefix's** OpenXR layer manifest registration to the new manifest. Keep the
+addon opt-in and existing NR/DLAA settings. Do not overwrite loaded DLLs.
+
 Fluorine and old MO2 saves also diverge after the copy. For rollback, close the
 native game and manager, restore the old Steam launch option and copy only
 wanted newer saves (including their `.nvse` companions) back after backing up

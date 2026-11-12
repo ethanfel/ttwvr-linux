@@ -54,15 +54,16 @@ python3 tools/patch_openxr_bridge.py \
   /path/to/private-openxr/wineopenxr.so
 ```
 
-Add this under `[VR]` in the `ttwvr-linux.ini` beside `ModOrganizer.exe`:
+Add this under `[VR]` in Fluorine's **`instance/ttwvr-linux.ini`**, beside
+`ModOrganizer.ini`:
 
 ```ini
 openxr_bridge=/path/to/private-openxr/wineopenxr.so
 ```
 
-Paths in this setting may also be relative to MO2's directory. The explicit
+Paths in this setting may also be relative to the native instance directory. The explicit
 `--openxr-bridge` option is available too. Flat mode ignores the setting.
-The [native shader compiler workaround](simulated-vr.md) is also required for
+The [native shader compiler workaround](linux-fixes.md#1-native-shader-compiler) is also required for
 the tested installation.
 
 Rollback: exit the game and remove the `openxr_bridge` setting or command-line
