@@ -33,4 +33,30 @@ int main() {
   for (unsigned i = 1; i <= 8; ++i)
     for (unsigned base : {2u, 3u})
       assert(std::abs(Halton(i, base) - .5f) <= .5f);
+  // Independent viewport projection: every Halton phase must move an actual
+  // perspective vertex by the same pixel offset supplied to NGX. This catches
+  // confusing a sample location with the opposite raster displacement.
+  float shaderMatrix[16];
+  for (unsigned r = 0; r < 4; ++r)
+    for (unsigned c = 0; c < 4; ++c)
+      shaderMatrix[r * 4 + c] = projection[c * 4 + r];
+  for (unsigned phase = 1; phase <= 8; ++phase) {
+    const float x = Halton(phase, 2) - .5f, y = Halton(phase, 3) - .5f;
+    float jittered[16];
+    ApplySampleJitter(shaderMatrix, jittered, 2944, 2208, x, y);
+    for (float depth : {2.f, 10.f, 80.f}) {
+      const float vertex[4] = {.3f, -.2f, depth, 1};
+      double a[4]{}, b[4]{};
+      for (unsigned r = 0; r < 4; ++r)
+        for (unsigned c = 0; c < 4; ++c) {
+          a[r] += double(shaderMatrix[r * 4 + c]) * vertex[c];
+          b[r] += double(jittered[r * 4 + c]) * vertex[c];
+        }
+      const double dx = (b[0] / b[3] - a[0] / a[3]) * 2944 / 2;
+      const double dy = -(b[1] / b[3] - a[1] / a[3]) * 2208 / 2;
+      assert(std::abs(dx - RasterJitter(x)) < 1e-5);
+      assert(std::abs(dy - RasterJitter(y)) < 1e-5);
+      assert(a[2] == b[2] && a[3] == b[3]); // depth and perspective unchanged
+    }
+  }
 }

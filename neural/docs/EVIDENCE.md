@@ -1,5 +1,9 @@
 # Isolated validation, 2026-11-11
 
+The newer [2026-11-12 native-menu/MSAA and DLAA correction record](VR-SETTINGS.md)
+supersedes the original NGX jitter-sign assumption below. Earlier captures prove
+processing, but do not establish correct temporal image quality.
+
 This records **spatial NR, temporal NR, native-resolution DLAA and combined
 NR/DLAA prototypes** in an isolated simulated headset. It is not a physical
 headset comfort/performance validation. All screenshots below were checked

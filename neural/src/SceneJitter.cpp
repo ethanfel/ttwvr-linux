@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "SceneJitter.h"
 #include "NativeGuides.h"
+#include "GuideMath.h"
 #include "Support.h"
 #include <array>
 #include <cstring>
@@ -110,11 +111,7 @@ SceneJitter::SceneJitter(IDirect3DDevice9 *d, bool bypass) {
   if (FAILED(d->GetVertexShaderConstantF(first, saved, 4)))
     return;
   float jittered[16];
-  std::memcpy(jittered, saved, sizeof(saved));
-  for (unsigned i = 0; i < 4; ++i) {
-    jittered[i] -= 2 * x / float(r.Width) * saved[12 + i];
-    jittered[4 + i] += 2 * y / float(r.Height) * saved[12 + i];
-  }
+  ApplySampleJitter(saved, jittered, r.Width, r.Height, x, y);
   if (SUCCEEDED(d->SetVertexShaderConstantF(first, jittered, 4)))
     device = d;
 }

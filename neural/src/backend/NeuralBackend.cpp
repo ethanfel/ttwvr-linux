@@ -2,6 +2,7 @@
 // Adapted from Ethanfel TF2VRNeuralRendering; see THIRD-PARTY-NOTICES.md.
 #include "NeuralBackend.h"
 #include "../Support.h"
+#include "../GuideMath.h"
 #include "GpuInterop.h"
 #include "GpuTiming.h"
 #include "NgxLifetime.h"
@@ -518,10 +519,15 @@ struct NeuralBackend::Impl {
                              D3D12_RESOURCE_STATE_COMMON,
                              D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
       ttwvrnr_parameter_set_int(e.aaParams, NVSDK_NGX_Parameter_Reset, reset);
+      // NativeGuides stores the sample location: SceneJitter moves rasterized
+      // geometry by its NEGATIVE. NGX expects the raster displacement in
+      // current-to-previous motion-vector coordinates (right/down positive).
+      // Passing the sample location directly makes DLAA accumulate opposite
+      // subpixel phases, blurring detail and delaying convergence after motion.
       ttwvrnr_parameter_set_float(e.aaParams,
-                                  NVSDK_NGX_Parameter_Jitter_Offset_X, jitterX);
+                                  NVSDK_NGX_Parameter_Jitter_Offset_X, RasterJitter(jitterX));
       ttwvrnr_parameter_set_float(e.aaParams,
-                                  NVSDK_NGX_Parameter_Jitter_Offset_Y, jitterY);
+                                  NVSDK_NGX_Parameter_Jitter_Offset_Y, RasterJitter(jitterY));
       timing.Begin(list, 0);
       Ngx(evaluate(list, e.aaFeature, e.aaParams, nullptr), "dlaa_evaluate");
       timing.End(list, 0);
@@ -546,8 +552,8 @@ struct NeuralBackend::Impl {
       srvs[4] = nullptr;
       if (reset || e.evaluations < 3 || e.evaluations % 120 == 0)
         Log("dlaa_evaluate frame=%llu eye=%u reset=%d jitter_x=%.6f "
-            "jitter_y=%.6f output_applied=1",
-            (unsigned long long)frame, eye, reset, jitterX, jitterY);
+            "jitter_y=%.6f sampling_jitter_x=%.6f sampling_jitter_y=%.6f output_applied=1",
+            (unsigned long long)frame, eye, reset, -jitterX, -jitterY, jitterX, jitterY);
     }
     if (options.neural) {
       c->CSSetShader(prepare.Get(), nullptr, 0);

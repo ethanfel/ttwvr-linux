@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "MenuControl.h"
 #include "Support.h"
+#include "VRSettings.h"
 #include <algorithm>
 #include <cstdio>
 namespace ttwvrnr {
@@ -57,6 +58,7 @@ bool Save(const LiveSettings &s) {
   return ok;
 }
 } // namespace
+bool SaveLiveSettings(const LiveSettings &s) { return s.Valid() && Save(s); }
 LiveSettings ReadLiveSettings() {
   auto p = Ini();
   Flush(p);
@@ -143,14 +145,15 @@ void PublishMenuState(const ReloadState &r, bool applied) {
     else
       status = r.requested.neural ? "Active: NR" : "Active: DLAA";
   }
+  if (CurrentMsaaSamples()) status = "Active: MSAA - AA changes require restart";
   const auto &s = r.requested;
   char data[1024]{};
   std::snprintf(
       data, sizeof(data),
-      "[state]\nsession=%u\nrevision=%u\nsequence=%u\nneural=%u\ndlaa=%"
+      "[state]\nnative_menu=%u\nmsaa_samples=%u\nsession=%u\nrevision=%u\nsequence=%u\nneural=%u\ndlaa=%"
       "u\npreset=%u\n"
       "resolution=%u\nstrength=%u\ntone=%u\ndetail=%u\nstatus=%s\nnotice=%s\n",
-      session, r.revision, consumed, s.neural, s.dlaa, s.preset, s.resolution,
+      unsigned(NativeVRSettingsInstalled()), CurrentMsaaSamples(), session, r.revision, consumed, s.neural, s.dlaa, s.preset, s.resolution,
       s.strength, s.tone, s.detail, status, notice.c_str());
   static std::string previous;
   if (data == previous)

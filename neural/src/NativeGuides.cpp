@@ -5,6 +5,7 @@
 #include "GuideMath.h"
 #include "SceneCapture.h"
 #include "SpatialNR.h"
+#include "VRSettings.h"
 #include "Support.h"
 #include <MinHook.h>
 #include <algorithm>
@@ -148,7 +149,7 @@ bool InstallNativeGuides(HMODULE module) {
   return true;
 }
 bool NativeGuidesEnabled() {
-  return enabled && (captureProbe || SceneProcessingEnabled());
+  return enabled && !CurrentMsaaSamples() && (captureProbe || SceneProcessingEnabled());
 }
 void NativeGuidesFrame(uint64_t frame) {
   const bool camerasReady = previous[0].verified && !previous[0].rejected &&

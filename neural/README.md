@@ -147,38 +147,39 @@ no untested preset is labelled faster or better.
 
 ### In-game controls
 
-Install the contents of [`menu/`](menu/) as an enabled MO2 mod in the isolated
-profile. It uses the existing xNVSE (6.3.3+), JIP LN and UIO plugins; no ESP,
-MCM download, game UI replacement or changes to saves are required.
+Build the installable **TTWVR Rendering Addon**:
 
-Open the pause menu and press **X**, or use **F10** with the desktop game focused.
-The native selection dialog provides separate NR/DLAA toggles, **NR tuning**,
-**Apply** and **Cancel**. Use the stick/D-pad and A; B returns from tuning or
-cancels the main dialog. Arrows and Enter use Fallout's existing handling; the bridge adds Escape.
-NR tuning cycles model A/B, processing scale 25/50/75/100%, and strength/tone/detail
-in 10% steps. Game and DLAA resolution remain unchanged. Reopen the menu to see
-the current renderer status. Changing a row only edits a draft; Apply saves it.
+```sh
+cmake --build /path/to/build32 --target rendering_addon
+```
 
-The menu draft lives in a persistent HUD node, because showing a native dialog
-can close `StartMenu`. Requests include a session token and base revision, and
-are committed by writing the sequence last. Stale edits are rejected instead
-of overwriting newer CLI settings. The renderer atomically saves accepted edits
-and publishes separate requested/initializing/active/error status; **Active**
-requires output applied to both eyes. Apply also explicitly retries a failure.
+Install the resulting `TTWVR Rendering Addon` folder as a mod in the VR profile
+in Fluorine or MO2, and disable the older `TTWVR Neural Menu` mod. Update the
+matching x86 OpenXR layer and x64 helper while the game is closed.
+See [installation and rollback](docs/STEAM.md).
 
-TTWVR bypasses some script-level keyboard/gamepad events. A passive reader
-verifies the installed JIP controller wrapper signature and derives the address
-of the game's final cached input state. It reads X/B edges without modifying
-input, patching a call, or polling another controller. Unknown wrappers leave
-this shortcut disabled. F10/Escape are polled only while the game owns the
-foreground window; arrows/Enter are left to Fallout to avoid double navigation.
-A small INI mailbox carries these menu commands to the script. Back is handled
-only for this addon's own dialog or the vanilla pause menu. OpenXR action/image
-ownership is unchanged.
+Open **Settings → VR**. The addon adds these controls after Resolution:
 
-Installing a new DLL or script version still requires a game restart. Changing
-NR/DLAA settings afterward does not. First-time feature creation can take longer
-than a warm change; bypass continues during initialization.
+- **Anti-aliasing:** Off, DLAA, MSAA 2×, 4× or 8×.
+- **Neural Rendering:** Off/On, independently of DLAA.
+- **NR model**, processing scale, strength, tone and detail.
+
+These are TTWVR's native option rows, navigated by the game's controller/keyboard
+handling. Each change saves immediately. NR/DLAA changes apply live during a
+brief bypass; **MSAA changes require a restart**. Pending choices say `(restart)`.
+MSAA currently excludes NR/DLAA because their depth transport accepts only
+single-sampled scene depth. Selecting MSAA turns both off; selecting NR clears
+the requested MSAA mode for the next launch. Final eye resolution is unchanged.
+The unavailable built-in Upscaler, Upscaler Level and Sharpness rows are hidden.
+
+The addon requires xNVSE, the matching OpenXR layer, and the verified TTWVR 1.1.0
+binary. It adds no ESP and changes no saves or TTWVR DLL on disk. Its startup
+plugin prevents TTWVR from forcing the selected MSAA level back to zero. Actual
+MSAA is detected from scene HDR targets, not the single-sampled final buffer.
+The legacy X/F10 dialog remains a fallback when native integration is unavailable;
+its input reader is inactive when the native menu is installed.
+
+[Implementation, DLAA jitter correction and test evidence](docs/VR-SETTINGS.md)
 
 ### Terminal controls
 

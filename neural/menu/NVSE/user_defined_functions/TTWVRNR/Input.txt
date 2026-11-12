@@ -1,5 +1,8 @@
 ; SPDX-License-Identifier: GPL-3.0-only
 begin Function {int keyCode}
+ if GetINIFloat "state:native_menu" "TTWVRNR_state.ini"
+  return
+ endif
  if keyCode == 68 && MenuMode 1001 == 0
   if MenuMode == 0 || MenuMode 1013
    Call (CompileScript "TTWVRNR/Load.txt")

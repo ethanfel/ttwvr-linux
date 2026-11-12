@@ -4,6 +4,7 @@
 #include <string>
 namespace ttwvrnr {
 LiveSettings ReadLiveSettings();
+bool SaveLiveSettings(const LiveSettings &settings);
 // Called only at a stereo frame boundary. Menu writes a draft followed by its
 // sequence number. The renderer acknowledges and persists a complete snapshot.
 bool ReadMenuRequest(uint32_t revision, LiveSettings &s);

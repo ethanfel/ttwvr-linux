@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "MenuInput.h"
 #include "Support.h"
+#include "VRSettings.h"
 #include <atomic>
 #include <cstdio>
 #include <cstring>
@@ -58,6 +59,7 @@ void Install() {
 }
 } // namespace
 void PollMenuInput() {
+  if (NativeVRSettingsInstalled()) return;
   static bool installed = false;
   if (!installed) {
     installed = true;

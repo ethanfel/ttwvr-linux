@@ -1,5 +1,13 @@
 # Changes
 
+## Native VR rendering settings and DLAA correction — 2026-11-12
+
+- Package the rendering controls as a separately enableable addon in Fluorine/MO2.
+- Add native Settings → VR rows for AA and NR tuning; hide the unavailable built-in upscaler controls.
+- Enable scene MSAA 2×/4×/8× through a hash-verified xNVSE startup hook, with restart labels and a neural-processing bypass while MSAA is active.
+- Correct the sign of the raster jitter supplied to DLAA and test the projection-to-NGX convention geometrically.
+- Record isolated stereo captures, motion validation and remaining headset checks in [the evidence note](neural/docs/VR-SETTINGS.md).
+
 ## Native Fluorine launch integration — 2026-11-12
 
 - Preserve Fluorine’s prepared game command and FUSE mod deployment while applying the existing VR patches.

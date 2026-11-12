@@ -7,6 +7,7 @@
 #include "NativeGuides.h"
 #include "SceneCapture.h"
 #include "Support.h"
+#include "VRSettings.h"
 #include <chrono>
 #include <cmath>
 #include <cstring>
@@ -199,11 +200,14 @@ bool SpatialEnabled(uint64_t frame) {
     if (!reload.revision || now - polled >= 250) {
       polled = now;
       auto settings = ReadLiveSettings();
+      if (CurrentMsaaSamples()) settings.neural = settings.dlaa = 0;
       bool changed = reload.Request(settings, !reload.revision);
       const bool retry =
           DeleteFileW((Directory() + L"\\neural.request").c_str()) != FALSE;
-      if (ReadMenuRequest(reload.revision, settings) || retry)
+      if (ReadMenuRequest(reload.revision, settings) || retry) {
+        if (CurrentMsaaSamples()) settings.neural = settings.dlaa = 0;
         changed = reload.Request(settings, true);
+      }
       if (changed)
         Log("live_settings_request revision=%u nr=%u dlaa=%u model=%u scale=%u",
             reload.revision, settings.neural, settings.dlaa, settings.preset,
@@ -222,7 +226,7 @@ bool SpatialEnabled(uint64_t frame) {
 }
 bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
                     bool capture) {
-  if (reload.fault || !enabled || eye > 1)
+  if (CurrentMsaaSamples() || reload.fault || !enabled || eye > 1)
     return false;
   try {
     auto hdr = Surface(d, 1), bloom = Surface(d, 0);

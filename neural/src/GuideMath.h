@@ -66,6 +66,16 @@ inline bool ClipToPrevious(const float *view, const float *projection,
   }
   return true;
 }
+// Scene sampling offsets and raster displacement have opposite signs.
+inline float RasterJitter(float sampleOffset) { return -sampleOffset; }
+inline void ApplySampleJitter(const float *original, float *jittered,
+                              unsigned width, unsigned height, float x, float y) {
+  std::copy(original, original + 16, jittered);
+  for (unsigned i = 0; i < 4; ++i) {
+    jittered[i] += 2 * RasterJitter(x) / float(width) * original[12 + i];
+    jittered[4 + i] -= 2 * RasterJitter(y) / float(height) * original[12 + i];
+  }
+}
 inline float Halton(unsigned index, unsigned base) {
   float value = 0, scale = 1;
   while (index) {

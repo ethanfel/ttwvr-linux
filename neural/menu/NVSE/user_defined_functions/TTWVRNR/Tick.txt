@@ -4,7 +4,7 @@ begin Function {}
   InjectUIXML "HUDMainMenu" "Data/Menus/Prefabs/TTWVRNR/state.xml"
   SetUIFloat "HUDMainMenu/TTWVRNRState/_input" (GetINIFloat "input:sequence" "TTWVRNR_input.ini")
  endif
- if MenuMode 1013
+ if MenuMode 1013 && GetINIFloat "state:native_menu" "TTWVRNR_state.ini" == 0
   if IsComponentLoaded "StartMenu/TTWVRNR" == 0
    InjectUIXML "StartMenu" "Data/Menus/Prefabs/TTWVRNR/panel.xml"
   endif

@@ -7,6 +7,7 @@
 #include "SceneJitter.h"
 #include "SpatialNR.h"
 #include "Support.h"
+#include "VRSettings.h"
 #include <MinHook.h>
 #include <array>
 #include <atomic>
@@ -204,7 +205,9 @@ void Observe(IDirect3DDevice9 *d, const char *op,
 HRESULT STDMETHODCALLTYPE HookSetRT(IDirect3DDevice9 *d, DWORD n,
                                     IDirect3DSurface9 *p) {
   Observe(d, "before_set_target", p, n);
-  return setRT(d, n, p);
+  const auto result = setRT(d, n, p);
+  if (n == 0 && SUCCEEDED(result)) ObserveMSAATarget(p);
+  return result;
 }
 HRESULT STDMETHODCALLTYPE HookClear(IDirect3DDevice9 *d, DWORD n,
                                     const D3DRECT *r, DWORD flags,
@@ -367,8 +370,10 @@ bool InstallD3D9Trace() {
       MH_RemoveHook(p);
     }
   // Borrowed device, owned by TTWVR. No reference or state is changed.
-  if (ready)
+  if (ready) {
     InstallNativeGuides(module);
+    InstallVRSettings(module, device);
+  }
   Log("d3d9_trace_ready=%d capture_only=1", ready);
   return ready;
 }

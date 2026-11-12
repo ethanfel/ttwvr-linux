@@ -59,13 +59,19 @@ enable_language(C)
 set(OPENXR_INCLUDE_DIR /usr/include/openxr CACHE PATH "OpenXR headers")
 add_library(minhook STATIC third_party/minhook/src/buffer.c third_party/minhook/src/hook.c third_party/minhook/src/trampoline.c third_party/minhook/src/hde/hde32.c)
 target_include_directories(minhook PUBLIC third_party/minhook/include)
-add_library(capture_layer SHARED src/Layer.cpp src/Graphics.cpp src/Bindings.cpp src/Support.cpp src/CaptureWriter.cpp src/D3D9Trace.cpp src/SceneCapture.cpp src/DepthTransfer.cpp src/SpatialNR.cpp src/MenuControl.cpp src/MenuInput.cpp src/NativeGuides.cpp src/SceneJitter.cpp)
+add_library(settings_bootstrap SHARED src/SettingsBootstrap.cpp)
+set_target_properties(settings_bootstrap PROPERTIES PREFIX "" OUTPUT_NAME TTWVRRenderingAddon)
+target_compile_definitions(settings_bootstrap PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX UNICODE _UNICODE)
+target_compile_options(settings_bootstrap PRIVATE -Wall -Wextra -Werror -Wno-cast-function-type -Wno-misleading-indentation)
+target_link_libraries(settings_bootstrap PRIVATE minhook bcrypt)
+target_link_options(settings_bootstrap PRIVATE -static -static-libgcc -static-libstdc++ -Wl,--kill-at)
+add_library(capture_layer SHARED src/Layer.cpp src/Graphics.cpp src/Bindings.cpp src/Support.cpp src/CaptureWriter.cpp src/D3D9Trace.cpp src/SceneCapture.cpp src/DepthTransfer.cpp src/SpatialNR.cpp src/MenuControl.cpp src/MenuInput.cpp src/NativeGuides.cpp src/SceneJitter.cpp src/VRSettings.cpp)
 set_target_properties(capture_layer PROPERTIES PREFIX "" OUTPUT_NAME TTWVRNeuralRenderingLayer)
 set(VULKAN_INCLUDE_DIR "" CACHE PATH "External Vulkan-Headers include directory")
 target_include_directories(capture_layer PRIVATE "${OPENXR_INCLUDE_DIR}" "${VULKAN_INCLUDE_DIR}")
 target_compile_definitions(capture_layer PRIVATE XR_NO_PROTOTYPES WIN32_LEAN_AND_MEAN NOMINMAX UNICODE _UNICODE)
 target_compile_options(capture_layer PRIVATE -Wall -Wextra -Werror -Wno-missing-field-initializers -Wno-cast-function-type)
-target_link_libraries(capture_layer PRIVATE d3d9 d3d11 dxgi dxguid bcrypt minhook)
+target_link_libraries(capture_layer PRIVATE d3d9 d3d11 dxgi dxguid bcrypt shell32 minhook)
 target_link_options(capture_layer PRIVATE -static -static-libgcc -static-libstdc++ -Wl,--kill-at)
 
 add_executable(d3d9_texture_probe tools/D3D9TextureProbe.cpp src/DepthTransfer.cpp src/Support.cpp)
@@ -74,3 +80,12 @@ target_compile_definitions(d3d9_texture_probe PRIVATE WIN32_LEAN_AND_MEAN NOMINM
 target_compile_options(d3d9_texture_probe PRIVATE -Wall -Wextra -Werror -Wno-missing-field-initializers -Wno-cast-function-type)
 target_link_libraries(d3d9_texture_probe PRIVATE d3d9 d3d11 dxgi dxguid)
 target_link_options(d3d9_texture_probe PRIVATE -static)
+
+# Installable addon: our scripts and xNVSE bootstrap only, no game/NVIDIA files.
+add_custom_target(rendering_addon
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/menu" "${CMAKE_BINARY_DIR}/TTWVR Rendering Addon"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/addon" "${CMAKE_BINARY_DIR}/TTWVR Rendering Addon"
+  COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:settings_bootstrap>" "${CMAKE_BINARY_DIR}/TTWVR Rendering Addon/NVSE/Plugins/TTWVRRenderingAddon.dll"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE" "${CMAKE_BINARY_DIR}/TTWVR Rendering Addon/LICENSE"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/third_party/minhook/LICENSE.txt" "${CMAKE_BINARY_DIR}/TTWVR Rendering Addon/MINHOOK-LICENSE.txt"
+  DEPENDS settings_bootstrap capture_layer VERBATIM)
