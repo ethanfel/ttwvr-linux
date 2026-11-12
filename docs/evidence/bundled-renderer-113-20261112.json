@@ -1,0 +1,847 @@
+{
+  "date": "2026-11-12",
+  "status": "not usable: stale DLSS eye images; apparent FPS gain rejected",
+  "patch": {
+    "status": "experimental; runtime validation required",
+    "version": "1.1.3",
+    "source_sha256": "4c45d6e5adb5da76dd3d08bf0639d360761d3dc50d891ea0bd19b51e4fb006a0",
+    "patched_sha256": "b82d341690cf0068b561803dca22a4ac07ea8042e6437c68f3ab9a85fcd16530",
+    "file_offset": "0x513f2c",
+    "rva": "0x514b2c",
+    "before": "0f8589010000",
+    "after": "909090909090",
+    "changed_bytes": 20,
+    "winevulkan_lookup": true
+  },
+  "patch_validation": {
+    "builds": [
+      {
+        "status": "experimental; runtime validation required",
+        "version": "1.1.0",
+        "source_sha256": "8a3a71b48d362984fe346c73b68dfbd476d6e138d6831f26f10c6f506cd03880",
+        "patched_sha256": "7d02f7ba509ab1b2a31a42f8b36f6c46d8ff17ccffeeebe87d0485c42f6f29a9",
+        "file_offset": "0x4f8e4c",
+        "rva": "0x4f9a4c",
+        "before": "0f8589010000",
+        "after": "909090909090",
+        "changed_bytes": 6,
+        "winevulkan_lookup": false
+      },
+      {
+        "status": "experimental; runtime validation required",
+        "version": "1.1.0",
+        "source_sha256": "8a3a71b48d362984fe346c73b68dfbd476d6e138d6831f26f10c6f506cd03880",
+        "patched_sha256": "1e7383f6ee4eb8e1ec38a68b53e4b62b5d712c4baa699ac56f99aae4ff9ee246",
+        "file_offset": "0x4f8e4c",
+        "rva": "0x4f9a4c",
+        "before": "0f8589010000",
+        "after": "909090909090",
+        "changed_bytes": 20,
+        "winevulkan_lookup": true
+      },
+      {
+        "status": "experimental; runtime validation required",
+        "version": "1.1.3",
+        "source_sha256": "4c45d6e5adb5da76dd3d08bf0639d360761d3dc50d891ea0bd19b51e4fb006a0",
+        "patched_sha256": "a42c4f3a75480176d200d37634c906563ff1731a82442421ee0a64e5b70eb248",
+        "file_offset": "0x513f2c",
+        "rva": "0x514b2c",
+        "before": "0f8589010000",
+        "after": "909090909090",
+        "changed_bytes": 6,
+        "winevulkan_lookup": false
+      },
+      {
+        "status": "experimental; runtime validation required",
+        "version": "1.1.3",
+        "source_sha256": "4c45d6e5adb5da76dd3d08bf0639d360761d3dc50d891ea0bd19b51e4fb006a0",
+        "patched_sha256": "b82d341690cf0068b561803dca22a4ac07ea8042e6437c68f3ab9a85fcd16530",
+        "file_offset": "0x513f2c",
+        "rva": "0x514b2c",
+        "before": "0f8589010000",
+        "after": "909090909090",
+        "changed_bytes": 20,
+        "winevulkan_lookup": true
+      }
+    ],
+    "refuses_unknown_hash": true,
+    "refuses_overwrite": true
+  },
+  "runtime": "isolated Monado 90 Hz; Proton Experimental; RTX 5090",
+  "ngx_evaluations": [
+    {
+      "api": "NVSDK_NGX_D3D11_EvaluateFeature",
+      "feature": 3,
+      "result": "0x1"
+    },
+    {
+      "api": "NVSDK_NGX_D3D11_EvaluateFeature",
+      "feature": 4,
+      "result": "0x1"
+    },
+    {
+      "api": "NVSDK_NGX_D3D11_EvaluateFeature",
+      "feature": 3,
+      "result": "0x1"
+    },
+    {
+      "api": "NVSDK_NGX_D3D11_EvaluateFeature",
+      "feature": 4,
+      "result": "0x1"
+    }
+  ],
+  "initial_dlss_counters": [
+    {
+      "render_width": 1984,
+      "render_height": 1488,
+      "output_width": 2944,
+      "output_height": 2208,
+      "posted": 8241,
+      "shown": 8236,
+      "not_produced": 4,
+      "worker_posts": 8241,
+      "legacy_posts": 0,
+      "ready_when_shown": 8236,
+      "show_checks": 8236,
+      "helper_gpu_ms": 0.0,
+      "helper_gpu_max_ms": 0.0,
+      "mode": "DLSS",
+      "pid": 846627,
+      "process_win32u_sha256": "689b18550d5485ea0a21d8bfc0dd886ac8d8f6a21df549d9a6a3b73ae513dd33"
+    }
+  ],
+  "motion_before_counters": {
+    "pid": 856387,
+    "ttwvr_sha256": "b82d341690cf0068b561803dca22a4ac07ea8042e6437c68f3ab9a85fcd16530",
+    "notice": "non-atomic status counters; pixels require separate validation",
+    "render_width": 1984,
+    "render_height": 1488,
+    "output_width": 2944,
+    "output_height": 2208,
+    "posted": 1317,
+    "shown": 1316,
+    "not_produced": 0,
+    "slot_busy": 0,
+    "resets": 1,
+    "worker_posts": 1317,
+    "legacy_posts": 0,
+    "ready_when_shown": 1316,
+    "show_checks": 1316,
+    "mode": "DLSS",
+    "copy_refused": false
+  },
+  "motion_after_counters": {
+    "pid": 856387,
+    "ttwvr_sha256": "b82d341690cf0068b561803dca22a4ac07ea8042e6437c68f3ab9a85fcd16530",
+    "notice": "non-atomic status counters; pixels require separate validation",
+    "render_width": 1984,
+    "render_height": 1488,
+    "output_width": 2944,
+    "output_height": 2208,
+    "posted": 1347,
+    "shown": 1346,
+    "not_produced": 0,
+    "slot_busy": 0,
+    "resets": 1,
+    "worker_posts": 1347,
+    "legacy_posts": 0,
+    "ready_when_shown": 1346,
+    "show_checks": 1346,
+    "mode": "DLSS",
+    "copy_refused": false
+  },
+  "dlss_movement": [
+    {
+      "eye": 0,
+      "frame_before": 1590,
+      "frame_after": 1620,
+      "position_before": [
+        -0.0315,
+        1.6,
+        -0.5
+      ],
+      "position_after": [
+        0.5685,
+        1.6,
+        -0.5
+      ],
+      "changed_pixel_fraction": 0.0,
+      "mean_absolute_difference": 0.0,
+      "sha256_before": "3bd0b0f785bf99a3db933d58321d808ab6541068b3e4002febcc2947a3fd3de8",
+      "sha256_after": "3bd0b0f785bf99a3db933d58321d808ab6541068b3e4002febcc2947a3fd3de8"
+    },
+    {
+      "eye": 1,
+      "frame_before": 1590,
+      "frame_after": 1620,
+      "position_before": [
+        0.0315,
+        1.6,
+        -0.5
+      ],
+      "position_after": [
+        0.6315,
+        1.6,
+        -0.5
+      ],
+      "changed_pixel_fraction": 0.0,
+      "mean_absolute_difference": 0.0,
+      "sha256_before": "ea6b869fd0aa394f257dae36461c1190d38cb93eac3949e0a715c7461c92af45",
+      "sha256_after": "ea6b869fd0aa394f257dae36461c1190d38cb93eac3949e0a715c7461c92af45"
+    }
+  ],
+  "fsr_movement_control": [
+    {
+      "eye": 0,
+      "frame_before": 5490,
+      "frame_after": 6540,
+      "position_before": [
+        0.5685,
+        1.6,
+        -0.5
+      ],
+      "position_after": [
+        -0.0315,
+        1.6,
+        -0.5
+      ],
+      "changed_pixel_fraction": 0.8497087542336169,
+      "mean_absolute_difference": 29.658197740676197,
+      "sha256_before": "4faf9c9594fa12d469fd366d06e6e863858b572cbbf01286abdbbf8f6a1f5df2",
+      "sha256_after": "1683d8f8527323d909fa737ef747bdf40a3e2053be2e8673826ad277903d58a4"
+    },
+    {
+      "eye": 1,
+      "frame_before": 5490,
+      "frame_after": 6540,
+      "position_before": [
+        0.6315,
+        1.6,
+        -0.5
+      ],
+      "position_after": [
+        0.0315,
+        1.6,
+        -0.5
+      ],
+      "changed_pixel_fraction": 0.8498252094655797,
+      "mean_absolute_difference": 26.934219408425882,
+      "sha256_before": "0741d8c20f095ae5da52e8a67b03a9c2a72803812761f84cdf4cb0bbc8ddf50f",
+      "sha256_after": "48011b109b45f7db1bf55cf255d6044ff2c721f2d42f3fde9eed3b5767417054"
+    }
+  ],
+  "capture_coverage": [
+    {
+      "run": "author-native-113",
+      "frame": 930,
+      "eye": 0,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998370857455104,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-native-113",
+      "frame": 930,
+      "eye": 1,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998183175311122,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-native-113",
+      "frame": 931,
+      "eye": 0,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998370857455104,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-native-113",
+      "frame": 931,
+      "eye": 1,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998183175311122,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-monotonic-113",
+      "frame": 1950,
+      "eye": 0,
+      "width": 4480,
+      "height": 3360,
+      "nonblack_fraction": 0.43176591730442176,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-monotonic-113",
+      "frame": 1950,
+      "eye": 1,
+      "width": 4480,
+      "height": 3360,
+      "nonblack_fraction": 0.4317602040816326,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-monotonic-113",
+      "frame": 1951,
+      "eye": 0,
+      "width": 4480,
+      "height": 3360,
+      "nonblack_fraction": 0.43176591730442176,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-monotonic-113",
+      "frame": 1951,
+      "eye": 1,
+      "width": 4480,
+      "height": 3360,
+      "nonblack_fraction": 0.4317602040816326,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-monotonic-enabled-113",
+      "frame": 2280,
+      "eye": 0,
+      "width": 4480,
+      "height": 3360,
+      "nonblack_fraction": 0.43176571800595237,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-monotonic-enabled-113",
+      "frame": 2280,
+      "eye": 1,
+      "width": 4480,
+      "height": 3360,
+      "nonblack_fraction": 0.4317600047831633,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-monotonic-enabled-113",
+      "frame": 2281,
+      "eye": 0,
+      "width": 4480,
+      "height": 3360,
+      "nonblack_fraction": 0.43176571800595237,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-monotonic-enabled-113",
+      "frame": 2281,
+      "eye": 1,
+      "width": 4480,
+      "height": 3360,
+      "nonblack_fraction": 0.4317600047831633,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-fsr-113",
+      "frame": 14910,
+      "eye": 0,
+      "width": 4480,
+      "height": 3360,
+      "nonblack_fraction": 0.9998244844812925,
+      "nonblack_bbox": [
+        0,
+        0,
+        4480,
+        3360
+      ],
+      "alpha_min": 255,
+      "alpha_max": 255
+    },
+    {
+      "run": "author-fsr-113",
+      "frame": 14910,
+      "eye": 1,
+      "width": 4480,
+      "height": 3360,
+      "nonblack_fraction": 0.9998169775722789,
+      "nonblack_bbox": [
+        0,
+        0,
+        4480,
+        3360
+      ],
+      "alpha_min": 255,
+      "alpha_max": 255
+    },
+    {
+      "run": "author-fsr-113",
+      "frame": 14911,
+      "eye": 0,
+      "width": 4480,
+      "height": 3360,
+      "nonblack_fraction": 0.9998243516156463,
+      "nonblack_bbox": [
+        0,
+        0,
+        4480,
+        3360
+      ],
+      "alpha_min": 255,
+      "alpha_max": 255
+    },
+    {
+      "run": "author-fsr-113",
+      "frame": 14911,
+      "eye": 1,
+      "width": 4480,
+      "height": 3360,
+      "nonblack_fraction": 0.999815981079932,
+      "nonblack_bbox": [
+        0,
+        0,
+        4480,
+        3360
+      ],
+      "alpha_min": 255,
+      "alpha_max": 255
+    },
+    {
+      "run": "author-full-eye-113",
+      "frame": 1740,
+      "eye": 0,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998355473672811,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-full-eye-113",
+      "frame": 1740,
+      "eye": 1,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998220096388626,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-full-eye-113",
+      "frame": 1741,
+      "eye": 0,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998355473672811,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-full-eye-113",
+      "frame": 1741,
+      "eye": 1,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998220096388626,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-live-full-eye-113",
+      "frame": 5790,
+      "eye": 0,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998355473672811,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-live-full-eye-113",
+      "frame": 5790,
+      "eye": 1,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998220096388626,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-live-full-eye-113",
+      "frame": 5791,
+      "eye": 0,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998355473672811,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-live-full-eye-113",
+      "frame": 5791,
+      "eye": 1,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998220096388626,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-quality-after-timing-113",
+      "frame": 12600,
+      "eye": 0,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998355473672811,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-quality-after-timing-113",
+      "frame": 12600,
+      "eye": 1,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998220096388626,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-quality-after-timing-113",
+      "frame": 12601,
+      "eye": 0,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998355473672811,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    },
+    {
+      "run": "author-quality-after-timing-113",
+      "frame": 12601,
+      "eye": 1,
+      "width": 2944,
+      "height": 2208,
+      "nonblack_fraction": 0.9998220096388626,
+      "nonblack_bbox": [
+        0,
+        0,
+        2944,
+        2208
+      ],
+      "alpha_min": 0,
+      "alpha_max": 0
+    }
+  ],
+  "timings": {
+    "custom-fallback-90": {
+      "fps": 37.95599916162194,
+      "seconds": 31.015361337995273,
+      "frame_samples": 19,
+      "gpu_samples": [
+        "36, 98.14, 5512",
+        "36, 99.56, 5512",
+        "35, 99.39, 5512",
+        "35, 97.55, 5512",
+        "36, 97.43, 5512",
+        "36, 99.88, 5512",
+        "37, 101.97, 5512",
+        "28, 104.76, 5512",
+        "36, 102.54, 5512",
+        "35, 97.77, 5512",
+        "43, 98.69, 5512",
+        "28, 99.94, 5512",
+        "28, 102.09, 5513",
+        "25, 100.90, 5513",
+        "37, 101.57, 5513",
+        "37, 100.21, 5525",
+        "28, 99.72, 5525",
+        "35, 97.60, 5518",
+        "29, 93.95, 5518",
+        "37, 99.74, 5518",
+        "42, 98.35, 5512",
+        "36, 95.43, 5512",
+        "37, 96.57, 5512",
+        "29, 91.04, 5512",
+        "36, 93.38, 5512",
+        "36, 94.97, 5512",
+        "37, 96.09, 5512",
+        "36, 99.18, 5512",
+        "44, 98.76, 5512",
+        "43, 99.16, 5512"
+      ],
+      "gpu_utilization_mean": 35.1,
+      "gpu_power_watts_mean": 98.54433333333333,
+      "gpu_memory_mib_mean": 5513.566666666667,
+      "wait_ms": 9.74842105263158,
+      "app_ms": 14.448421052631579,
+      "end_ms": 0.841421052631579,
+      "display_period_ms": 22.222
+    },
+    "author-quality-2944-90": {
+      "fps": 63.9978668923875,
+      "seconds": 30.804702328008716,
+      "frame_samples": 33,
+      "gpu_samples": [
+        "8, 64.76, 5829",
+        "14, 84.80, 5829",
+        "11, 84.07, 5829",
+        "12, 77.43, 5842",
+        "16, 85.38, 5835",
+        "8, 71.99, 5834",
+        "16, 89.91, 5834",
+        "12, 90.97, 5829",
+        "17, 92.75, 5829",
+        "14, 88.86, 5829",
+        "19, 94.81, 5829",
+        "20, 94.90, 5829",
+        "15, 87.64, 5829",
+        "19, 96.93, 5829",
+        "15, 89.72, 5829",
+        "16, 89.26, 5829",
+        "16, 91.08, 5829",
+        "15, 87.35, 5829",
+        "18, 96.76, 5829",
+        "19, 98.00, 5829",
+        "20, 95.00, 5829",
+        "16, 95.20, 5829",
+        "19, 94.33, 5829",
+        "16, 93.90, 5829",
+        "13, 89.06, 5829",
+        "8, 69.07, 5829",
+        "15, 83.95, 5829",
+        "15, 86.79, 5829",
+        "14, 84.29, 5829",
+        "8, 76.55, 5829"
+      ],
+      "gpu_utilization_mean": 14.8,
+      "gpu_power_watts_mean": 87.517,
+      "gpu_memory_mib_mean": 5829.966666666666,
+      "wait_ms": 4.631636363636364,
+      "app_ms": 9.831575757575758,
+      "end_ms": 0.6710909090909091,
+      "display_period_ms": 11.44769696969697
+    },
+    "fallback-repeat-2944-90": {
+      "fps": 38.62966362265766,
+      "seconds": 30.838838076000684,
+      "frame_samples": 20,
+      "gpu_samples": [
+        "35, 91.73, 5029",
+        "28, 98.09, 5029",
+        "35, 97.90, 5029",
+        "36, 95.90, 5029",
+        "44, 96.95, 5029",
+        "35, 94.16, 5029",
+        "36, 92.94, 5029",
+        "43, 93.15, 5029",
+        "44, 96.70, 5029",
+        "36, 93.66, 5029",
+        "36, 96.75, 5029",
+        "36, 96.06, 5029",
+        "28, 97.88, 5029",
+        "36, 98.56, 5029",
+        "36, 96.54, 5029",
+        "27, 93.47, 5029",
+        "36, 91.56, 5029",
+        "36, 95.76, 5029",
+        "35, 95.79, 5029",
+        "27, 94.36, 5055",
+        "36, 95.23, 5048",
+        "27, 95.74, 5048",
+        "35, 93.85, 5048",
+        "44, 96.80, 5041",
+        "36, 98.04, 5041",
+        "36, 95.28, 5041",
+        "28, 94.44, 5041",
+        "35, 96.41, 5041",
+        "35, 99.22, 5041",
+        "36, 97.64, 5041"
+      ],
+      "gpu_utilization_mean": 35.1,
+      "gpu_power_watts_mean": 95.68533333333333,
+      "gpu_memory_mib_mean": 5034.566666666667,
+      "wait_ms": 12.69105,
+      "app_ms": 11.3454,
+      "end_ms": 0.7395,
+      "display_period_ms": 22.222
+    }
+  },
+  "regular_files_checked": 64,
+  "regular_files_changed": [],
+  "test_files_restored": 5,
+  "installed_proton_unchanged": true,
+  "headset_tested": false,
+  "fsr_final_counters": {
+    "pid": 856387,
+    "ttwvr_sha256": "b82d341690cf0068b561803dca22a4ac07ea8042e6437c68f3ab9a85fcd16530",
+    "notice": "non-atomic status counters; pixels require separate validation",
+    "render_width": 1984,
+    "render_height": 1488,
+    "output_width": 2944,
+    "output_height": 2208,
+    "posted": 8955,
+    "shown": 8954,
+    "not_produced": 0,
+    "slot_busy": 0,
+    "resets": 2,
+    "worker_posts": 8955,
+    "legacy_posts": 0,
+    "ready_when_shown": 8954,
+    "show_checks": 8954,
+    "mode": "FSR 3.1.5",
+    "copy_refused": false
+  },
+  "nvidia_sr_versions": {
+    "author_bundled_tested": "310.9.1.0",
+    "addon_separate": "310.9.16.0",
+    "version_swap_tested": false
+  }
+}

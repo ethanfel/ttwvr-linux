@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""Read TTWVR 1.1.3's upscaler counters from a specified Linux/Wine process.
+
+Read-only diagnostic. These are the original status-panel counters, not proof
+of valid or fresh pixels. Capture both eyes and test motion separately.
+"""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import struct
+
+SUPPORTED = {
+    "4c45d6e5adb5da76dd3d08bf0639d360761d3dc50d891ea0bd19b51e4fb006a0",
+    "b82d341690cf0068b561803dca22a4ac07ea8042e6437c68f3ab9a85fcd16530",
+}
+# Independently checked against the supplied 1.1.3 status formatter.
+COUNTERS = {
+    "render_width": 0x19987B4, "render_height": 0x19987B8,
+    "output_width": 0x19987BC, "output_height": 0x19987C0,
+    "posted": 0x19CA4C0, "shown": 0x19CA4C4,
+    "not_produced": 0x19CA4C8, "slot_busy": 0x19CA4CC,
+    "resets": 0x19CA4D0, "worker_posts": 0x19CA804,
+    "legacy_posts": 0x19CAA08, "ready_when_shown": 0x19CAA0C,
+    "show_checks": 0x19CAA20,
+}
+
+
+def inspect(pid):
+    proc = Path("/proc") / str(pid)
+    command = (proc / "cmdline").read_bytes().split(b"\0")[0].lower()
+    if not command.endswith(b"falloutnv.exe"):
+        raise ValueError("PID is not FalloutNV.exe")
+    mappings = [line.split(maxsplit=5) for line in
+                (proc / "maps").read_text().splitlines()]
+    candidates = [row for row in mappings if len(row) == 6
+                  and row[5].endswith("/TTWVR.dll") and int(row[2], 16) == 0]
+    if len(candidates) != 1:
+        raise ValueError("expected exactly one mapped TTWVR.dll image base")
+    mapping = candidates[0]
+    base = int(mapping[0].split("-")[0], 16)
+    # Read through the process namespace, including launch-scoped overlays.
+    dll = proc / "root" / mapping[5].lstrip("/")
+    digest = hashlib.sha256(dll.read_bytes()).hexdigest()
+    if digest not in SUPPORTED:
+        raise ValueError("unsupported mapped DLL hash; refusing unverified offsets")
+    fd = os.open(proc / "mem", os.O_RDONLY)
+    try:
+        def read(rva, size):
+            data = os.pread(fd, size, base + rva)
+            if len(data) != size:
+                raise ValueError("short process-memory read")
+            return data
+        result = {name: struct.unpack("<I", read(rva, 4))[0]
+                  for name, rva in COUNTERS.items()}
+        result["helper_mode_label"] = read(0x19CA508, 96).split(b"\0")[0].decode(errors="replace")
+        result["copy_refused"] = bool(read(0x1998E52, 1)[0])
+    finally:
+        os.close(fd)
+    return {"pid": pid, "ttwvr_sha256": digest,
+            "notice": "non-atomic status counters; pixels require separate validation",
+            **result}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("pid", type=int)
+    args = parser.parse_args()
+    if args.pid <= 0:
+        parser.error("PID must be positive")
+    try:
+        result = inspect(args.pid)
+    except (OSError, ValueError) as exc:
+        parser.error(str(exc))
+    print(json.dumps(result, indent=2))
+
+
+if __name__ == "__main__":
+    main()

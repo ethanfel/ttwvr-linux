@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create an EXPERIMENTAL TTWVR 1.1.0 copy that loads its bundled DXVK.
+"""Create an EXPERIMENTAL TTWVR 1.1.0/1.1.3 copy that loads its bundled DXVK.
 
 This bypasses only the stock-DXVK detection return. It is not a proven
 performance fix. Keep the original, test with a launch-scoped overlay, and
@@ -11,11 +11,15 @@ import json
 from pathlib import Path
 
 
-SOURCE_SHA256 = "8a3a71b48d362984fe346c73b68dfbd476d6e138d6831f26f10c6f506cd03880"
-OFFSET = 0x4F8E4C
+# Exact original DLL hashes; offsets independently checked in each build.
+BUILDS = {
+    "8a3a71b48d362984fe346c73b68dfbd476d6e138d6831f26f10c6f506cd03880":
+        ("1.1.0", 0x4F8E4C, 0x4F9A4C, 0xA1FEB0),
+    "4c45d6e5adb5da76dd3d08bf0639d360761d3dc50d891ea0bd19b51e4fb006a0":
+        ("1.1.3", 0x513F2C, 0x514B2C, 0xA3DF70),
+}
 BEFORE = bytes.fromhex("0f 85 89 01 00 00")
 AFTER = b"\x90" * 6
-LOADER_OFFSET = 0xA1FEB0
 LOADER_BEFORE = "vulkan-1.dll".encode("utf-16le").ljust(32, b"\x00")
 LOADER_AFTER = "winevulkan.dll".encode("utf-16le").ljust(32, b"\x00")
 
@@ -29,16 +33,18 @@ def main():
     args = parser.parse_args()
     try:
         original = args.source.read_bytes()
-        if hashlib.sha256(original).hexdigest() != SOURCE_SHA256:
+        source_hash = hashlib.sha256(original).hexdigest()
+        if source_hash not in BUILDS:
             raise ValueError("unsupported TTWVR.dll hash; refusing another build")
-        if original[OFFSET:OFFSET + len(BEFORE)] != BEFORE:
+        version, offset, rva, loader_offset = BUILDS[source_hash]
+        if original[offset:offset + len(BEFORE)] != BEFORE:
             raise ValueError("unexpected renderer-detection instruction")
         patched = bytearray(original)
-        patched[OFFSET:OFFSET + len(BEFORE)] = AFTER
+        patched[offset:offset + len(BEFORE)] = AFTER
         if args.winevulkan:
-            if original[LOADER_OFFSET:LOADER_OFFSET + 32] != LOADER_BEFORE:
+            if original[loader_offset:loader_offset + 32] != LOADER_BEFORE:
                 raise ValueError("unexpected Vulkan loader string or padding")
-            patched[LOADER_OFFSET:LOADER_OFFSET + 32] = LOADER_AFTER
+            patched[loader_offset:loader_offset + 32] = LOADER_AFTER
         args.output.parent.mkdir(parents=True, exist_ok=True)
         with args.output.open("xb") as stream:
             stream.write(patched)
@@ -46,9 +52,9 @@ def main():
         parser.error(str(exc))
     print(json.dumps({
         "status": "experimental; runtime validation required",
-        "source_sha256": SOURCE_SHA256,
+        "version": version, "source_sha256": source_hash,
         "patched_sha256": hashlib.sha256(patched).hexdigest(),
-        "file_offset": hex(OFFSET), "rva": "0x4f9a4c",
+        "file_offset": hex(offset), "rva": hex(rva),
         "before": BEFORE.hex(), "after": AFTER.hex(),
         "changed_bytes": sum(a != b for a, b in zip(original, patched)),
         "winevulkan_lookup": args.winevulkan,

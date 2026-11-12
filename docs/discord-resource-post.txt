@@ -3,7 +3,7 @@ Updated for TTWVR 1.1.3, GPU handoff, DLSS SR and stereo FG, 2026-11-12.
 
 Suggested forum title: TTWVR on Linux — Fluorine + WiVRn setup and rendering addon
 
-Copy the five messages below separately, without the separator labels.
+Copy the six messages below separately, without the separator labels.
 Each message is under 2,000 UTF-16 code units. Paths in the Steam command are
 examples to replace; the linked guide contains the full configuration.
 
@@ -134,3 +134,17 @@ Close the game before updating the matching **protocol-7 layer/helper**; preserv
 **Build/dependencies:** <https://github.com/ethanfel/ttwvr-linux/blob/main/neural/docs/SR-FRAME-GENERATION.md>
 
 ===== END MESSAGE 5 =====
+
+===== MESSAGE 6 — COPY BELOW =====
+
+**Bundled Vulkan/DLSS investigation — experimental, not a release**
+
+The supplied TTWVR 1.1.3 renderer/helper was retested under Proton. Guarded loader edits enable its custom DXVK worker; a private fence experiment reaches successful D3D11 NGX evaluations.
+
+**The apparent FPS gain was rejected:** DLSS submitted about 64 frames/s versus 39 for native fallback, but both eye images stayed byte-identical when the simulated headset moved. The FSR control changed about 85% of pixels in both eyes. Successful evaluation and increasing frame counters did not prove fresh output.
+
+No diagnostic renderer/fence patch is enabled in normal Fluorine launches. Your existing addon, Steam command and WiVRn runtime selection stay the same. The author's worker scheduling and D3D11 backend remain useful directions, but shared-image transfer and synchronization need fixing before a performance claim or headset test.
+
+**Evidence and details:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/bundled-renderer-113.md>
+
+===== END MESSAGE 6 =====

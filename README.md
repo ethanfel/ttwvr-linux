@@ -47,6 +47,10 @@ The OpenXR/DXVK overlays apply to the VR launch without replacing Steam's
 installed Proton files. Runtime selection is per launch; WiVRn's default
 registration stays intact.
 
+The [bundled DXVK / DLSS 1.1.3 retest](docs/bundled-renderer-113.md) reaches NGX
+evaluation but produces stale eye images under the diagnostic fence workaround.
+Its higher submission rate is not a validated performance gain.
+
 ## In-game rendering controls
 
 Install the optional **TTWVR Rendering Addon** as a mod in Fluorine, with its

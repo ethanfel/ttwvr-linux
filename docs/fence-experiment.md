@@ -57,3 +57,13 @@ The run was stopped and the diagnostic overlays removed. Normal launches use
 the original `win32u.so` and do not enable either experimental DLSS patch.
 Correct image transfer and full fence semantics remain unresolved. No physical
 headset result was obtained from this simulated run.
+
+## Updated 1.1.3 helper: stale output
+
+The [1.1.3 retest](bundled-renderer-113.md) reaches successful D3D11 NGX
+evaluations and incrementing worker/output counters. At 2944×2208 the images
+fill both eyes, but a 0.6 m HMD translation changes zero pixels under DLSS;
+the FSR control changes about 85%. An apparent 64 FPS result is therefore
+not a usable performance improvement. The diagnostic remains unsuitable for
+normal launches; shared-image transfer and complete synchronization semantics
+are still unresolved.
