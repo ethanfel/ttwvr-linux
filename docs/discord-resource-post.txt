@@ -1,93 +1,100 @@
-TTWVR LINUX — DISCORD RESOURCE POST
-Updated 2026-11-13: original renderer, author DLSS / native Vulkan FSR, TTWVR 1.1.4.
-Suggested title: TTWVR on Linux — prepare your install, then apply the Linux patch
-Copy each numbered message separately. Links are public; the TTWVR download thread requires Discord access.
+TTWVR ON LINUX — DISCORD RESOURCE POST
+Updated 2026-11-13.
+Suggested title: TTWVR on Linux — setup guide and Linux patch tool
+Copy each numbered message separately.
 
 ----- MESSAGE 1 -----
-**TTWVR on Linux: original renderer + DLSS / FSR**
+**Play Tale of Two Wastelands in VR on Linux**
 
-This project patches a prepared Tale of Two Realities / TTWVR installation for **native Fluorine + Proton + WiVRn**.
+This guide sets up **Tale of Two Realities / TTWVR** with **native Fluorine, Proton and WiVRn**, including **DLSS and FSR** and the mod's VR settings and controls.
 
-The focus is the original mod's VR menu, controls and renderer:
-• Author's bundled Vulkan/DXVK renderer.
-• DLSS through the author's 64-bit **D3D11 NGX helper**, with repaired shared output and GPU synchronization.
-• Native **Vulkan FSR 3.1.4** in the 32-bit game.
-• Original resolution, upscaler-level and sharpness controls.
+The workflow is:
+**Prepare a working TTW installation → run the Linux patch tool → connect WiVRn and play.**
 
-DLSS is not a new direct Vulkan NGX implementation. Our previous custom D3D12 NR/DLAA/SR/FG addon is archived and is not needed for this setup.
+The tool checks compatibility, prepares the Linux dependencies, creates a patched copy of TTWVR and configures the launcher. It preserves your settings and saves, keeps the original mod, and records backups for rollback.
 
+**Full installation guide:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/installation.md>
 **Repository:** <https://github.com/ethanfel/ttwvr-linux>
-**Start here:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/installation.md>
 
-You supply the games, TTW, utilities and original TTWVR files. The Linux tool creates a separate patched mod, private compatibility files, a launcher and rollback records. No game/mod/NVIDIA DLLs are bundled.
+You need your own games and mod downloads. The tool does not install TTW or download Nexus mods; no game, TTWVR or NVIDIA runtime files are bundled.
 
 ----- MESSAGE 2 -----
-**1. Prepare your install**
+**1. Prepare your installation**
 
-• Own English New Vegas Ultimate and Fallout 3 GOTY with all DLC.
-• Install TTW and all required utilities/presets. Use FNV4GB **for Proton**.
-• Prepare native **Fluorine 0.4.1**, its TTW plugin, **FUSE**, a dedicated game copy and initialized private Proton prefix.
-• Make **TTW - Flat** work first: Utilities Checker passes, intro works, save/reload works. Keep that profile and its saves.
-• Duplicate it as **TTW - VR**. Install and enable the complete original **TTWVR 1.1.4 or 1.1.3** archive as a separate mod.
-• Set up WiVRn and xrizer. Use regular mod files or reflinks: the tested Fluorine skips symlinked BSA assets.
+• English **Fallout: New Vegas Ultimate** and **Fallout 3 GOTY**, with all DLC.
+• TTW and all required utilities and INI presets from **The Best of Times**. Apply **FNV4GB for Proton**.
+• **Fluorine 0.4.1**, using its TTW game plugin and **FUSE** backend, with a dedicated game copy and initialized private Proton prefix.
+• A working **TTW - Flat** profile: Utilities Checker passes, the intro runs, and you can save and reload.
+• A **TTW - VR** copy of that profile, with the complete original **TTWVR 1.1.4** archive installed and enabled as a separate mod.
+• Working **WiVRn and xrizer**. DLSS requires a supported NVIDIA RTX GPU.
+
+**Required Proton build:** `experimental-11.0-20261105c-x86_64`, with **Steam Linux Runtime 4**. The patch checks exact file hashes; a newer Proton Experimental build is not automatically supported.
+
+Linux prerequisites: Python 3.11+, Git, bubblewrap, FUSE 3, unshare, Meson, Ninja, glslang and i686 MinGW-w64 C/C++ with POSIX threads. The full guide explains the paths and setup.
 
 **TTW guide:** <https://thebestoftimes.moddinglinked.com/intro.html>
 **Native TTW installer:** <https://github.com/SulfurNitride/TTW_Linux_Installer>
 **Fluorine:** <https://github.com/SulfurNitride/Fluorine-Manager/releases/tag/v0.4.1>
 **TTWVR download:** <https://discord.com/channels/747967102895390741/1560413111423344730>
+**WiVRn:** <https://github.com/WiVRn/WiVRn>
+**xrizer:** <https://github.com/Supreeeme/xrizer>
 
-The exact tested Proton build is **experimental-11.0-20261105c-x86_64**, with Steam Linux Runtime 4. Newer Experimental builds are not automatically compatible; the tool checks hashes and stops on unknown versions.
-
-Install Python 3.11+, Git, bubblewrap, FUSE 3, unshare, Meson, Ninja, glslang and i686 MinGW-w64 C/C++ with POSIX threads. See the full guide for paths and prerequisites.
+Use regular files or reflinks for mod assets. The tested Fluorine version skips symlinked assets, which can cause missing files and crashes.
 
 ----- MESSAGE 3 -----
 **2. Apply the Linux patch**
 
-Clone the repository, copy its setup template, and edit the paths to your prepared install:
+Download the tool and copy its setup template:
 ```sh
 git clone https://github.com/ethanfel/ttwvr-linux.git
 cd ttwvr-linux
 cp tools/setup.example.json setup.json
+```
+
+Open **setup.json** and replace the example paths with your own. Point `mod` to the installed TTWVR mod directory. Choose a new, separate directory for `fixes`; it will hold dependencies, backups and the launcher.
+
+Check your preparation:
+```sh
 python3 tools/setup_linux.py check setup.json
 ```
 
-Run as your desktop user. Close Fallout and Fluorine, then:
+Resolve any reported errors. **Close Fallout and Fluorine**, then apply as your normal desktop user:
 ```sh
 python3 tools/setup_linux.py apply setup.json
 ```
 
-The first run prepares checksum-pinned shader compilers and builds the patched DXVK dependency. It keeps the original mod and settings, creates a Linux-patched copy, configures Fluorine and prints your launch command.
+The first run downloads the required shader compilers and builds the patched DXVK dependency. Allow several GB of free space and let the build finish. The tool then configures your VR profile and prints the launch and rollback commands.
 
-**3. Connect WiVRn and launch**
+**3. Connect your headset in WiVRn and play**
+
+Run the exact launch command printed by the tool. It looks like:
 ```sh
 python3 "/your/linux-fixes/launch-ttwvr.py"
 ```
-Use the exact path printed by the tool. For Steam, copy **linux-fixes/steam-launch-options.txt** into New Vegas's Launch Options. Fluorine mounts the mods and starts the game automatically.
 
-Choose DLSS or FSR in the original **VR Settings**. Existing resolution, sharpness and calibration settings are preserved. The tool does not force 200% or a fixed FPS target.
+For Steam, copy **linux-fixes/steam-launch-options.txt** into **New Vegas → Properties → Launch Options**. Fluorine mounts the mods and starts the game automatically.
 
-To prepare downloads/builds separately, use `python3 tools/setup_linux.py prepare setup.json` before apply. The checked cache is reused.
-
-**Full instructions:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/installation.md>
+Use **VR Settings** to choose DLSS or FSR, upscaler level, resolution and sharpness. Your existing calibration and settings are preserved.
 
 ----- MESSAGE 4 -----
-**Validation, troubleshooting and rollback**
+**Help and rollback**
 
-1.1.3: author DLSS Quality/Balanced/Performance and native FSR passed fresh stereo/consecutive-frame and head-motion checks. The user confirmed good physical WiVRn output at 200% / DLSS Quality.
-
-1.1.4: DLSS Quality at 200% and FSR Quality at 100% passed isolated gameplay checks, with both eyes and successful actual NGX evaluations. Physical 1.1.4 confirmation is still separate. Voice, multiplayer, every menu setting, other hardware and long sessions are not fully validated. Simulated FPS is not a streaming benchmark.
-
-The setup tool was tested with disposable real files, generated launch configuration and rollback. It does not replace TTW's utility checker.
+• Connect WiVRn before launching the game.
+• Use the generated launcher so the required Linux fixes are applied.
+• If a file-version check fails, follow the guide's supported versions; do not bypass it.
+• To open Fluorine without starting Fallout, add `--manager-only` to the generated launch command.
+• For flat play, close Fallout and Fluorine, then add `--profile "TTW - Flat"`. Keep TTWVR disabled in that profile.
 
 **Troubleshooting:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/troubleshooting.md>
-**Evidence:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/compatibility.md>
+**Tested hardware, validation and compatibility:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/compatibility.md>
 
-Close Fallout and Fluorine before rollback:
+To undo the patch, close Fallout and Fluorine and run:
 ```sh
 python3 tools/setup_linux.py rollback "/your/linux-fixes/transaction.json"
 ```
-It restores original configuration/compiler files and mod selection. Saves are untouched; private build/mod copies are retained. Restore your previous Steam launch option separately. Rollback stops if later edits would be overwritten; the guide explains the backed-up `--force` option.
 
-Credits: KUPOkinz, TTW, Fluorine, Wine/Proton, DXVK, WiVRn and xrizer.
-**Archived custom addon:** <https://github.com/ethanfel/ttwvr-linux/tree/main/archive/rendering-addon>
-Its original code remains GPL-3.0-only; NVIDIA SDKs/runtime DLLs are separate dependencies under NVIDIA's terms. The Windows MO2 workflow also remains archived.
+Rollback restores the backed-up configuration, compiler files and mod selection. Saves are untouched. Private build files and the patched mod copy are retained. Restore your previous Steam launch option separately.
+
+If settings have changed since installation, rollback stops to protect those edits. The full guide explains how to preserve them and restore the backups.
+
+Credits: **KUPOkinz** for TTWVR, the **TTW team**, and the developers of **Fluorine, Wine/Proton, DXVK, WiVRn and xrizer**.
