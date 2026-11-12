@@ -181,6 +181,8 @@ bool GetTemporalGuides(uint64_t frame, unsigned eye, TemporalGuides &out) {
   if (eye > 1 || guideFrames[eye] != frame || !guides[eye].motion)
     return false;
   out = guides[eye];
+  const float units = *reinterpret_cast<float *>(base + layout->settings + 0x28);
+  out.viewSpaceToMeters = std::isfinite(units) && units > 0 ? 1.f / units : 0.f;
   return true;
 }
 bool NativeJitter(float &x, float &y) {

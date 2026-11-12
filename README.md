@@ -60,11 +60,14 @@ main/pause menu; 1.1.0 uses **Settings → VR**. The addon rows follow Resolutio
 - **Anti-aliasing:** Off, native-resolution DLAA, MSAA 2×/4×/8×.
 - **Neural Rendering:** enable, model A/B, processing scale, strength, tone and detail.
 - **DLSS SR:** Off / Quality / Balanced / Performance, with native-size output.
-- **Frame generation:** Off / experimental stereo 2×.
+- **FSR SR:** Off / Quality / Balanced / Performance, using FSR 3.1.5.
+- **Frame generation:** Off / experimental stereo 2×; disabled with FSR.
 
 NR/DLAA/SR/FG changes apply live. MSAA changes require a game restart and
 exclude neural processing. SR owns temporal reconstruction and excludes NR/DLAA. The addon hides and disables the original upscaler controls.
 All effects default off; final eye resolution is unchanged.
+[FSR installation and validation](docs/fsr-integration.md) use the bundled AMD runtime
+through the addon’s existing GPU transport; no experimental Wine fence patch is needed.
 
 [Upgrade to TTWVR 1.1.3](docs/ttwvr-1.1.3.md) ·
 **[Addon setup](neural/docs/STEAM.md)** ·

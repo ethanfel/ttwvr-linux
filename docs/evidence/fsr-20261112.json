@@ -1,0 +1,246 @@
+{
+  "date": "2026-11-12",
+  "hardware": "RTX 5090 / Ryzen 9 5950X",
+  "runtime": "Monado simulated null compositor, 90 Hz, Proton Experimental 11",
+  "output_per_eye": [
+    2944,
+    2208
+  ],
+  "profile_gpu": false,
+  "capture_during_timing": false,
+  "fg": false,
+  "measurement_seconds_each": 30,
+  "scene": "Copied corridor save, Full Body off only in private test, stationary simulated HMD center [0,1.6,-0.5]",
+  "runs": {
+    "native": {
+      "fps": 38.500506412010395,
+      "seconds": 30.805106037005316,
+      "frame_samples": 20,
+      "gpu_utilization_mean": 34.733333333333334,
+      "gpu_power_watts_mean": 86.881,
+      "gpu_memory_mib_mean": 4623.0,
+      "wait_ms": 12.7421,
+      "app_ms": 11.4993,
+      "end_ms": 0.75185,
+      "display_period_ms": 22.222
+    },
+    "FSR Quality": {
+      "fps": 39.445138166590915,
+      "seconds": 30.805446875005146,
+      "frame_samples": 21,
+      "gpu_utilization_mean": 43.833333333333336,
+      "gpu_power_watts_mean": 120.42866666666667,
+      "gpu_memory_mib_mean": 5947.066666666667,
+      "wait_ms": 8.76755,
+      "app_ms": 14.9048,
+      "end_ms": 0.7503,
+      "display_period_ms": 22.222
+    },
+    "FSR Balanced": {
+      "fps": 38.9850214070401,
+      "seconds": 30.821025508004823,
+      "frame_samples": 20,
+      "gpu_utilization_mean": 43.0,
+      "gpu_power_watts_mean": 116.913,
+      "gpu_memory_mib_mean": 5885.0,
+      "wait_ms": 8.5712,
+      "app_ms": 15.40765,
+      "end_ms": 0.75345,
+      "display_period_ms": 22.222
+    },
+    "FSR Performance": {
+      "fps": 38.70179238629016,
+      "seconds": 30.835712834988954,
+      "frame_samples": 20,
+      "gpu_utilization_mean": 42.1,
+      "gpu_power_watts_mean": 113.50733333333334,
+      "gpu_memory_mib_mean": 5737.0,
+      "wait_ms": 8.2539,
+      "app_ms": 15.93385,
+      "end_ms": 0.74495,
+      "display_period_ms": 22.222
+    },
+    "DLSS Quality": {
+      "fps": 39.23863287948868,
+      "seconds": 30.837681889010128,
+      "frame_samples": 20,
+      "gpu_utilization_mean": 44.46666666666667,
+      "gpu_power_watts_mean": 131.29233333333335,
+      "gpu_memory_mib_mean": 6288.233333333334,
+      "wait_ms": 8.07055,
+      "app_ms": 15.60055,
+      "end_ms": 0.81065,
+      "display_period_ms": 22.222
+    },
+    "native repeat": {
+      "fps": 39.374158024950475,
+      "seconds": 30.788879254992935,
+      "frame_samples": 20,
+      "gpu_utilization_mean": 36.1,
+      "gpu_power_watts_mean": 94.49033333333334,
+      "gpu_memory_mib_mean": 4729.5,
+      "wait_ms": 12.54835,
+      "app_ms": 11.16845,
+      "end_ms": 0.7545499999999999,
+      "display_period_ms": 22.222
+    }
+  },
+  "movement": [
+    {
+      "eye": 0,
+      "changed_fraction": 0.9188348569431317,
+      "positions": [
+        [
+          -0.0315,
+          1.6,
+          -0.5
+        ],
+        [
+          0.5685,
+          1.6,
+          -0.5
+        ]
+      ],
+      "frames": [
+        7770,
+        8880
+      ]
+    },
+    {
+      "eye": 1,
+      "changed_fraction": 0.9043857932616572,
+      "positions": [
+        [
+          0.0315,
+          1.6,
+          -0.5
+        ],
+        [
+          0.6315,
+          1.6,
+          -0.5
+        ]
+      ],
+      "frames": [
+        7770,
+        8880
+      ]
+    }
+  ],
+  "same_frame_hdr": {
+    "frame": 7770,
+    "same_input": true,
+    "preview": "HDR display proxy; not game tone mapping",
+    "eyes": [
+      {
+        "eye": 0,
+        "input_size": [
+          1962,
+          1472
+        ],
+        "output_size": [
+          2944,
+          2208
+        ],
+        "comparison_reference": "bilinear input",
+        "alpha_max_error": 0.0053147077560424805,
+        "alpha_error_bound": 0.008812500000000001,
+        "alpha_unchanged": false,
+        "rgb_mean_absolute_change": 0.0045565227046608925,
+        "changed_pixel_fraction": 0.7865152533278198,
+        "rgb_input_range": [
+          -0.049468994140625,
+          2.6640625
+        ],
+        "rgb_output_range": [
+          0.0,
+          2.64453125
+        ]
+      },
+      {
+        "eye": 1,
+        "input_size": [
+          1962,
+          1472
+        ],
+        "output_size": [
+          2944,
+          2208
+        ],
+        "comparison_reference": "bilinear input",
+        "alpha_max_error": 0.004873067140579224,
+        "alpha_error_bound": 0.008812500000000001,
+        "alpha_unchanged": false,
+        "rgb_mean_absolute_change": 0.004099262412637472,
+        "changed_pixel_fraction": 0.7896058551906112,
+        "rgb_input_range": [
+          -0.053497314453125,
+          2.66015625
+        ],
+        "rgb_output_range": [
+          0.0,
+          2.646484375
+        ]
+      }
+    ]
+  },
+  "missing_runtime": "fsr_init_failed and host_failed bypass=1; both eyes continued capture_only at full resolution",
+  "protocol": {
+    "version": 8,
+    "bytes": 448
+  },
+  "limitations": [
+    "No physical-headset comfort/latency/streaming test",
+    "No validated FPS gain over native in this scene",
+    "No reactive or transparency masks yet",
+    "FSR frame generation disabled",
+    "Initial movement/HDR validation included avatar intersection, also present with effects off; cleared for final timing/previews"
+  ],
+  "dependencies": {
+    "TTWVRNeuralRenderingLayer.dll": "39951cbad55b1135ed9bda918a38a00403fc38cb1b53c3eadb2b71498aaf14a7",
+    "neural_host.exe": "08c8cf3c7be1ad20a427db12d9ecfc048841f166cbfe8af43f2f5842a527a5be",
+    "amd_fidelityfx_upscaler_dx12.dll": "d0dcccc74a43c44ba435b7a369b456e0970d8a4464e4bd683119b374f2c9fb46"
+  },
+  "final_clear_scene_movement": [
+    {
+      "eye": 0,
+      "changed_fraction": 0.9946082919817265,
+      "frames": [
+        19260,
+        19800
+      ],
+      "positions": [
+        [
+          -0.0315,
+          1.6,
+          -0.5
+        ],
+        [
+          0.5685,
+          1.6,
+          -0.5
+        ]
+      ]
+    },
+    {
+      "eye": 1,
+      "changed_fraction": 0.9941229336503623,
+      "frames": [
+        19260,
+        19800
+      ],
+      "positions": [
+        [
+          0.0315,
+          1.6,
+          -0.5
+        ],
+        [
+          0.6315,
+          1.6,
+          -0.5
+        ]
+      ]
+    }
+  ]
+}

@@ -49,10 +49,17 @@ bool Save(const LiveSettings &s) {
        ok;
   put(L"dlaa", L"enabled", s.dlaa);
   put(L"super_resolution", L"enabled", s.sr != 0);
+  ok =
+      WritePrivateProfileStringW(L"super_resolution", L"backend",
+                                 IsFSR(s.sr) ? L"FSR" : L"DLSS", tmp.c_str()) &&
+      ok;
   if (s.sr)
     ok = WritePrivateProfileStringW(L"super_resolution", L"mode",
-        s.sr == 3 ? L"Performance" : s.sr == 2 ? L"Balanced" : L"Quality",
-        tmp.c_str()) && ok;
+                                    SRQuality(s.sr) == 3   ? L"Performance"
+                                    : SRQuality(s.sr) == 2 ? L"Balanced"
+                                                           : L"Quality",
+                                    tmp.c_str()) &&
+         ok;
   put(L"frame_generation", L"enabled", s.fg);
   Flush(tmp);
   if (ok)
@@ -92,12 +99,22 @@ LiveSettings ReadLiveSettings() {
                            p.c_str());
   s.preset = !_wcsicmp(model, L"A") ? 1 : 2;
   wchar_t srMode[32]{};
-  GetPrivateProfileStringW(L"super_resolution", L"mode", L"Quality", srMode, 32, p.c_str());
+  GetPrivateProfileStringW(L"super_resolution", L"mode", L"Quality", srMode, 32,
+                           p.c_str());
   if (get(L"super_resolution", L"enabled", 0))
     s.sr = !_wcsicmp(srMode, L"Performance") ? 3
-         : !_wcsicmp(srMode, L"Balanced") ? 2 : 1;
-  s.fg = get(L"frame_generation", L"enabled", 0) != 0;
-  if (s.fg) { s.temporal = 1; s.identity = 0; }
+           : !_wcsicmp(srMode, L"Balanced")  ? 2
+                                             : 1;
+  wchar_t srBackend[16]{};
+  GetPrivateProfileStringW(L"super_resolution", L"backend", L"DLSS", srBackend,
+                           16, p.c_str());
+  if (s.sr && !_wcsicmp(srBackend, L"FSR"))
+    s.sr += 3;
+  s.fg = !IsFSR(s.sr) && get(L"frame_generation", L"enabled", 0) != 0;
+  if (s.fg) {
+    s.temporal = 1;
+    s.identity = 0;
+  }
   if (s.sr) {
     s.neural = s.dlaa = s.identity = 0;
     s.temporal = 1;
@@ -161,25 +178,32 @@ void PublishMenuState(const ReloadState &r, bool applied) {
     else if (!applied)
       status = "Ready - waiting for a scene";
     else if (r.requested.sr)
-      status = r.requested.sr == 3 ? "Active: DLSS Performance"
-             : r.requested.sr == 2 ? "Active: DLSS Balanced" : "Active: DLSS Quality";
+      status = r.requested.sr == 6   ? "Active: FSR Performance"
+               : r.requested.sr == 5 ? "Active: FSR Balanced"
+               : r.requested.sr == 4 ? "Active: FSR Quality"
+               : r.requested.sr == 3 ? "Active: DLSS Performance"
+               : r.requested.sr == 2 ? "Active: DLSS Balanced"
+                                     : "Active: DLSS Quality";
     else if (r.requested.neural && r.requested.dlaa)
       status = "Active: NR + DLAA";
-    else if(r.requested.fg && !r.requested.neural && !r.requested.dlaa)
-      status="Active: frame generation (experimental)";
+    else if (r.requested.fg && !r.requested.neural && !r.requested.dlaa)
+      status = "Active: frame generation (experimental)";
     else
       status = r.requested.neural ? "Active: NR" : "Active: DLAA";
   }
-  if (CurrentMsaaSamples()) status = "Active: MSAA - AA changes require restart";
+  if (CurrentMsaaSamples())
+    status = "Active: MSAA - AA changes require restart";
   const auto &s = r.requested;
   char data[1024]{};
   std::snprintf(
       data, sizeof(data),
-      "[state]\nnative_menu=%u\nmsaa_samples=%u\nsession=%u\nrevision=%u\nsequence=%u\nneural=%u\ndlaa=%"
+      "[state]\nnative_menu=%u\nmsaa_samples=%u\nsession=%u\nrevision=%"
+      "u\nsequence=%u\nneural=%u\ndlaa=%"
       "u\nsr=%u\nfg=%u\npreset=%u\n"
       "resolution=%u\nstrength=%u\ntone=%u\ndetail=%u\nstatus=%s\nnotice=%s\n",
-      unsigned(NativeVRSettingsInstalled()), CurrentMsaaSamples(), session, r.revision, consumed, s.neural, s.dlaa, s.sr, s.fg, s.preset, s.resolution,
-      s.strength, s.tone, s.detail, status, notice.c_str());
+      unsigned(NativeVRSettingsInstalled()), CurrentMsaaSamples(), session,
+      r.revision, consumed, s.neural, s.dlaa, s.sr, s.fg, s.preset,
+      s.resolution, s.strength, s.tone, s.detail, status, notice.c_str());
   static std::string previous;
   if (data == previous)
     return;

@@ -33,7 +33,7 @@ unsigned char *ttwvr = nullptr;
 const TTWVRBuild *layout = nullptr;
 std::atomic<bool> installed{false};
 std::atomic<unsigned> actualSamples{0};
-std::array<Option *, 9> rows{};
+std::array<Option *, 10> rows{};
 const unsigned samples[] = {0, 0, 2, 4, 8};
 const char *aaNames[] = {"Off", "DLAA", "MSAA 2x (restart)",
                          "MSAA 4x (restart)", "MSAA 8x (restart)"};
@@ -85,11 +85,20 @@ void Sync(Option *row) {
   else if (row == rows[6])
     row->value = s.detail / 10;
   else if (row == rows[7]) {
-    row->value = s.sr;
-    static const char *restart[] = {"Off", "Quality (restart)", "Balanced (restart)", "Performance (restart)"};
+    row->value = IsFSR(s.sr) ? 0 : s.sr;
+    static const char *restart[] = {"Off", "Quality (restart)",
+                                    "Balanced (restart)",
+                                    "Performance (restart)"};
     for (unsigned i = 0; i < 4; ++i)
       row->names[i] = actualSamples ? restart[i] : srNames[i];
   } else if (row == rows[8]) {
+    row->value = IsFSR(s.sr) ? s.sr - 3 : 0;
+    static const char *restart[] = {"Off", "Quality (restart)",
+                                    "Balanced (restart)",
+                                    "Performance (restart)"};
+    for (unsigned i = 0; i < 4; ++i)
+      row->names[i] = actualSamples ? restart[i] : srNames[i];
+  } else if (row == rows[9]) {
     row->value = s.fg;
     row->names[1] = actualSamples ? "2x (restart)" : "2x (experimental)";
   }
@@ -187,8 +196,10 @@ void __cdecl Selected(Option *row) {
     s.tone = row->value * 10;
   else if (row == rows[6])
     s.detail = row->value * 10;
-  else if (row == rows[7]) {
-    s.sr = row->value;
+  else if (row == rows[7] || row == rows[8]) {
+    s.sr = row->value ? row->value + (row == rows[8] ? 3 : 0) : 0;
+    if (IsFSR(s.sr))
+      s.fg = 0;
     if (s.sr) {
       s.neural = s.dlaa = 0;
       if (msaa) {
@@ -196,8 +207,10 @@ void __cdecl Selected(Option *row) {
         changedAa = true;
       }
     }
-  } else if (row == rows[8]) {
+  } else if (row == rows[9]) {
     s.fg = row->value;
+    if (s.fg && IsFSR(s.sr))
+      s.sr = 0;
     if (s.fg && msaa) {
       msaa = 0;
       changedAa = true;
@@ -280,6 +293,7 @@ void Extend() {
           Add("NR tone", 11, percentNames),
           Add("NR detail", 11, percentNames),
           Add("DLSS SR", 4, srNames),
+          Add("FSR SR", 4, srNames),
           Add("Frame gen.", 2, toggleNames)};
   for (auto *p : rows)
     if (!p) {
@@ -310,7 +324,7 @@ void Extend() {
   for (auto *p : rows)
     Sync(p);
   installed = true;
-  Log("native_vr_menu_registered rows=9 controller_navigation=engine "
+  Log("native_vr_menu_registered rows=10 controller_navigation=engine "
       "msaa_actual=%u",
       actualSamples.load());
 }

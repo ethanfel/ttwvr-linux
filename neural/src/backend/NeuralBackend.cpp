@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Adapted from Ethanfel TF2VRNeuralRendering; see THIRD-PARTY-NOTICES.md.
 #include "NeuralBackend.h"
+#include "ComputeState.h"
 #include "../Support.h"
 #include "../GuideMath.h"
 #include "../SRMode.h"
@@ -97,63 +98,7 @@ float3 decode(float3 x) { return lerp(pow(max((x+0.055)/1.055,0),2.4),x/12.92,x<
 )";
 // Only compute bindings and OM are changed. Preserve every touched slot,
 // including dynamic shader class instances and UAV counters (-1 retains them).
-struct ContextState {
-  ID3D11DeviceContext *c;
-  ID3D11ComputeShader *cs = nullptr;
-  ID3D11ClassInstance *classes[256]{};
-  UINT count = 256;
-  ID3D11ShaderResourceView *srvs[6]{};
-  ID3D11UnorderedAccessView *uavs[3]{};
-  ID3D11Buffer *cb = nullptr;
-  ID3D11SamplerState *sampler = nullptr;
-  ID3D11RenderTargetView *rt[8]{};
-  ID3D11DepthStencilView *ds = nullptr;
-  explicit ContextState(ID3D11DeviceContext *ctx) : c(ctx) {
-    c->CSGetShader(&cs, classes, &count);
-    c->CSGetShaderResources(0, 6, srvs);
-    c->CSGetUnorderedAccessViews(0, 3, uavs);
-    c->CSGetConstantBuffers(0, 1, &cb);
-    c->CSGetSamplers(0, 1, &sampler);
-    c->OMGetRenderTargets(8, rt, &ds);
-    c->OMSetRenderTargets(0, nullptr, nullptr);
-  }
-  void Unbind() {
-    ID3D11ShaderResourceView *nulls[6]{};
-    ID3D11UnorderedAccessView *nu[3]{};
-    c->CSSetShaderResources(0, 6, nulls);
-    c->CSSetUnorderedAccessViews(0, 3, nu, nullptr);
-  }
-  ~ContextState() {
-    Unbind();
-    c->CSSetShader(cs, classes, count);
-    c->CSSetConstantBuffers(0, 1, &cb);
-    c->CSSetSamplers(0, 1, &sampler);
-    c->OMSetRenderTargets(8, rt, ds);
-    c->CSSetShaderResources(0, 6, srvs);
-    UINT counts[3] = {~0u, ~0u, ~0u};
-    c->CSSetUnorderedAccessViews(0, 3, uavs, counts);
-    if (cs)
-      cs->Release();
-    if (cb)
-      cb->Release();
-    if (sampler)
-      sampler->Release();
-    if (ds)
-      ds->Release();
-    for (auto *p : srvs)
-      if (p)
-        p->Release();
-    for (auto *p : uavs)
-      if (p)
-        p->Release();
-    for (auto *p : rt)
-      if (p)
-        p->Release();
-    for (UINT i = 0; i < count; ++i)
-      if (classes[i])
-        classes[i]->Release();
-  }
-};
+
 } // namespace
 struct NeuralBackend::Impl {
   GpuInterop gpu;

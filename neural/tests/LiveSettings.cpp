@@ -77,7 +77,7 @@ int main() {
   assert(!invalidSR.Valid());
   // Each preset changes input allocation and must invalidate the old helper.
   ReloadState modes;
-  for (unsigned mode : {1u, 2u, 3u, 1u, 3u, 2u, 0u}) {
+  for (unsigned mode : {1u, 4u, 5u, 6u, 2u, 3u, 4u, 0u}) {
     auto next = sr;
     next.sr = mode;
     assert(next.Valid() && modes.Request(next));
@@ -96,14 +96,18 @@ int main() {
     } else assert(!modes.NeedStart());
   }
   invalidSR = sr;
-  invalidSR.sr = 4;
+  invalidSR.sr = 7;
   assert(!invalidSR.Valid() && !modes.Request(invalidSR));
   assert(SRInputSize(0).width == 2944 && SRInputSize(0).height == 2208);
   assert(SRJitterPhases(0) == 8 && SRJitterPhases(1) == 18);
   assert(SRJitterPhases(2) == 24 && SRJitterPhases(3) == 32);
   assert(SRInputSize(2).width == 1708 && SRInputSize(2).height == 1281);
   assert(SRInputSize(3).width == 1472 && SRInputSize(3).height == 1104);
-  assert(SRInputSize(4).width == 0 && SRJitterPhases(4) == 0);
+  assert(SRInputSize(7).width == 0 && SRJitterPhases(7) == 0);
+  assert(SRInputSize(4).width == 1962 && SRInputSize(4).height == 1472);
+  assert(SRInputSize(5).width == 1731 && SRInputSize(5).height == 1298);
+  assert(SRJitterPhases(4) == 18 && SRJitterPhases(5) == 23 && SRJitterPhases(6) == 32);
+  auto fsrfg = sr; fsrfg.sr = 4; fsrfg.fg = 1; assert(!fsrfg.Valid());
   LiveSettings fg=off;fg.fg=fg.temporal=1;fg.identity=0;
   assert(fg.Valid()&&fg.Active());
   assert(r.Request(fg,true)&&r.NeedStart());r.Started();r.Initialized();

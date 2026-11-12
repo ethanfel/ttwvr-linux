@@ -12,6 +12,7 @@ struct TemporalGuides {
   float clipToPrevious[16]{};
   float view[16]{}, projection[16]{};
   float jitterX = 0, jitterY = 0;
+  float viewSpaceToMeters = 0;
   bool reset = true;
   IDirect3DSurface9 *motion =
       nullptr; // borrowed only until the current tone pass ends

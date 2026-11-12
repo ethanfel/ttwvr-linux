@@ -15,8 +15,9 @@ steps are in [the README](../README.md#in-game-controls) and [Steam setup](STEAM
 | NR model | A/B |
 | NR processing scale | 25/50/75/100% per dimension; final eye size unchanged |
 | NR strength/tone/detail | 0–100%, in 10% steps |
-| DLSS Super Resolution | Off / Quality; owns temporal AA, excludes NR/DLAA |
-| Frame gen. | Off / 2x (experimental); independent of SR |
+| DLSS Super Resolution | Off / Quality / Balanced / Performance; owns temporal AA, excludes NR/DLAA |
+| FSR SR | Off / Quality / Balanced / Performance; excludes NR/DLAA/DLSS/FG |
+| Frame gen. | Off / 2x (experimental); optional with DLSS, disables FSR |
 
 Rows save immediately. NR/DLAA/SR/FG settings apply live at a stereo frame boundary.
 MSAA changes require restarting Fallout; the menu marks pending choices with

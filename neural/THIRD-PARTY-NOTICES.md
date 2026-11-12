@@ -20,3 +20,9 @@ The original menu scripts use public xNVSE/JIP UI APIs. The passive controller
 reader was checked against [JIP LN NVSE](https://github.com/jazzisparis/JIP-LN-NVSE)
 57.30 (`internal/xinput.cpp`) and the installed wrapper bytes. It does not
 redistribute JIP or modify its input state.
+
+AMD FidelityFX API headers are vendored unmodified under MIT in
+`third_party/fidelityfx/`, pinned to SDK v2.0.0 commit
+`f4c1da8e92f3fe563b5c28c44e6267ce6b6b8eb2`. Each retains its full license notice.
+The FSR backend is original GPL-3.0-only addon code. AMD runtime DLLs are
+separate dependencies under their supplied terms and are not distributed here.

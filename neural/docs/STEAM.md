@@ -9,7 +9,7 @@ The Steam entry point remains `tools/launch_fluorine.py`; no new Steam command
 is needed. The isolated development setup is separate and does not enable the
 addon in a regular installation automatically.
 
-The addon provides **VR Settings** controls for DLAA, MSAA, NR, DLSS SR and experimental stereo FG. It requires
+The addon provides **VR Settings** controls for DLAA, MSAA, NR, DLSS SR, FSR SR and experimental stereo FG. It requires
 the matching x86 OpenXR layer and x64 helper even if you start by selecting MSAA.
 Obtain NVIDIA SDKs/runtime DLLs separately for neural processing; they are not
 bundled with this GPL-3.0-only addon.

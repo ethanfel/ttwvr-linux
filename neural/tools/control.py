@@ -9,12 +9,12 @@ import tempfile
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--config', required=True, type=Path, help='Private layer INI path')
 parser.add_argument('action', choices=['status', 'on', 'off', 'all-off', 'quality',
-                                     'strength', 'tone', 'detail', 'model', 'dlaa', 'sr', 'fg'])
+                                     'strength', 'tone', 'detail', 'model', 'dlaa', 'sr', 'fsr', 'fg'])
 parser.add_argument('value', nargs='?')
 args = parser.parse_args()
 if not args.config.is_file():
     parser.error('Configuration does not exist')
-values = {'quality', 'strength', 'tone', 'detail', 'model', 'dlaa', 'sr', 'fg'}
+values = {'quality', 'strength', 'tone', 'detail', 'model', 'dlaa', 'sr', 'fsr', 'fg'}
 if (args.action in values) != (args.value is not None):
     parser.error('This action requires one value' if args.action in values else 'Unexpected value')
 if args.action in ('quality', 'strength', 'tone', 'detail'):
@@ -30,8 +30,8 @@ if args.action == 'model' and args.value.upper() not in ('A', 'B'):
     parser.error('model must be A or B')
 if args.action in ('dlaa', 'fg') and args.value not in ('on', 'off'):
     parser.error('dlaa/fg requires on or off')
-if args.action == 'sr' and args.value not in ('on', 'off', 'quality', 'balanced', 'performance'):
-    parser.error('sr requires off, on, quality, balanced or performance')
+if args.action in ('sr', 'fsr') and args.value not in ('on', 'off', 'quality', 'balanced', 'performance'):
+    parser.error('sr/fsr requires off, on, quality, balanced or performance')
 config = configparser.ConfigParser()
 config.read(args.config)
 for section in ('neural_rendering', 'dlaa', 'super_resolution', 'frame_generation', 'capture'):
@@ -58,8 +58,11 @@ elif args.action == 'dlaa':
     if args.value == 'on':
         nr['transport_identity'] = '0'
         config['super_resolution']['enabled'] = '0'
-elif args.action == 'sr':
+elif args.action in ('sr', 'fsr'):
     enabled = args.value != 'off'
+    config['super_resolution']['backend'] = 'FSR' if args.action == 'fsr' else 'DLSS'
+    if args.action == 'fsr' and enabled:
+        config['frame_generation']['enabled'] = '0'
     config['super_resolution']['enabled'] = str(int(enabled))
     config['super_resolution']['capture_probe'] = '0'
     if args.value in ('quality', 'balanced', 'performance'):
@@ -68,6 +71,8 @@ elif args.action == 'sr':
         nr['enabled'] = config['dlaa']['enabled'] = '0'
         nr['transport_identity'] = '0'
 elif args.action == 'fg':
+    if args.value == 'on' and config['super_resolution'].get('backend', 'DLSS').upper() == 'FSR':
+        config['super_resolution']['enabled'] = '0'
     config['frame_generation']['enabled'] = '1' if args.value == 'on' else '0'
     if args.value == 'on':
         nr['transport_identity'] = '0'
@@ -93,6 +98,9 @@ print(f'NR configured: {nr.get("enabled", "0")} | model {nr.get("model", "B")} |
 print(f'DLAA configured: {config["dlaa"].get("enabled", "0")} | native resolution')
 sr_mode = config['super_resolution'].get('mode', 'Quality').title()
 sr_size = {'Quality': '1963x1472', 'Balanced': '1708x1281', 'Performance': '1472x1104'}.get(sr_mode, '1963x1472')
-print(f'DLSS configured: {config["super_resolution"].get("enabled", "0")} | {sr_mode} | {sr_size} scene -> 2944x2208 per eye')
+sr_backend = config['super_resolution'].get('backend', 'DLSS').upper()
+if sr_backend == 'FSR':
+    sr_size = {'Quality': '1962x1472', 'Balanced': '1731x1298', 'Performance': '1472x1104'}.get(sr_mode, '1962x1472')
+print(f'{sr_backend} configured: {config["super_resolution"].get("enabled", "0")} | {sr_mode} | {sr_size} scene -> 2944x2208 per eye')
 print(f'Frame generation configured: {config["frame_generation"].get("enabled", "0")} | experimental stereo 2x')
 print('Configuration alone does not prove successful feature evaluation.')

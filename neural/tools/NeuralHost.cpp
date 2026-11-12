@@ -4,6 +4,7 @@
 #include "../src/LiveSettings.h"
 #include "../src/Support.h"
 #include "../src/backend/FrameGeneration.h"
+#include "../src/backend/FsrBackend.h"
 #include "../src/backend/NeuralBackend.h"
 #include <algorithm>
 #include <chrono>
@@ -57,7 +58,7 @@ int wmain(int argc, wchar_t **argv) {
     return 3;
   auto *p = static_cast<HostProtocol *>(
       MapViewOfFile(mapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(HostProtocol)));
-  if (!p || p->magic != 0x54544e52 || p->version != 7)
+  if (!p || p->magic != 0x54544e52 || p->version != 8)
     return 3;
   HANDLE request = OpenEventW(SYNCHRONIZE, FALSE, (name + L"-request").c_str());
   HANDLE reply =
@@ -209,6 +210,8 @@ RWTexture2D<float2> motion:register(u2);
     ComPtr<ID3D11Buffer> constants;
     Check(d->CreateBuffer(&cbDesc, nullptr, &constants));
     NeuralBackend backend;
+    FsrBackend fsr;
+    const bool useFsr = IsFSR(p->sr);
     NeuralOptions options;
     // Immutable configuration snapshot published before this helper starts.
     options.resolutionPercent = p->resolution;
@@ -226,8 +229,13 @@ RWTexture2D<float2> motion:register(u2);
     options.temporalGuides = p->temporal != 0;
 
     const bool sceneEffect = p->neural || p->dlaa || p->sr;
-    if (sceneEffect && !backend.Init(d.Get(), p->width, p->height,
-                                     Directory() + L"\\runtime", options))
+    if (useFsr &&
+        !fsr.Init(d.Get(), p->width, p->height, p->outputWidth, p->outputHeight,
+                  p->sr, Directory() + L"\\runtime", p->profile != 0))
+      throw std::runtime_error("host FSR initialization");
+    if (sceneEffect && !useFsr &&
+        !backend.Init(d.Get(), p->width, p->height, Directory() + L"\\runtime",
+                      options))
       throw std::runtime_error("host NR initialization");
     GpuTimeline *finalTimeline = nullptr;
     FrameGeneration fg;
@@ -314,6 +322,7 @@ RWTexture2D<float2> motion:register(u2);
         continue;
       }
       backend.LogCompletedGpuTiming();
+      fsr.LogCompletedGpuTiming();
       Constants parameters{};
       parameters.hdrParam = p->hdrParam;
       parameters.width = p->width;
@@ -346,7 +355,13 @@ RWTexture2D<float2> motion:register(u2);
       c->CSSetShaderResources(0, 3, srvs);
       c->CSSetUnorderedAccessViews(0, 3, uavs, nullptr);
       const auto start = std::chrono::steady_clock::now();
-      if (sceneEffect &&
+      if (useFsr &&
+          !fsr.Render(hdr.Get(), depth.Get(), motion.Get(), exposure.Get(),
+                      output.Get(), p->eye, p->frame, p->reset != 0, p->jitterX,
+                      p->jitterY, DecodeTTWVRCamera(p->view, p->projection),
+                      p->viewSpaceToMeters))
+        throw std::runtime_error("host FSR evaluate");
+      if (sceneEffect && !useFsr &&
           !backend.Render(hdr.Get(), depth.Get(), motion.Get(), exposure.Get(),
                           p->eye, p->frame, p->reset != 0, p->jitterX,
                           p->jitterY, output.Get()))
@@ -365,6 +380,7 @@ RWTexture2D<float2> motion:register(u2);
       else
         completion.Wait();
       backend.LogCompletedGpuTiming();
+      fsr.LogCompletedGpuTiming();
       // The client may overwrite the shared request as soon as reply is set.
       const auto completedFrame = p->frame;
       const auto completedEye = p->eye;
@@ -385,8 +401,11 @@ RWTexture2D<float2> motion:register(u2);
     }
     completion.Wait();
     backend.LogCompletedGpuTiming();
+    fsr.LogCompletedGpuTiming();
     fg.Shutdown();
-    if (sceneEffect)
+    if (useFsr)
+      fsr.Shutdown();
+    else if (sceneEffect)
       backend.Shutdown();
   } catch (const std::exception &e) {
     Log("host_failed reason=%s bypass=1", e.what());

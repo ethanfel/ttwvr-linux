@@ -16,15 +16,20 @@ exited; the private game required a targeted SIGTERM. Earlier slower menu tests
 passed, so this is not a claim that FG teardown is fixed. FG remains optional
 and defaults off. See [preset validation](../../docs/dlss-presets.md).
 
+FSR 3.1.5 now has a separate **FSR SR** row with all three quality presets.
+Its runtime, camera contract and validation are described in [FSR integration](../../docs/fsr-integration.md).
+FSR and FG are mutually exclusive in this initial implementation.
+
 ## Features and dependencies
 
-| Feature | NVIDIA runtime | Rendering behavior |
+| Feature | Runtime | Rendering behavior |
 |---|---|---|
 | NR | `nvngx_dlssnr.dll` | Neural rendering before tone mapping |
 | DLAA | `nvngx_dlss.dll` | Native-resolution temporal antialiasing |
 | DLSS SR Quality | `nvngx_dlss.dll` | 1963×1472 scene reconstructed to 2944×2208 per eye |
 | DLSS SR Balanced | `nvngx_dlss.dll` | 1708×1281 scene reconstructed to 2944×2208 per eye |
 | DLSS SR Performance | `nvngx_dlss.dll` | 1472×1104 scene reconstructed to 2944×2208 per eye |
+| FSR Quality / Balanced / Performance | `amd_fidelityfx_upscaler_dx12.dll` | 1962×1472 / 1731×1298 / 1472×1104 reconstructed to 2944×2208 per eye |
 | Stereo FG | `nvngx_dlssg.dll` | An interpolated stereo pair between consecutive real pairs |
 
 The current SR adapter supports the verified **2944×2208 output** and Quality,
@@ -49,7 +54,7 @@ binaries, game assets or private captures. The reference is
 ## Installation and controls
 
 Follow [the Fluorine addon installation](STEAM.md). Close the game and helper
-before replacing the matching x86 layer and x64 helper; protocol **7** is not
+before replacing the matching x86 layer and x64 helper; protocol **8** is not
 compatible with older helper binaries. Preserve the runtime INI and profile
 settings rather than replacing them with development defaults. The Steam
 command and WiVRn registration remain unchanged.
@@ -62,6 +67,7 @@ in addition to the common and NR headers.
 ```ini
 [super_resolution]
 enabled=0
+backend=DLSS
 mode=Quality
 capture_probe=0
 [frame_generation]
@@ -81,6 +87,9 @@ Explicit CLI controls are available for an identified runtime INI:
 python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini sr quality
 python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini sr balanced
 python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini sr performance
+python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini fsr quality
+python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini fsr balanced
+python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini fsr performance
 python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini fg on
 python3 neural/tools/control.py --config /path/to/runtime/TTWVRNeuralRendering.ini all-off
 ```

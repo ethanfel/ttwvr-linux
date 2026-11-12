@@ -1,5 +1,5 @@
 DISCORD RESOURCE POST — TTWVR ON LINUX
-Updated for TTWVR 1.1.3, GPU handoff, DLSS SR and stereo FG, 2026-11-12.
+Updated for TTWVR 1.1.3, GPU handoff, DLSS/FSR SR and stereo FG, 2026-11-12.
 
 Suggested forum title: TTWVR on Linux — Fluorine + WiVRn setup and rendering addon
 
@@ -112,7 +112,7 @@ Set it to `0` and restart to restore CPU completion waits. The distributed defau
 
 **Evidence:** 32 asynchronous HDR/depth round trips passed 393,216 pixel checks with zero mismatches. In-game comparisons use the same corridor and full 2944×2208 eye targets on simulated Monado; they do not predict WiVRn/Quest FPS or comfort. Both eyes and consecutive frames are checked separately from timing.
 
-The newer SR/FG integration uses the same GPU handoff, with matching **protocol-6** layer/helper files. See message 5 for its separate 120 Hz measurements. The stock upscaler stays disabled and DLAA's distant haze remains unresolved.
+The newer SR/FG integration uses the same GPU handoff, with matching layer/helper files (currently **protocol 8**). See message 5 for its separate 120 Hz measurements. The stock upscaler stays disabled and DLAA's distant haze remains unresolved.
 
 ===== END MESSAGE 4 =====
 
@@ -128,7 +128,7 @@ SR uses its own temporal reconstruction and excludes NR/DLAA. FG is independent 
 
 Both new presets passed consecutive-eye captures with matching guides and reconstructed output. **Headset motion, latency, WiVRn streaming and comfort still need validation.** A rapid preset-cycle test with FG stalled on quit; FG teardown is not fully reliable. DLAA haze is not fixed.
 
-Close the game before updating the matching **protocol-7 layer/helper**; preserve your INI. `nvngx_dlss.dll` supplies SR/DLAA; obtain `nvngx_dlssg.dll` separately for FG. Keep the same Steam command. No NVIDIA/game binaries are distributed.
+Close the game before updating the matching **protocol-8 layer/helper**; preserve your INI. `nvngx_dlss.dll` supplies SR/DLAA; obtain `nvngx_dlssg.dll` separately for FG. Keep the same Steam command. No NVIDIA/game binaries are distributed.
 
 **Preset checks/results:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/dlss-presets.md>
 **Build/dependencies:** <https://github.com/ethanfel/ttwvr-linux/blob/main/neural/docs/SR-FRAME-GENERATION.md>
@@ -148,3 +148,21 @@ No diagnostic renderer/fence patch is enabled in normal Fluorine launches. Your 
 **Evidence and details:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/bundled-renderer-113.md>
 
 ===== END MESSAGE 6 =====
+
+===== MESSAGE 7 — COPY BELOW =====
+
+**FSR 3.1.5: a working first path**
+
+The addon now adds **VR Settings → FSR SR → Off / Quality / Balanced / Performance**, beside DLSS. Presets switch live. Input sizes are **1962×1472 / 1731×1298 / 1472×1104** per eye, reconstructed to **2944×2208**. HUD/output stays full size. Only that output layout is supported.
+
+Close Fallout/helper, back up your runtime and install the matching **protocol-8 layer/helper**. Copy `NVSE/Plugins/TTWVR/amd_fidelityfx_upscaler_dx12.dll` from your own TTWVR 1.1.3 download into the addon's `runtime/` directory. Keep the same Steam command. No diagnostic Wine fence patch is needed; no AMD/game/NVIDIA DLLs are distributed here.
+
+FSR owns temporal AA and excludes NR, DLAA, DLSS and FG. Active MSAA requires a restart before FSR can run. Off or missing-runtime failure keeps native rendering available.
+
+**Measured, not promised:** on the RTX 5090 with simulated Monado at 90 Hz, native, all FSR presets and DLSS Quality stayed around **39 app FPS**. FSR Quality used ~120 W versus DLSS Quality ~131 W, but native used ~87–94 W. This is not an FPS win over native. Both eyes, consecutive frames, headset movement and missing-DLL bypass passed isolated checks.
+
+Headset motion/comfort, fog/particles and text still need review. No reactive/transparency mask or sharpening is supplied yet. DLAA's reported haze is not fixed by this work. Frame generation stays off with FSR.
+
+**Setup, source and measured results:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/fsr-integration.md>
+
+===== END MESSAGE 7 =====

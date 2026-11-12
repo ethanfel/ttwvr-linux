@@ -427,6 +427,7 @@ bool ApplySpatialNR(IDirect3DDevice9 *d, uint64_t frame, unsigned eye,
     p->reset = client->p->temporal ? guides.reset : 1;
     p->jitterX = guides.jitterX;
     p->jitterY = guides.jitterY;
+    p->viewSpaceToMeters = guides.viewSpaceToMeters;
     std::memcpy(p->view, guides.view, sizeof(p->view));
     std::memcpy(p->projection, guides.projection, sizeof(p->projection));
     std::memcpy(p->clipToPrevious, guides.clipToPrevious,

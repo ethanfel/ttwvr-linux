@@ -53,7 +53,7 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
       "${CMAKE_CURRENT_SOURCE_DIR}/tools/NgxParameterAccess.cpp" "/Fo${NGX_PARAMETER_OBJECT}"
     DEPENDS tools/NgxParameterAccess.cpp VERBATIM)
   set_source_files_properties("${NGX_PARAMETER_OBJECT}" PROPERTIES EXTERNAL_OBJECT TRUE GENERATED TRUE)
-  add_library(neural_backend STATIC src/backend/NeuralBackend.cpp src/backend/FrameGeneration.cpp src/backend/GpuInterop.cpp src/backend/NgxLifetime.cpp "${NGX_PARAMETER_OBJECT}")
+  add_library(neural_backend STATIC src/backend/NeuralBackend.cpp src/backend/FsrBackend.cpp src/backend/FrameGeneration.cpp src/backend/GpuInterop.cpp src/backend/NgxLifetime.cpp "${NGX_PARAMETER_OBJECT}")
   target_include_directories(neural_backend PRIVATE "${NGX_COMMON_INCLUDE}" "${NGX_NR_INCLUDE}" "${NGX_FG_INCLUDE}")
   target_compile_definitions(neural_backend PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX UNICODE _UNICODE)
   target_compile_options(neural_backend PRIVATE -Wall -Wextra -Werror -Wno-cast-function-type -Wno-missing-field-initializers)

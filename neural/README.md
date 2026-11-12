@@ -127,10 +127,14 @@ Place these together in the private layer directory:
 - the manifest and INI in this directory;
 - your separately obtained `runtime/nvngx_dlssnr.dll` for NR;
 - your separately obtained `runtime/nvngx_dlss.dll` for DLAA/SR;
-- your separately obtained `runtime/nvngx_dlssg.dll` for optional FG.
+- your separately obtained `runtime/nvngx_dlssg.dll` for optional FG;
+- `runtime/amd_fidelityfx_upscaler_dx12.dll` from your TTWVR download for optional FSR 3.1.5.
 
-The helper requires the driver NGX core, working D3D12, NVIDIA GPU visibility and
-native D3DCompiler 47. Register the manifest **only in the copied prefix's 32-bit
+FSR Quality/Balanced/Performance uses the same GPU transport without NGX evaluation.
+See [FSR setup and evidence](../docs/fsr-integration.md).
+
+The helper requires working D3D12 and native D3DCompiler 47. NVIDIA features
+also require the driver NGX core and NVIDIA GPU visibility. Register the manifest **only in the copied prefix's 32-bit
 OpenXR implicit-layer registry view**. Do not apply that manifest to the native
 Linux OpenXR loader. The existing private Wine OpenXR bridge is still required.
 See the repository's [simulated runtime notes](../docs/simulated-vr.md).
@@ -307,7 +311,7 @@ gpu_handoff=1
 ```
 
 Restart the game after changing this setting. Install the matching layer/helper
-pair: protocol 7 is 440 bytes and refuses older helpers. Set `gpu_handoff=0`
+pair: protocol 8 is 448 bytes and refuses older helpers. Set `gpu_handoff=0`
 and restart to restore CPU completion waits. Distributed defaults keep it off.
 This changes synchronization, not NR/DLAA quality or rendering dimensions.
 Do not combine it with the historical monotonic-D3D12-fence binary patch.
