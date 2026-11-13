@@ -1,5 +1,11 @@
 # Changes
 
+## Supplied CachyOS OpenXR build validation — 2026-11-13
+
+- Record actual bridge-converter regression checks and isolated TTWVR 1.1.4 DLSS/FSR gameplay using the supplied full Proton archive without our OpenXR binary patch.
+- Publish stereo previews, consecutive/motion checks, successful NGX evaluations and a short same-scene Experimental comparison in [the validation note](docs/cachyos-openxr-validation.md). No FPS improvement is established.
+- Retain the other renderer patches and current installer/Steam defaults. Native Fluorine and physical WiVRn validation for this build remain pending.
+
 ## Author-renderer focus and prepared-install Linux patch — 2026-11-13
 
 - Make native Fluorine and the original TTWVR Vulkan renderer, D3D11-helper DLSS and native Vulkan FSR the primary setup.

@@ -62,6 +62,7 @@ all been validated. Simulated-headset FPS is not a WiVRn streaming benchmark.
 - [Fluorine configuration and migration](docs/native-fluorine.md)
 - [Troubleshooting and rollback](docs/troubleshooting.md)
 - [Discord resource post](docs/discord-resource-post.txt)
+- [Supplied CachyOS OpenXR build: isolated validation](docs/cachyos-openxr-validation.md)
 - [Changes](CHANGELOG.md)
 - [Archived custom rendering addon](archive/rendering-addon/README.md)
 - [Archived Windows MO2 path](docs/archive/mo2/README.md)

@@ -1,0 +1,485 @@
+{
+  "date": "2026-11-13",
+  "archive": {
+    "archive": "proton-cachyos-wineopenxr-fix.tar.gz",
+    "archive_sha256": "0e6f57024d5577fcb70bf973f0416a876e0a6215247de7c905be35e3761e3642",
+    "version": "1794507542 cachyos-11.0-20261015-slr",
+    "bridge_sha256": "df84ffb28339dc1737fc08158f9f22e0e94b6161cec892cc1bdfaba98c21cc13"
+  },
+  "converter_test": {
+    "checks": 28,
+    "conversions": 14,
+    "cases": [
+      "projection,quad,quad",
+      "quad,projection,quad",
+      "quad,quad,projection",
+      "null,projection,quad,quad",
+      "projection,null,quad,quad",
+      "projection,quad,null,quad",
+      "projection,quad,quad,null"
+    ],
+    "function_offsets": {
+      "win32_to_host": "0x4fcf0",
+      "win64_to_host": "0x51400"
+    },
+    "observed_fix": "Layer type is read from each indexed element inside the allocation loop, with null elements skipped."
+  },
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "runtime": "Monado simulated headset, null compositor at 90 Hz",
+  "scope": "Full supplied Proton; copied legacy capture harness and prefix. Passive capture only. Existing TTWVR 1.1.4 and DXVK pool/opaque fence patches retained. Native Fluorine launcher and WiVRn headset not changed or tested.",
+  "active_dxvk32": {
+    "d3d9.dll": "d7d5fd1008f09494c81acb6d607aeff00d09dcff5cf63759b6ab3f3e1169e85d",
+    "d3d11.dll": "19b0e23e280645ac62cab4f9bfc7c06286d42bfa9b2b9e33a9e3bc93933384f8",
+    "dxgi.dll": "8414f9622edcc0ab258b8d667717ee35fa2e01ce43152ec5408084182e2db7bf"
+  },
+  "runs": [
+    {
+      "name": "cachyos-dlss-200",
+      "status": {
+        "ttwvr_sha256": "e54dccb5e29e1361d36dd9f9a7ee23294b07663f29690cabbaff7168cbd62413",
+        "notice": "non-atomic status counters; pixels require separate validation",
+        "render_width": 2944,
+        "render_height": 2208,
+        "output_width": 5888,
+        "output_height": 4416,
+        "posted": 2799,
+        "shown": 2797,
+        "not_produced": 1,
+        "slot_busy": 0,
+        "resets": 1,
+        "worker_posts": 2799,
+        "legacy_posts": 0,
+        "ready_when_shown": 2797,
+        "show_checks": 2797,
+        "upscaler": 1,
+        "native_fsr_frames_since_status_reset": 0,
+        "helper_mode_label": "DLSS",
+        "copy_refused": false,
+        "direct_output_capability": false,
+        "direct_output_active": false,
+        "native_fsr_enabled": true,
+        "native_fsr_failed": false,
+        "native_fsr_initialized": true,
+        "fsr_fp16_allowed": true,
+        "native_fsr_active": false
+      },
+      "motion": [
+        {
+          "eye": 0,
+          "frames": [
+            2850,
+            2851,
+            3090,
+            3091
+          ],
+          "dimensions": [
+            5888,
+            4416
+          ],
+          "consecutive": 0.5923469990548205,
+          "motion": 0.8021976732952307,
+          "center_motion": 0.9993501890359168,
+          "center_consecutive": 0.3889315532451166,
+          "shift_consecutive": 0.5680700060550568,
+          "sha256": [
+            "68d869a958352f421687f84a67324b06c1b089e4419cad2f5ea21837ee9eaed9",
+            "7e812275d106d30ee8b2210748a3021666938f8cb972ee4df2f995c01d741a65",
+            "264ed1880a2bc9c3a022179f97b4576b164286695222ea09bc02d03c0265c9a3",
+            "80a2fec82e45b8700c0119d3253fbb4fd3709c609d7cccae9d1da75a54358d15"
+          ]
+        },
+        {
+          "eye": 1,
+          "frames": [
+            2850,
+            2851,
+            3090,
+            3091
+          ],
+          "dimensions": [
+            5888,
+            4416
+          ],
+          "consecutive": 0.5921642781806278,
+          "motion": 0.802257670046176,
+          "center_motion": 0.9993120372558286,
+          "center_consecutive": 0.3883143558994959,
+          "shift_consecutive": 0.566067960627363,
+          "sha256": [
+            "a76ec9b6207931706ce831a6372fb1c1501dde20801ced0200fdb5e3b40fd367",
+            "43c00e8375b3f4f507b8368a70a1ea82e68ca790ad3820726b4505f927ba007f",
+            "64501330dbb71fc639cec4f1b1f9a23a2372fc907e3b8931d0f071e8c4670619",
+            "db15a61050eacd8aec8e7658c6b4c4b68f457b7a37a8d2103072d47ddafbefe7"
+          ]
+        }
+      ],
+      "timing": {
+        "fps": 55.56658073036126,
+        "seconds": 31.02364330898854,
+        "frame_samples": 29,
+        "gpu_samples": [
+          "20, 122.05, 7982",
+          "23, 130.40, 7983",
+          "16, 123.71, 7980",
+          "17, 117.63, 7980",
+          "17, 117.47, 7980",
+          "17, 117.13, 7980",
+          "19, 120.07, 7980",
+          "19, 119.38, 7980",
+          "19, 130.01, 7980",
+          "21, 127.91, 7980",
+          "14, 115.27, 7980",
+          "21, 121.87, 7980",
+          "23, 122.65, 7980",
+          "18, 120.25, 7983",
+          "22, 135.68, 7984",
+          "28, 145.44, 8031",
+          "20, 133.14, 8037",
+          "24, 137.99, 8037",
+          "21, 135.80, 8028",
+          "22, 125.60, 8028",
+          "26, 121.17, 8028",
+          "26, 124.52, 8028",
+          "25, 123.53, 8028",
+          "26, 123.96, 8028",
+          "23, 141.62, 8028",
+          "17, 117.10, 8028",
+          "30, 134.53, 8028",
+          "22, 130.52, 8030",
+          "22, 131.52, 8030",
+          "24, 127.08, 8030"
+        ],
+        "gpu_utilization_mean": 21.4,
+        "gpu_power_watts_mean": 126.5,
+        "gpu_memory_mib_mean": 8005.3,
+        "wait_ms": 6.072517241379311,
+        "app_ms": 10.347862068965517,
+        "end_ms": 0.7869655172413793,
+        "display_period_ms": 11.111
+      }
+    },
+    {
+      "name": "cachyos-fsr-100",
+      "status": {
+        "ttwvr_sha256": "e54dccb5e29e1361d36dd9f9a7ee23294b07663f29690cabbaff7168cbd62413",
+        "notice": "non-atomic status counters; pixels require separate validation",
+        "render_width": 1984,
+        "render_height": 1488,
+        "output_width": 2944,
+        "output_height": 2208,
+        "posted": 2576,
+        "shown": 2575,
+        "not_produced": 0,
+        "slot_busy": 0,
+        "resets": 1,
+        "worker_posts": 2575,
+        "legacy_posts": 0,
+        "ready_when_shown": 2575,
+        "show_checks": 2575,
+        "upscaler": 2,
+        "native_fsr_frames_since_status_reset": 2575,
+        "helper_mode_label": "DLSS",
+        "copy_refused": false,
+        "direct_output_capability": false,
+        "direct_output_active": false,
+        "native_fsr_enabled": true,
+        "native_fsr_failed": false,
+        "native_fsr_initialized": true,
+        "fsr_fp16_allowed": true,
+        "native_fsr_active": true
+      },
+      "motion": [
+        {
+          "eye": 0,
+          "frames": [
+            2700,
+            2701,
+            2910,
+            2911
+          ],
+          "dimensions": [
+            2944,
+            2208
+          ],
+          "consecutive": 0.6395239827012444,
+          "motion": 0.8110216185215816,
+          "center_motion": 0.9994535680529301,
+          "center_consecutive": 0.3983882718966604,
+          "shift_consecutive": 0.6267512897763075,
+          "sha256": [
+            "54bc2374d7c76b5bdbf63dd26d99975484176c6b0bba68dd84fa7e0092bf426b",
+            "14e96f2bba81dc50fdbacb8c77ee3d98ae7c08181ce1cc3c744f3bc61eb34ad8",
+            "729c5cfd7dc53dd52ceedc1dfa18e1883a8162320a6181730e40fc41ba88017a",
+            "6534ab6559a759fb163fb6fbc07822b12882e0532108bdfbf05f99363ef40a10"
+          ]
+        },
+        {
+          "eye": 1,
+          "frames": [
+            2700,
+            2701,
+            2910,
+            2911
+          ],
+          "dimensions": [
+            2944,
+            2208
+          ],
+          "consecutive": 0.6381952854245432,
+          "motion": 0.8110794615430057,
+          "center_motion": 0.9993304977945809,
+          "center_consecutive": 0.3973052536231884,
+          "shift_consecutive": 0.6252255262484246,
+          "sha256": [
+            "128ba3dc7cf2b88373d5f1a62e275fc5aa2d6966392d4eabb7ad8e189fb30a17",
+            "282e72de6651da4405529e207701c218e3215c4688f88d43b0060b8a8a7e9f5b",
+            "d5fa34ccf77cf32569b81f9441fa3c641f5ddd1a07f519ea32d0c707e5f0525a",
+            "dc727473d13d92c5bdcb0b27098950a9b70516678c535fe9cefd9e5878ef0afa"
+          ]
+        }
+      ],
+      "timing": {
+        "fps": 52.72407764813237,
+        "seconds": 31.027976933997707,
+        "frame_samples": 27,
+        "gpu_samples": [
+          "16, 88.28, 7441",
+          "19, 107.63, 7397",
+          "15, 103.70, 7394",
+          "16, 96.27, 7394",
+          "17, 93.84, 7392",
+          "17, 90.72, 7438",
+          "25, 99.82, 7474",
+          "13, 107.54, 7432",
+          "15, 87.89, 7378",
+          "15, 85.04, 7449",
+          "15, 87.90, 7629",
+          "14, 86.44, 7554",
+          "13, 84.50, 7562",
+          "14, 84.81, 7431",
+          "15, 85.68, 7449",
+          "11, 83.65, 7512",
+          "14, 83.18, 7501",
+          "15, 83.85, 7514",
+          "15, 83.27, 7501",
+          "14, 83.47, 7406",
+          "15, 84.71, 7376",
+          "11, 86.68, 7371",
+          "15, 83.68, 7376",
+          "18, 85.03, 7376",
+          "14, 79.37, 7371",
+          "14, 82.64, 7376",
+          "12, 84.72, 7376",
+          "12, 83.37, 7371",
+          "16, 84.27, 7402",
+          "14, 87.99, 7428"
+        ],
+        "gpu_utilization_mean": 14.966666666666667,
+        "gpu_power_watts_mean": 88.33133333333333,
+        "gpu_memory_mib_mean": 7435.7,
+        "wait_ms": 6.5857777777777775,
+        "app_ms": 10.753370370370371,
+        "end_ms": 0.7888148148148149,
+        "display_period_ms": 11.111
+      }
+    }
+  ],
+  "ngx_evaluations": [
+    {
+      "api": "0x6fffe7f1b2f0",
+      "feature": 3,
+      "result": "0x1"
+    },
+    {
+      "api": "0x6fffe7f1b2f0",
+      "feature": 4,
+      "result": "0x1"
+    },
+    {
+      "api": "0x6fffe7f1b2f0",
+      "feature": 3,
+      "result": "0x1"
+    },
+    {
+      "api": "0x6fffe7f1b2f0",
+      "feature": 4,
+      "result": "0x1"
+    }
+  ],
+  "restoration": {
+    "private_files_restored": 13,
+    "regular_files_unchanged": 65,
+    "test_processes_closed": true
+  },
+  "public_installer_support": false,
+  "physical_headset_tested": false,
+  "baseline_restoration": {
+    "private_files_restored": 13,
+    "regular_files_unchanged": 65,
+    "test_processes_closed": true
+  },
+  "final_checks": {
+    "regular_files_unchanged": 65,
+    "installed_experimental_bridge_unchanged": true,
+    "test_games_and_helpers_closed": true
+  },
+  "baseline_proton": "experimental-11.0-20261105c-x86_64",
+  "comparison_order": [
+    "cachyos-dlss-200",
+    "cachyos-fsr-100",
+    "expcompare-dlss-200",
+    "expcompare-fsr-100"
+  ],
+  "timing_limit": "One roughly 30-second sample per mode/package in sequence; CPU wall-time app spans, whole-GPU utilization/power. Not randomized, repeated, component-isolated or physical-headset tested.",
+  "baseline_runs": [
+    {
+      "name": "expcompare-dlss-200",
+      "timing": {
+        "fps": 58.246367919087895,
+        "seconds": 30.190756811993197,
+        "frame_samples": 29,
+        "gpu_samples": [
+          "26, 131.25, 7875",
+          "18, 117.00, 7875",
+          "18, 119.74, 7875",
+          "17, 120.82, 7875",
+          "23, 129.71, 7875",
+          "20, 124.84, 7875",
+          "20, 124.13, 7875",
+          "14, 119.15, 7875",
+          "18, 121.41, 7875",
+          "19, 128.18, 7875",
+          "28, 122.74, 7875",
+          "15, 108.46, 7875",
+          "18, 117.51, 7875",
+          "23, 118.99, 7875",
+          "18, 124.14, 7875",
+          "25, 134.42, 7875",
+          "23, 130.58, 7875",
+          "20, 123.17, 7875",
+          "27, 127.14, 7875",
+          "21, 124.42, 7875",
+          "21, 124.88, 7875",
+          "17, 124.52, 7875",
+          "18, 112.66, 7875",
+          "14, 107.47, 7875",
+          "17, 109.34, 7875",
+          "16, 108.96, 7875",
+          "17, 110.55, 7875",
+          "20, 119.09, 7875",
+          "16, 120.82, 7875"
+        ],
+        "gpu_utilization_mean": 19.551724137931036,
+        "gpu_power_watts_mean": 120.89965517241379,
+        "gpu_memory_mib_mean": 7875.0,
+        "wait_ms": 5.52148275862069,
+        "app_ms": 10.092344827586206,
+        "end_ms": 0.7186206896551723,
+        "display_period_ms": 11.111
+      },
+      "status": {
+        "ttwvr_sha256": "e54dccb5e29e1361d36dd9f9a7ee23294b07663f29690cabbaff7168cbd62413",
+        "notice": "non-atomic status counters; pixels require separate validation",
+        "render_width": 2944,
+        "render_height": 2208,
+        "output_width": 5888,
+        "output_height": 4416,
+        "posted": 2394,
+        "shown": 2392,
+        "not_produced": 1,
+        "slot_busy": 0,
+        "resets": 1,
+        "worker_posts": 2394,
+        "legacy_posts": 0,
+        "ready_when_shown": 2392,
+        "show_checks": 2392,
+        "upscaler": 1,
+        "native_fsr_frames_since_status_reset": 0,
+        "helper_mode_label": "DLSS",
+        "copy_refused": false,
+        "direct_output_capability": false,
+        "direct_output_active": false,
+        "native_fsr_enabled": true,
+        "native_fsr_failed": false,
+        "native_fsr_initialized": true,
+        "fsr_fp16_allowed": true,
+        "native_fsr_active": false
+      }
+    },
+    {
+      "name": "expcompare-fsr-100",
+      "timing": {
+        "fps": 52.22631422754695,
+        "seconds": 31.022297197996522,
+        "frame_samples": 27,
+        "gpu_samples": [
+          "12, 86.21, 7273",
+          "10, 85.45, 7273",
+          "13, 86.83, 7273",
+          "11, 87.32, 7273",
+          "13, 86.35, 7273",
+          "12, 86.34, 7273",
+          "13, 86.81, 7273",
+          "13, 84.93, 7273",
+          "11, 86.81, 7273",
+          "12, 86.06, 7273",
+          "12, 86.18, 7273",
+          "10, 84.56, 7273",
+          "13, 87.46, 7273",
+          "12, 86.74, 7273",
+          "12, 88.10, 7273",
+          "12, 86.10, 7273",
+          "12, 85.21, 7273",
+          "10, 84.87, 7273",
+          "12, 84.95, 7273",
+          "13, 85.59, 7273",
+          "13, 87.26, 7273",
+          "15, 87.23, 7273",
+          "11, 83.82, 7273",
+          "11, 88.98, 7273",
+          "11, 85.95, 7273",
+          "14, 85.14, 7273",
+          "11, 85.86, 7273",
+          "11, 84.40, 7273",
+          "12, 85.00, 7273",
+          "11, 85.50, 7273"
+        ],
+        "gpu_utilization_mean": 11.933333333333334,
+        "gpu_power_watts_mean": 86.06700000000001,
+        "gpu_memory_mib_mean": 7273.0,
+        "wait_ms": 6.781740740740741,
+        "app_ms": 10.82474074074074,
+        "end_ms": 0.6735185185185185,
+        "display_period_ms": 11.111
+      },
+      "status": {
+        "ttwvr_sha256": "e54dccb5e29e1361d36dd9f9a7ee23294b07663f29690cabbaff7168cbd62413",
+        "notice": "non-atomic status counters; pixels require separate validation",
+        "render_width": 1984,
+        "render_height": 1488,
+        "output_width": 2944,
+        "output_height": 2208,
+        "posted": 2270,
+        "shown": 2269,
+        "not_produced": 0,
+        "slot_busy": 0,
+        "resets": 1,
+        "worker_posts": 2270,
+        "legacy_posts": 0,
+        "ready_when_shown": 2269,
+        "show_checks": 2269,
+        "upscaler": 2,
+        "native_fsr_frames_since_status_reset": 2270,
+        "helper_mode_label": "DLSS",
+        "copy_refused": false,
+        "direct_output_capability": false,
+        "direct_output_active": false,
+        "native_fsr_enabled": true,
+        "native_fsr_failed": false,
+        "native_fsr_initialized": true,
+        "fsr_fp16_allowed": true,
+        "native_fsr_active": true
+      }
+    }
+  ]
+}
