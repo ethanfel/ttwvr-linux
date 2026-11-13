@@ -61,12 +61,19 @@ all been validated. Simulated-headset FPS is not a WiVRn streaming benchmark.
 - [Preparation and patch tool](docs/installation.md)
 - [Fluorine configuration and migration](docs/native-fluorine.md)
 - [Troubleshooting and rollback](docs/troubleshooting.md)
+- [TTWVR Discord community](https://discord.com/invite/ttwvr)
 - [Discord resource post](docs/discord-resource-post.txt)
 - [Supplied CachyOS OpenXR build: isolated validation](docs/cachyos-openxr-validation.md)
 - [Changes](CHANGELOG.md)
 - [Archived custom rendering addon](archive/rendering-addon/README.md)
 - [Archived Windows MO2 path](docs/archive/mo2/README.md)
 
+## License
+
+This project's original code, including the Linux tools, tests and patch
+contributions, is licensed under **GPL-3.0-only**; see [LICENSE](LICENSE).
+The archived addon uses the same license. Third-party components retain their
+licenses and attributions; see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
+
 TTWVR belongs to its author. Follow the original mod's distribution terms.
-The archived addon remains **GPL-3.0-only**, with NVIDIA SDKs/runtime DLLs
-separate under NVIDIA's terms. Keep those notices when reusing its source.
+NVIDIA SDKs and runtime DLLs remain separate dependencies under NVIDIA's terms.

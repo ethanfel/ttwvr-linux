@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Build an isolated TTWVR 1.1.3/1.1.4 author-DLSS compatibility candidate.
 
 Accepts only the exact original plugin. Includes bundled-renderer activation,

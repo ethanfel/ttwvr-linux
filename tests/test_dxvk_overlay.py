@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Check that renderer experiments cannot replace the real Windows directory."""
 import hashlib
 import json

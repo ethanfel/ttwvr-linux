@@ -15,6 +15,8 @@ registration is never changed by this integration.
 
 The archive identifies itself as `cachyos-11.0-20261015-slr`, built November 12.
 Its exact custom source commit and official-release provenance are not known.
+Community invite: [TTWVR Discord](https://discord.com/invite/ttwvr).
+
 Archive source supplied by the user: [Discord channel](https://discord.com/channels/1570233209462194208/1570481280825561098)
 (access required; channel contents could not be independently retrieved).
 Hashes are recorded in the [evidence JSON](evidence/cachyos-openxr-20261113.json).

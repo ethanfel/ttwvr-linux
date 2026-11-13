@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Read TTWVR 1.1.3/1.1.4 upscaler counters from a specified Linux/Wine process.
 
 Read-only diagnostic. These are the original status-panel counters, not proof

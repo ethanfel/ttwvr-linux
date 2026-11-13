@@ -8,6 +8,8 @@ TTW utility version. Finish the preparation phase and verify flat TTW first.
 
 ## 1. Get the requirements
 
+[Join the TTWVR Discord community](https://discord.com/invite/ttwvr).
+
 | Requirement | Source / tested version |
 |---|---|
 | English New Vegas Ultimate + Fallout 3 GOTY, all DLC | Your Steam library |

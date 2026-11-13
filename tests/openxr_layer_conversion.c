@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+// SPDX-License-Identifier: GPL-3.0-only
 /* Exercise the actual conversion functions in the exact supported bridge.
  * Build: cc -O2 -Wall -Wextra -rdynamic -o /tmp/ttw-xr-layers \
  *          tests/openxr_layer_conversion.c -ldl

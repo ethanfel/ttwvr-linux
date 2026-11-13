@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Launch-scoped DXVK source overrides with a separate writable Windows directory."""
 import hashlib
 import json

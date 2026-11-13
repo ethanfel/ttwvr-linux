@@ -1,3 +1,5 @@
+// SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+// SPDX-License-Identifier: GPL-3.0-only
 // Reproduce TTWVR's cross-process D3D11 fence import without game or VR assets.
 // Build as both i686 and x86_64. Run probe32.exe <Windows path to probe64.exe> [rounds].
 #include <windows.h>

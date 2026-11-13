@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Exercise the launcher without Wine, Steam, or a headset."""
 import json
 import os

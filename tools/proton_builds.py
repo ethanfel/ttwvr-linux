@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Exact tested Proton builds; keep the Windows/Unix OpenXR pair together."""
 import hashlib
 from pathlib import Path

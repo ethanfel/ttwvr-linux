@@ -1,5 +1,10 @@
 # Changes
 
+## Project license and Discord invite — 2026-11-13
+
+- License the project's original tools, tests and patch contributions under GPL-3.0-only; add the root license, source identifiers and third-party notices while preserving upstream licenses.
+- Add the TTWVR Discord invite to the README, installation guide, runtime-source notes and resource post.
+
 ## Combined CachyOS and TTWVR Linux patch — 2026-11-13
 
 - Support the exact supplied CachyOS WineOpenXR-fix archive alongside Experimental, verifying the Windows/Unix bridge pairing and renderer hashes. Use its built-in fix and retain the TTWVR/DXVK patches.

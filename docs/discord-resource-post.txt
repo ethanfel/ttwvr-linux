@@ -15,6 +15,7 @@ The tool checks compatibility, prepares the Linux dependencies, creates a patche
 
 **Full installation guide:** <https://github.com/ethanfel/ttwvr-linux/blob/main/docs/installation.md>
 **Repository:** <https://github.com/ethanfel/ttwvr-linux>
+**Linux patch code license:** GPL-3.0-only; third-party licenses remain unchanged.
 
 You need your own games and mod downloads. The tool does not install TTW or download Nexus mods; no game, TTWVR or NVIDIA runtime files are bundled.
 
@@ -35,6 +36,7 @@ Linux prerequisites: Python 3.11+, Git, bubblewrap, FUSE 3, unshare, Meson, Ninj
 **TTW guide:** <https://thebestoftimes.moddinglinked.com/intro.html>
 **Native TTW installer:** <https://github.com/SulfurNitride/TTW_Linux_Installer>
 **Fluorine:** <https://github.com/SulfurNitride/Fluorine-Manager/releases/tag/v0.4.1>
+**TTWVR Discord invite:** <https://discord.com/invite/ttwvr>
 **TTWVR download:** <https://discord.com/channels/747967102895390741/1560413111423344730>
 **WiVRn:** <https://github.com/WiVRn/WiVRn>
 **xrizer:** <https://github.com/Supreeeme/xrizer>

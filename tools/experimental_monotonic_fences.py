@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Create a DIAGNOSTIC Proton copy using native, monotonic shared timelines.
 
 NOT a general D3D12-fence fix: D3D fences may rewind, Vulkan timelines may not.

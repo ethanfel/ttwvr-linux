@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+// SPDX-License-Identifier: GPL-3.0-only
 // Standalone 32 -> 64-bit Wine opaque Vulkan timeline semaphore probe.
 // Build both architectures with Vulkan-Headers; pass probe64.exe to
 // probe32.exe.

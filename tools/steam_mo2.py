@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Experimental Steam launch wrapper; use --dry-run to inspect without writing."""
 import argparse
 import configparser

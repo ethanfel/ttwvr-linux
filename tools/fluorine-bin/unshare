@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Preserve the desktop UID only for Fluorine 0.4.1's profile-save mount."""
 import os
 import sys

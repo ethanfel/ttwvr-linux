@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Create a private, hash-guarded workaround for Proton's projection-first layers."""
 import argparse
 import hashlib

@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Reject mixed Proton components and skip the obsolete bridge patch safely."""
 import copy
 import hashlib

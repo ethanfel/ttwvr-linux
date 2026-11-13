@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Create a separate TTWVR 1.1.0 DLL with 1920x1440 fallback rendering defaults."""
 import argparse
 import hashlib

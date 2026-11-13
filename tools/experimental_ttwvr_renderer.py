@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Create an EXPERIMENTAL TTWVR 1.1.0/1.1.3/1.1.4 copy that loads its bundled DXVK.
 
 This bypasses only the stock-DXVK detection return. It is not a proven

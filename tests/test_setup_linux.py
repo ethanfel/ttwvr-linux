@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Installation safety: real filesystem rollback, partial failures, INI preservation."""
 import json
 from pathlib import Path

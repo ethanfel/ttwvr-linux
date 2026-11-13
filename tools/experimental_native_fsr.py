@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Create an EXPERIMENTAL TTWVR 1.1.3/1.1.4 native-Vulkan-FSR candidate.
 
 Reads only the exact original DLL, writes a NEW file, and never installs it.

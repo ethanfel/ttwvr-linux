@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Read-only audit. Never loads a DLL or extracts a supplied archive."""
 import argparse
 import hashlib

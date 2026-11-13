@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Initialize a new portable TTW MO2 instance; refuses to replace existing config."""
 import argparse
 import configparser

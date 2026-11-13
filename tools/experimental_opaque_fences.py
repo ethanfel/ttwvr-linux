@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ethanfel and contributors
+# SPDX-License-Identifier: GPL-3.0-only
 """Create an EXPERIMENTAL private DXVK D3D11 fence candidate for TTWVR.
 
 Changes shared D3D11 fences from D3D11_FENCE_BIT (8) to OPAQUE_WIN32_BIT (2),
