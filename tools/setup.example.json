@@ -2,7 +2,7 @@
   "instance": "/path/to/ttwvr/instance",
   "mod": "/path/to/ttwvr/instance/mods/Tale of Two Realities 1.1.4",
   "manager": "/path/to/fluorine-manager/fluorine-manager",
-  "proton": "/path/to/steamapps/common/Proton - Experimental",
+  "proton": "/path/to/proton-cachyos-wineopenxr-fix",
   "prefix": "/path/to/ttwvr/compat/pfx",
   "steam_runtime": "/path/to/steamapps/common/SteamLinuxRuntime_4",
   "config_home": "/path/to/ttwvr/config",

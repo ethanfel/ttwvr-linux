@@ -7,7 +7,7 @@ configuration. No installed Proton library is overwritten.
 | Fix | Purpose | Location |
 |---|---|---|
 | Native D3DCompiler 47, 32/64-bit | Avoid the observed save-load shader compilation crash | Private prefix, original files/links backed up |
-| Hash-guarded OpenXR bridge | Correct projection-first layer allocation that caused black headset output | Private `wineopenxr.so`, game-only bind overlay |
+| OpenXR layer allocation | Correct mixed projection/quad allocation | Supplied CachyOS built-in fix, or hash-guarded private Experimental bridge |
 | 32 MiB DXVK mapped pool | Avoid repeated allocations for large 32-bit eye buffers | Private source-built DXVK |
 | DXVK opaque shared timelines | Preserve GPU fence handoff for this author's increasing timeline values | Same private DXVK build; not a general rewindable D3D fence implementation |
 | Author renderer/Wine loader | Activate bundled Vulkan renderer and resolve `winevulkan.dll` | New patched TTWVR mod copy |
@@ -18,7 +18,8 @@ configuration. No installed Proton library is overwritten.
 The generated `instance/ttwvr-linux.ini` selects `author_renderer=true`,
 `neural_rendering=false`, WoW64, native shader compilers and private overlay
 paths. The wrapper enables NVAPI and disables the archived neural layer for
-this VR path. The original TTWVR menu remains in use.
+this VR path. Automatic Proton upscaler replacement is disabled so the tested
+author runtimes stay selected. The original TTWVR menu remains in use.
 
 [Compiler evidence](simulated-vr.md) · [OpenXR bridge](openxr-layers.md) ·
 [Pool diagnosis](dxvk-pools.md) · [Native FSR/fences](native-vulkan-fsr.md) ·

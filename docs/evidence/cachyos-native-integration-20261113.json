@@ -1,0 +1,105 @@
+{
+  "before": {
+    "ttwvr_sha256": "e54dccb5e29e1361d36dd9f9a7ee23294b07663f29690cabbaff7168cbd62413",
+    "notice": "non-atomic status counters; pixels require separate validation",
+    "render_width": 2944,
+    "render_height": 2208,
+    "output_width": 5888,
+    "output_height": 4416,
+    "posted": 14619,
+    "shown": 14617,
+    "not_produced": 1,
+    "slot_busy": 0,
+    "resets": 2,
+    "worker_posts": 14619,
+    "legacy_posts": 0,
+    "ready_when_shown": 14616,
+    "show_checks": 14617,
+    "upscaler": 1,
+    "native_fsr_frames_since_status_reset": 0,
+    "helper_mode_label": "DLSS",
+    "copy_refused": false,
+    "direct_output_capability": false,
+    "direct_output_active": false,
+    "native_fsr_enabled": true,
+    "native_fsr_failed": false,
+    "native_fsr_initialized": true,
+    "fsr_fp16_allowed": true,
+    "native_fsr_active": false
+  },
+  "after": {
+    "ttwvr_sha256": "e54dccb5e29e1361d36dd9f9a7ee23294b07663f29690cabbaff7168cbd62413",
+    "notice": "non-atomic status counters; pixels require separate validation",
+    "render_width": 2944,
+    "render_height": 2208,
+    "output_width": 5888,
+    "output_height": 4416,
+    "posted": 14723,
+    "shown": 14721,
+    "not_produced": 1,
+    "slot_busy": 0,
+    "resets": 2,
+    "worker_posts": 14723,
+    "legacy_posts": 0,
+    "ready_when_shown": 14720,
+    "show_checks": 14721,
+    "upscaler": 1,
+    "native_fsr_frames_since_status_reset": 0,
+    "helper_mode_label": "DLSS",
+    "copy_refused": false,
+    "direct_output_capability": false,
+    "direct_output_active": false,
+    "native_fsr_enabled": true,
+    "native_fsr_failed": false,
+    "native_fsr_initialized": true,
+    "fsr_fp16_allowed": true,
+    "native_fsr_active": false
+  },
+  "ngx": [
+    {
+      "api": "0x6ffff7eab2f0",
+      "feature": 3,
+      "result": "0x1"
+    },
+    {
+      "api": "0x6ffff7eab2f0",
+      "feature": 4,
+      "result": "0x1"
+    },
+    {
+      "api": "0x6ffff7eab2f0",
+      "feature": 3,
+      "result": "0x1"
+    },
+    {
+      "api": "0x6ffff7eab2f0",
+      "feature": 4,
+      "result": "0x1"
+    }
+  ],
+  "modules": [
+    "/home/ethanfel/.local/share/tf2vr-autotest/monado-build/src/xrt/targets/openxr/libopenxr_monado.so",
+    "/media/p5/tales_2_wasteland/local/proton/proton-cachyos-wineopenxr-fix/files/lib/wine/i386-windows/wineopenxr.dll",
+    "/media/p5/tales_2_wasteland/local/proton/proton-cachyos-wineopenxr-fix/files/lib/wine/x86_64-unix/wineopenxr.so"
+  ],
+  "environment": {
+    "PROTON_FSR4_UPGRADE": "0",
+    "PROTON_DLSS_UPGRADE": "0",
+    "PROTON_USE_OPTISCALER": "0",
+    "DISABLE_TTWVR_NEURAL_RENDERING": "1"
+  },
+  "loaded_save": "Save 12 - Springvale Elementary School",
+  "simulated": true,
+  "physical_headset_tested": false,
+  "source": "https://discord.com/channels/1570233209462194208/1570481280825561098",
+  "archive_sha256": "0e6f57024d5577fcb70bf973f0416a876e0a6215247de7c905be35e3761e3642",
+  "tests_passed": 36,
+  "installer_rollback": "rolled_back",
+  "regular_switch": {
+    "separate_prefix": true,
+    "old_prefix_retained": true,
+    "save_files_unchanged": 30,
+    "steam_entry_point_unchanged": true
+  },
+  "capture_limit": "Native integration validated save load and live NGX processing. Its desktop screenshot includes simulated full-body overlap, so image-quality evidence remains the earlier controlled stereo captures; physical WiVRn is pending."
+}

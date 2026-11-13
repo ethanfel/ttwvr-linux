@@ -152,6 +152,9 @@ os.execvpe(command[0], command, os.environ)
         env = json.loads(result.stdout)['environment']
         self.assertIsNone(env['ENABLE_TTWVR_NEURAL_RENDERING'])
         self.assertEqual(env['DISABLE_TTWVR_NEURAL_RENDERING'], '1')
+        self.assertEqual(env['PROTON_FSR4_UPGRADE'], '0')
+        self.assertEqual(env['PROTON_DLSS_UPGRADE'], '0')
+        self.assertEqual(env['PROTON_USE_OPTISCALER'], '0')
         self.assertEqual(env['PROTON_ENABLE_NVAPI'], '1')
         self.assertEqual(env['PROTON_HIDE_NVIDIA_GPU'], '0')
 

@@ -6,13 +6,17 @@ Our separate two-byte bridge workaround was omitted. The TTWVR renderer,
 shared-output, FSR handle and DXVK pool/opaque-fence patches were retained.
 
 This is validation of one supplied archive, not general CachyOS support.
-The public setup tool remains pinned to Proton Experimental; the regular
-Fluorine/Steam installation and WiVRn registration were not changed.
+The setup tool now supports this exact archive alongside Experimental and
+combines its built-in OpenXR fix with the existing renderer patches. The initial
+comparison below left the regular installation unchanged. WiVRn default runtime
+registration is never changed by this integration.
 
 ## What the build fixes
 
 The archive identifies itself as `cachyos-11.0-20261015-slr`, built November 12.
 Its exact custom source commit and official-release provenance are not known.
+Archive source supplied by the user: [Discord channel](https://discord.com/channels/1570233209462194208/1570481280825561098)
+(access required; channel contents could not be independently retrieved).
 Hashes are recorded in the [evidence JSON](evidence/cachyos-openxr-20261113.json).
 
 Disassembly shows that both composition-layer converters size each element
@@ -69,8 +73,8 @@ Simulated-headset FPS is not a WiVRn streaming or physical-headset benchmark.
 
 - Menu startup, the saved scene, stereo freshness, translation and graceful
   shutdown passed; long sessions and physical-headset comfort remain untested.
-- The existing private capture harness was used. Native Fluorine integration
-  with this Proton build has not been migrated or validated.
+- The initial stereo/timing tests used the private capture harness. See the
+  subsequent combined-installer/native-Fluorine validation below.
 - The tests retained the other Linux patches. They do not show those patches
   can be removed, or that stock CachyOS DXVK alone is sufficient.
 - This package automatically provisioned an FSR4 DLL in its disposable prefix.
@@ -82,4 +86,38 @@ Simulated-headset FPS is not a WiVRn streaming or physical-headset benchmark.
   its protected installation could not open `dist.lock`. The retry mounted a
   private writable lock file while keeping installed Proton read-only.
 
-No change is required to the working Steam command or installer instructions.
+The Steam entry point stays the same when Fluorine selects the new Proton and
+prefix. See the current [installation guide](installation.md).
+
+
+## Combined installer and native Fluorine integration
+
+The setup tool now recognizes both exact Proton builds. It verifies the
+Windows/Unix OpenXR pair and stock DXVK files, keeps the renderer fixes, and
+writes an empty `openxr_bridge` setting for CachyOS to clear stale overrides.
+Experimental retains its private bridge workaround. Automatic Proton upscaler
+replacement is disabled for the author renderer.
+
+**36 tests passed**, including mixed-runtime rejection, both bridge-selection
+paths, rollback and real native save mounts. The updated tool was then applied
+to a separate copy of the native Fluorine installation using the original
+1.1.4 mod and verified dependencies. Fluorine mounted its FUSE view, launched
+the generated game wrapper with CachyOS, and loaded the Springvale save.
+Output advanced at 2944×2208 input / 5888×4416 output, with no copy refusal;
+four actual NGX evaluations alternated features 3/4/3/4 and returned `0x1`.
+The game exited through its own quit command. Installer rollback passed on
+that copy, preserving the settings changed during the test in a conflict backup.
+
+The initial automation timeout came from writing through the old MO2 backing
+path; sending test commands through the native game's FUSE view resolved it.
+The native desktop capture included full-body overlap with simulated tracking,
+so it is not used to claim image quality. The earlier controlled stereo images
+remain the pixel evidence; physical WiVRn confirmation is still pending.
+
+The regular Fluorine instance was switched using a copied prefix and private
+Windows directory, with a transaction recording the three changed configuration
+files. The old prefix was retained, all 30 checked save files remained unchanged,
+and the existing Steam entry point was retained. Its complete game-wrapper
+dry run selects CachyOS, WiVRn and patched DXVK without a bridge overlay.
+
+[Native integration record](evidence/cachyos-native-integration-20261113.json).

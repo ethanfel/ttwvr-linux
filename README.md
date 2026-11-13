@@ -31,7 +31,7 @@ command. Run as your desktop user, with Fallout and Fluorine closed for apply.
 | FSR | Author's **native Vulkan FSR 3.1.4** in the 32-bit game |
 | VR menu and resolution | Original TTWVR controls; existing calibration/settings preserved |
 | TTWVR versions | Exact supplied 1.1.3 and 1.1.4 builds; unknown files rejected |
-| Proton | Exact `experimental-11.0-20261105c-x86_64` files; rolling updates require revalidation |
+| Proton | Supplied CachyOS WineOpenXR-fix build or exact Experimental; [versions and source](docs/installation.md#1-get-the-requirements), hash checked |
 | Custom NR / DLAA / SR / FG | [Archived source and evidence](archive/rendering-addon/README.md); excluded from this setup |
 
 DLSS is not a direct Vulkan NGX implementation: Vulkan renders the game and

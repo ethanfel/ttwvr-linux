@@ -248,6 +248,11 @@ def main():
     }
     if vr and vr_author:
         changes["DISABLE_TTWVR_NEURAL_RENDERING"] = "1"
+        # Preserve the author runtimes validated by preflight; CachyOS otherwise
+        # provisions FSR4 automatically, although this mod uses embedded FSR.
+        for key in ("PROTON_FSR4_UPGRADE", "PROTON_DLSS_UPGRADE", "PROTON_FFX3_UPGRADE",
+                    "PROTON_FFX4_UPGRADE", "PROTON_XESS_UPGRADE", "PROTON_USE_OPTISCALER"):
+            changes[key] = "0"
     if vr and (vr_neural or vr_author):
         changes["PROTON_ENABLE_NVAPI"] = "1"
         changes["PROTON_HIDE_NVIDIA_GPU"] = "0"

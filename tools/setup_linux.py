@@ -20,8 +20,8 @@ import urllib.request
 
 from experimental_author_dlss import build, BUILDS
 from experimental_native_fsr import SOURCE_SHA256_114
-from patch_openxr_bridge import patch_bytes, SOURCE_SHA256 as BRIDGE_SOURCE
-from dxvk_overlay import ORIGINAL_HASHES
+from patch_openxr_bridge import patch_bytes
+from proton_builds import identify_proton
 
 ROOT = Path(__file__).resolve().parents[1]
 REVISION = 'cf0a0d90f8965147741ad17dcd0b263817572ab3'
@@ -188,9 +188,11 @@ def check(c):
         # Reproduce all exact-byte patches during preflight, without writing.
         build(plugin.read_bytes(), native_fsr=True)
     verify('TTWVR', check_mod)
-    verify('Proton OpenXR', lambda: hash_is(c['proton']/'files/lib/wine/x86_64-unix/wineopenxr.so', BRIDGE_SOURCE))
-    for name, expected in ORIGINAL_HASHES.items():
-        verify('Proton DXVK', lambda n=name, h=expected: hash_is(c['proton']/'files/lib/wine/dxvk/i386-windows'/n, h))
+    def check_proton():
+        profile = identify_proton(c['proton'])
+        notes.append('Proton: ' + profile['version'] +
+                     ('; built-in OpenXR fix' if profile['openxr_builtin'] else '; private OpenXR workaround'))
+    verify('Proton runtime and DXVK', check_proton)
     def check_instance():
         cp = ini(c['instance']/'ModOrganizer.ini')
         for key, path in (('prefix_path', c['prefix']), ('proton_path', c['proton'])):
@@ -265,7 +267,7 @@ def check(c):
               f'Private prefix: {c["prefix"]}',
               f'Patch output/backups: {c["fixes"]}',
               'Original mod, saves and installed Proton are retained.',
-              'Generated launcher uses WiVRn; default runtime registration is unchanged.']
+              f'OpenXR manifest: {c["xr_runtime"]}; default runtime registration is unchanged.']
     return errors, notes
 
 
@@ -452,6 +454,16 @@ def patched_modlist(data, c):
     return ('\r\n'.join(result)+'\r\n').encode()
 
 
+def prepare_openxr(proton, fixes):
+    """Use the verified built-in fix, or generate the Experimental-only overlay."""
+    profile = identify_proton(proton)
+    if profile['openxr_builtin']:
+        return None
+    bridge = fixes/'wineopenxr.so'
+    atomic_write(bridge,patch_bytes((proton/'files/lib/wine/x86_64-unix/wineopenxr.so').read_bytes()),0o755)
+    return bridge
+
+
 def apply(c):
     require_closed()
     prepare(c)
@@ -462,8 +474,7 @@ def apply(c):
         raise ValueError('private syswow64 already exists; use a fresh fixes directory')
     shutil.copytree(c['prefix']/'drive_c/windows/syswow64',private,symlinks=True)
     atomic_write(private/'d3dcompiler_47.dll',(c['fixes']/'dependencies/compiler32.dll').read_bytes())
-    bridge = c['fixes']/'wineopenxr.so'
-    atomic_write(bridge,patch_bytes((c['proton']/'files/lib/wine/x86_64-unix/wineopenxr.so').read_bytes()),0o755)
+    bridge = prepare_openxr(c['proton'], c['fixes'])
     shutil.copytree(c['mod'], c['new_mod'], symlinks=False)
     plugin = c['new_mod']/'NVSE/Plugins/TTWVR.dll'
     atomic_write(plugin,bytes(build(plugin.read_bytes(),native_fsr=True)))
@@ -477,7 +488,7 @@ def apply(c):
     compatibility = c['instance']/'ttwvr-linux.ini'
     compatibility_data = edit_ini(compatibility.read_bytes() if compatibility.exists() else b'',{'VR':{
         'author_renderer':'true','neural_rendering':'false','wow64':'true','native_d3dcompiler47':'true',
-        'openxr_bridge':str(bridge),'dxvk_renderer':str(c['fixes']/'dependencies/dxvk'),
+        'openxr_bridge':str(bridge) if bridge else '','dxvk_renderer':str(c['fixes']/'dependencies/dxvk'),
         'dxvk_syswow64':str(private),'fallback_resolution_source':'','fallback_resolution_patch':''}})
     launch_args = [sys.executable,str(ROOT/'tools/launch_fluorine.py'),'--manager',str(c['manager']),
                    '--instance',str(c['instance']),'--config-home',str(c['config_home']),

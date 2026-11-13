@@ -1,5 +1,11 @@
 # Changes
 
+## Combined CachyOS and TTWVR Linux patch — 2026-11-13
+
+- Support the exact supplied CachyOS WineOpenXR-fix archive alongside Experimental, verifying the Windows/Unix bridge pairing and renderer hashes. Use its built-in fix and retain the TTWVR/DXVK patches.
+- Preserve the author upscaler runtimes, add mixed-build rejection checks, and pass 36 automated tests plus real native Fluorine apply/save-load/DLSS/rollback checks. Physical WiVRn validation remains pending.
+- Credit the user-supplied [Discord source](https://discord.com/channels/1570233209462194208/1570481280825561098) and update the installation and resource-post guides.
+
 ## Supplied CachyOS OpenXR build validation — 2026-11-13
 
 - Record actual bridge-converter regression checks and isolated TTWVR 1.1.4 DLSS/FSR gameplay using the supplied full Proton archive without our OpenXR binary patch.

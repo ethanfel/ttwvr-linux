@@ -8,7 +8,7 @@
 | GPU / driver | RTX 5090 / NVIDIA 615.78.08 |
 | CPU / headset | Ryzen 9 5950X / Quest 3 |
 | Streaming runtime | WiVRn 26.9 |
-| Proton | Exact `experimental-11.0-20261105c-x86_64`, WoW64 |
+| Proton | Exact `experimental-11.0-20261105c-x86_64` and supplied `cachyos-11.0-20261015-slr` WineOpenXR-fix build, WoW64 |
 | Container / startup probe | Steam Linux Runtime 4 / xrizer `0.6.r5.g63fc7eb`, 64-bit |
 | Native manager | Fluorine 0.4.1, FUSE |
 | TTW / xNVSE | 3.4 / 6.4.9 |
@@ -27,6 +27,7 @@
 | Physical author-path image quality | User confirmed good 200% DLSS Quality output with 1.1.3; no controlled sustained headset benchmark |
 | 1.1.4 port | DLSS Quality 200% and FSR Quality 100% passed isolated stereo/movement checks; successful NGX calls for DLSS; physical confirmation pending |
 | Original menu/settings | Preserved; 1.1.4 adds Turn Speed and Loot Menu keys. Every setting's behavior has not been exhaustively tested. |
+| CachyOS combined setup | Exact supplied build: native Fluorine save load and live DLSS evaluations passed; original stereo DLSS/FSR checks passed; physical WiVRn confirmation pending |
 | Linux setup tool | Fresh dependency build, apply/rollback on disposable real files, Qt argument parsing, generated launch dry-run and real namespace overlays; see [tool validation](setup-validation.md) |
 | Voice, multiplayer, all calibration/control combinations | Not comprehensively validated |
 | Long sessions, outdoor frame times, other GPUs/distros | Pending |
@@ -38,6 +39,8 @@ TTWVR uses OpenXR directly; xrizer serves Proton's earlier VR startup probe.
 The launcher does not replace global runtime registration.
 
 ## Evidence
+
+- [CachyOS source, combined patch workflow and validation](cachyos-openxr-validation.md)
 
 - [1.1.4 patch hashes, stereo captures and settings preservation](ttwvr-1.1.4.md)
 - [Author DLSS output diagnosis and measurements](author-dlss.md)

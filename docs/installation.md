@@ -17,12 +17,34 @@ TTW utility version. Finish the preparation phase and verify flat TTW first.
 | Native Fluorine | [Official v0.4.1 release](https://github.com/SulfurNitride/Fluorine-Manager/releases/tag/v0.4.1), FUSE backend |
 | Original TTWVR 1.1.4 or 1.1.3 | [KUPOkinz's Flat2VR thread](https://discord.com/channels/747967102895390741/1560413111423344730); Discord access required |
 | WiVRn and xrizer | [WiVRn](https://github.com/WiVRn/WiVRn), [xrizer](https://github.com/Supreeeme/xrizer#download--usage) |
-| Proton / Steam runtime | `experimental-11.0-20261105c-x86_64` / Steam Linux Runtime 4 |
+| Proton / Steam runtime | Supplied [CachyOS WineOpenXR-fix build](https://discord.com/channels/1570233209462194208/1570481280825561098), `cachyos-11.0-20261015-slr`, or exact `experimental-11.0-20261105c-x86_64`; Steam Linux Runtime 4 |
 
-The patch is pinned to exact Proton and TTWVR file hashes. **A newer Proton
-Experimental is not automatically supported.** Retain the tested build in your
-own Steam installation; if preflight rejects it, stop and use a supported build
-or wait for an updated patch. Do not bypass the checks.
+Download **proton-cachyos-wineopenxr-fix.tar.gz** from the linked Discord
+channel (access required), then extract the complete archive into a permanent
+folder. Select that folder in Fluorine and in setup.json. The source link was
+provided by the user; an upstream source commit has not been established.
+The tested archive SHA256 is:
+
+```text
+0e6f57024d5577fcb70bf973f0416a876e0a6215247de7c905be35e3761e3642
+```
+
+The tool combines the selected Proton with our TTWVR and DXVK patches.
+**CachyOS uses its built-in OpenXR fix**; the supported Experimental build gets
+our private bridge workaround. Do not copy individual Wine OpenXR DLLs or Unix
+libraries between builds. The tool checks the Windows/Unix pair and renderer
+hashes; a matching folder name or newer release is not sufficient.
+[Validation and timing limits](cachyos-openxr-validation.md).
+
+For an existing Experimental installation, close the game and manager, copy
+its entire private compatdata directory to a new location, and select the new
+`pfx` and CachyOS paths in both Fluorine's instance and dedicated global config.
+Keep the old prefix for rollback; do not downgrade the prefix CachyOS upgrades.
+The patch tool remains a prepared-install tool, not an in-place migration tool.
+If the instance is already patched, use its recorded rollback first, move the
+retained `TTWVR Linux 1.1.4` (or 1.1.3) mod directory aside, and prepare the
+original mod again. Apply with a fresh fixes directory; keep the old rollback
+records and prefix. Alternatively prepare a separate instance.
 
 Install Python **3.11+**, Git, bubblewrap (`/usr/bin/bwrap`), FUSE 3 with
 `fusermount3`, and `unshare`. The dependency build needs Meson, Ninja, glslang,
@@ -115,7 +137,8 @@ Apply then:
   resolution and upscaler choice. Disables previous TTWVR/menu-addon entries
   only in the chosen VR profile and gives the new mod priority.
 - Installs both native compiler files in the private prefix, creates private
-  OpenXR/DXVK overlays and configures the selected Fluorine executable.
+  DXVK overlays and configures the selected Fluorine executable. Experimental
+  also gets a private OpenXR overlay; CachyOS needs none.
 - Enables the author's path and NVAPI; disables the archived neural layer.
 - Records backups in **fixes/transaction.json**, then creates the launcher and
   **fixes/steam-launch-options.txt**. Saves are never edited.

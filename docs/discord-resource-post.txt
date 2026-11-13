@@ -28,7 +28,7 @@ You need your own games and mod downloads. The tool does not install TTW or down
 • A **TTW - VR** copy of that profile, with the complete original **TTWVR 1.1.4** archive installed and enabled as a separate mod.
 • Working **WiVRn and xrizer**. DLSS requires a supported NVIDIA RTX GPU.
 
-**Required Proton build:** `experimental-11.0-20261105c-x86_64`, with **Steam Linux Runtime 4**. The patch checks exact file hashes; a newer Proton Experimental build is not automatically supported.
+**Proton:** get `proton-cachyos-wineopenxr-fix.tar.gz` (`cachyos-11.0-20261015-slr`) from <https://discord.com/channels/1570233209462194208/1570481280825561098> and use **Steam Linux Runtime 4**. Extract the full archive and select it in Fluorine. The tool combines its OpenXR fix with our Linux patches. Exact `experimental-11.0-20261105c-x86_64` also remains supported; newer builds need validation.
 
 Linux prerequisites: Python 3.11+, Git, bubblewrap, FUSE 3, unshare, Meson, Ninja, glslang and i686 MinGW-w64 C/C++ with POSIX threads. The full guide explains the paths and setup.
 
