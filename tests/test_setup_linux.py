@@ -81,3 +81,109 @@ class SetupTests(unittest.TestCase):
         c={k:str(self.root/k) for k in ('instance','mod','manager','proton','prefix','steam_runtime','config_home','data_home','fixes')}
         c['profile']='../elsewhere'; path=self.root/'setup.json'; path.write_text(json.dumps(c))
         with self.assertRaisesRegex(ValueError,'single directory'): read_config(path)
+
+
+class ConfigTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix='TTW config with spaces ')
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve()
+        self.instance = self.root/'instance'
+        self.instance.mkdir()
+        self.proton = self.root/'apps/Custom Proton'
+        self.prefix = self.root/'compat-cachyos/pfx'
+        (self.instance/'ModOrganizer.ini').write_text(
+            f'[fluorine]\nproton_path="{self.proton}"\nprefix_path="{self.prefix}"\n')
+        self.profile = self.instance/'profiles/TTW - VR'
+        self.profile.mkdir(parents=True)
+        self.add_mod('original VR')
+        self.add_mod('disabled VR')
+        (self.profile/'modlist.txt').write_text('+original VR\n-disabled VR\n')
+        self.config = {
+            'workspace': str(self.root),
+            'manager': 'apps/fluorine-manager/fluorine-manager',
+            'steam_library': str(self.root/'Steam library'),
+        }
+
+    def add_mod(self, name):
+        dll = self.instance/'mods'/name/'NVSE/Plugins/TTWVR.dll'
+        dll.parent.mkdir(parents=True)
+        dll.write_bytes(b'original mod fixture')
+        return dll.parent.parent.parent
+
+    def read(self, config=None):
+        path = self.root/'setup.json'
+        path.write_text(json.dumps(self.config if config is None else config))
+        return read_config(path)
+
+    def test_three_fields_find_native_settings_and_only_enabled_mod_without_writes(self):
+        path = self.root/'setup.json'
+        path.write_text(json.dumps(self.config))
+        before = {p.relative_to(self.root): p.read_bytes() for p in self.root.rglob('*') if p.is_file()}
+        c = read_config(path)
+        for key, folder in [('instance','instance'), ('config_home','config'),
+                            ('data_home','share'), ('fixes','linux-fixes')]:
+            self.assertEqual(c[key], self.root/folder)
+        self.assertEqual(c['manager'], self.root/self.config['manager'])
+        self.assertEqual(c['mod'], self.instance/'mods/original VR')
+        self.assertEqual(c['proton'], self.proton)
+        self.assertEqual(c['prefix'], self.prefix)
+        self.assertEqual(c['steam_runtime'], self.root/'Steam library/steamapps/common/SteamLinuxRuntime_4')
+        self.assertEqual(c['xr_runtime'], Path('/usr/share/openxr/1/openxr_wivrn.json'))
+        self.assertEqual(before, {p.relative_to(self.root): p.read_bytes() for p in self.root.rglob('*') if p.is_file()})
+        self.assertFalse(c['fixes'].exists())
+
+    def test_explicit_paths_override_inference_and_defaults(self):
+        self.config.update({
+            'proton': 'different-proton', 'prefix': 'different-prefix/pfx',
+            'mod': 'instance/mods/disabled VR', 'fixes': 'different-fixes',
+            'config_home': 'different-config', 'data_home': 'different-data',
+            'steam_runtime': 'different-runtime',
+        })
+        (self.instance/'ModOrganizer.ini').unlink()
+        c = self.read()
+        for key in ('proton','prefix','mod','fixes','config_home','data_home','steam_runtime'):
+            self.assertEqual(c[key], self.root/self.config[key])
+
+    def test_legacy_absolute_config_needs_no_discovery(self):
+        config = {key: str(self.root/'unprepared'/key) for key in
+                  ('instance','mod','manager','proton','prefix','steam_runtime','config_home','data_home','fixes')}
+        c = self.read(config)
+        for key, value in config.items():
+            self.assertEqual(c[key], Path(value))
+        self.assertFalse((self.root/'unprepared').exists())
+
+    def test_ambiguous_or_disabled_mods_are_not_guessed(self):
+        for listing in ('+original VR\n+disabled VR\n', '-original VR\n-disabled VR\n'):
+            with self.subTest(listing=listing):
+                (self.profile/'modlist.txt').write_text(listing)
+                with self.assertRaisesRegex(ValueError, 'enable exactly one original TTWVR mod'):
+                    self.read()
+
+    def test_mod_discovery_rejects_parent_traversal(self):
+        (self.profile/'modlist.txt').write_text('+../outside\n')
+        with self.assertRaisesRegex(ValueError, 'invalid enabled mod name'):
+            self.read()
+
+    def test_missing_native_proton_settings_explain_preparation(self):
+        (self.instance/'ModOrganizer.ini').write_text('[fluorine]\n')
+        with self.assertRaisesRegex(ValueError, 'select proton_path in the Fluorine instance'):
+            self.read()
+
+    def test_relative_paths_need_workspace(self):
+        c = {key: str(self.root/key) for key in
+             ('instance','mod','manager','proton','prefix','steam_runtime','config_home','data_home','fixes')}
+        c['manager'] = 'apps/fluorine-manager'
+        with self.assertRaisesRegex(ValueError, 'set workspace for relative paths'):
+            self.read(c)
+
+    def test_tilde_workspace_and_custom_instance(self):
+        self.config.update({'workspace':'~/Games/ttwvr', 'instance':str(self.instance)})
+        c = self.read()
+        self.assertEqual(c['manager'], (Path.home()/'Games/ttwvr/apps/fluorine-manager/fluorine-manager').resolve())
+        self.assertEqual(c['mod'], self.instance/'mods/original VR')
+
+    def test_blank_profile_is_rejected(self):
+        self.config['profile'] = ''
+        with self.assertRaisesRegex(ValueError, 'single directory'):
+            self.read()

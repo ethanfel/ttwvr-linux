@@ -4,6 +4,9 @@
 
 | Symptom | Action |
 |---|---|
+| Configuration cannot find the instance | Set `workspace` to the folder containing `instance`, or add an explicit `instance` override. Relative paths start at workspace. |
+| Configuration finds no TTWVR mod or several candidates | Enable exactly one original TTWVR mod in the selected VR profile, or set `mod` explicitly. The complete archive must provide `NVSE/Plugins/TTWVR.dll`. |
+| Missing Proton/prefix setting | Finish the native instance preparation; the tool reads `[fluorine] proton_path` and `prefix_path` from its ModOrganizer.ini. |
 | Preflight says unsupported/modified Proton | Use the exact tested build. Steam Experimental updates can invalidate both bridge and renderer hashes; do not bypass guards. |
 | Preflight rejects TTWVR | Point `mod` at the complete original 1.1.3/1.1.4 mod, not an already patched copy or mixed-version files. |
 | Existing transaction/destination mod | This tool does not overwrite previous patch deployments. Roll back first; retain backups, then use a fresh fixes directory and original mod. A retained copied mod can be moved aside while disabled. |
@@ -42,7 +45,7 @@ and [native FSR evidence](native-vulkan-fsr.md).
 
 ## Undo a fix
 
-Use [the complete rollback](installation.md#6-roll-back), with Fallout and
+Use [the complete rollback](maintenance.md#roll-back), with Fallout and
 Fluorine closed. Installed Proton files and global runtime registration were
 never changed. Restore any Steam launch option you changed manually.
 

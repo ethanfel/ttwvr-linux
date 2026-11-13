@@ -58,3 +58,12 @@ installation on another distribution or a new physical-headset validation.
 The GPU harness used the existing private test manager; native Fluorine's
 underlying launch/save-mount integration was separately validated and previously
 confirmed in headset use. No sustained performance claim is made for this run.
+
+
+## Compact configuration and guide revision
+
+On 2026-11-13, the three-field workspace configuration was checked with **45 passing tests**, including real user-namespace/save-mount integration. New cases cover inherited Proton/prefix paths with spaces, enabled-mod discovery, ambiguous/disabled candidates, overrides, legacy absolute configurations, tilde expansion, missing preparation and path traversal.
+
+A compact config for the existing isolated native CachyOS fixture resolved all nine required paths identically to its full-path config. This was a read-only resolution comparison; no new game launch or full installer deployment was needed for the configuration change. Existing apply/rollback evidence above still describes the installation path.
+
+The guide's two screenshots were captured from native Fluorine 0.4.1 on an isolated virtual display; the test manager configuration was restored afterward. Shell/JSON examples, local links and all four Discord messages were checked. A complete fresh-install walkthrough remains untested, as stated in the preparation guide.

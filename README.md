@@ -1,72 +1,54 @@
 # TTWVR on Linux
 
-Linux compatibility patches for **Tale of Two Realities / TTWVR**, using native
-**Fluorine**, **Proton** and **WiVRn**. The focus is the original mod's renderer,
-VR settings and controls, including its **DLSS and FSR upscalers**.
+Play **Tale of Two Wastelands in VR** using **Tale of Two Realities / TTWVR**, native **Fluorine**, **Proton** and **WiVRn**. These patches enable the mod's original renderer, **DLSS**, **FSR**, VR settings and controls on the tested Linux setup.
 
-**[Prepare your install → apply the Linux patch → launch](docs/installation.md)**
+## Start here
 
-The setup tool checks your prepared installation, builds private dependencies,
-creates a separate patched TTWVR mod, configures Fluorine and generates a
-launcher with rollback. You supply the games, TTW, required utilities and the
-original TTWVR archive. No game, mod or NVIDIA DLLs are redistributed here.
+| Your starting point | Guide |
+|---|---|
+| I have the Steam games and need to install TTW | [Prepare TTW in Fluorine](docs/preparation.md) |
+| TTW already works in native Fluorine | [Apply the Linux patch](docs/installation.md) |
+| I already applied this patch | [Launch options, updates and rollback](docs/maintenance.md) |
 
-```sh
-# Copy tools/setup.example.json to setup.json and fill in your paths first.
-python3 tools/setup_linux.py check setup.json
-python3 tools/setup_linux.py apply setup.json
+The standard setup file has three entries:
+
+```json
+{
+  "workspace": "~/Games/ttwvr",
+  "manager": "apps/fluorine-manager/fluorine-manager",
+  "steam_library": "~/.local/share/Steam"
+}
 ```
 
-The tool prints your direct launch command, Steam launch options and rollback
-command. Run as your desktop user, with Fallout and Fluorine closed for apply.
-[What it changes and how to undo it](docs/linux-fixes.md).
+The tool reads Proton and the prefix from Fluorine and finds the enabled TTWVR mod. It checks compatibility, builds the required dependencies, creates a patched mod copy and generates your Steam launch command. Original mods and saves are retained, with backups for rollback.
 
-## Supported path
+You supply the games and mod downloads. No game, TTWVR or NVIDIA DLLs are redistributed here.
 
-| Feature | Implementation / status |
+## Supported setup
+
+| Component | Supported / tested |
 |---|---|
-| Native mod management | Fluorine 0.4.1, FUSE; keeps the prepared TTW profiles |
-| Game renderer | Author's bundled Vulkan/DXVK renderer |
-| DLSS | Author's **64-bit D3D11 NGX helper**, with repaired shared output and GPU fences |
-| FSR | Author's **native Vulkan FSR 3.1.4** in the 32-bit game |
-| VR menu and resolution | Original TTWVR controls; existing calibration/settings preserved |
-| TTWVR versions | Exact supplied 1.1.3 and 1.1.4 builds; unknown files rejected |
-| Proton | Supplied CachyOS WineOpenXR-fix build or exact Experimental; [versions and source](docs/installation.md#1-get-the-requirements), hash checked |
-| Custom NR / DLAA / SR / FG | [Archived source and evidence](archive/rendering-addon/README.md); excluded from this setup |
+| Mod manager | Native Fluorine **0.4.1**, FUSE backend |
+| TTWVR | Exact supplied **1.1.4** and **1.1.3** archives |
+| Proton | Supplied CachyOS WineOpenXR-fix build or exact Experimental; [downloads and versions](docs/requirements.md#proton) |
+| Upscaling | Author's DLSS helper and native Vulkan FSR |
+| Headset connection | WiVRn; validation used Quest 3 and RTX 5090 |
 
-DLSS is not a direct Vulkan NGX implementation: Vulkan renders the game and
-its inputs are processed by the author's D3D11 helper. The previous custom
-D3D12 processing helper is unnecessary for this path. The upstream archive
-may still contain unused D3D12 dependencies; this tool retains its contents.
+Both-eye rendering, consecutive frames and movement were checked. The user confirmed good headset output at **200% / DLSS Quality** on 1.1.3. The 1.1.4 and CachyOS runs passed isolated GPU checks; physical confirmation of that combination remains pending. Other GPUs, all mod features and long sessions have not all been validated.
 
-## Evidence and limits
+[Compatibility and limits](docs/compatibility.md) ·
+[DLSS evidence](docs/author-dlss.md) · [FSR evidence](docs/native-vulkan-fsr.md)
 
-The 1.1.3 author path passed consecutive stereo and movement checks for DLSS
-Quality/Balanced/Performance, native FSR and resolution changes. The user
-confirmed good physical WiVRn output at **200% / DLSS Quality**.
-The [1.1.4 port](docs/ttwvr-1.1.4.md) passed isolated DLSS Quality at 200% and
-FSR Quality at 100%, including both eyes, consecutive frames and actual
-successful NGX evaluations. Physical 1.1.4 confirmation remains separate.
+## Help and reference
 
-[DLSS diagnosis, captures and measurements](docs/author-dlss.md) ·
-[Native Vulkan FSR repairs](docs/native-vulkan-fsr.md) ·
-[Tested hardware and remaining checks](docs/compatibility.md)
-
-This is an exact-build compatibility project. Full feature parity is the goal;
-voice, multiplayer, every menu setting, other GPUs and long sessions have not
-all been validated. Simulated-headset FPS is not a WiVRn streaming benchmark.
-
-## Reference
-
-- [Preparation and patch tool](docs/installation.md)
-- [Fluorine configuration and migration](docs/native-fluorine.md)
-- [Troubleshooting and rollback](docs/troubleshooting.md)
 - [TTWVR Discord community](https://discord.com/invite/ttwvr)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Optional setup.json fields](docs/configuration.md)
+- [What the Linux patches change](docs/linux-fixes.md)
+- [Fluorine technical reference](docs/native-fluorine.md)
 - [Discord resource post](docs/discord-resource-post.txt)
-- [Supplied CachyOS OpenXR build: isolated validation](docs/cachyos-openxr-validation.md)
 - [Changes](CHANGELOG.md)
-- [Archived custom rendering addon](archive/rendering-addon/README.md)
-- [Archived Windows MO2 path](docs/archive/mo2/README.md)
+- Archives: [custom rendering addon](archive/rendering-addon/README.md), [Windows MO2 workflow](docs/archive/mo2/README.md)
 
 ## License
 

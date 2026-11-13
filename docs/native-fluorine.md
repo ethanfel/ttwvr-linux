@@ -33,7 +33,7 @@ ttwvr/
     profiles/TTW - VR/
     overwrite/
     downloads/
-  fixes/                        private compiler/OpenXR/DXVK files
+  linux-fixes/                  private compiler/OpenXR/DXVK files and backups
   state/                        launcher logs
 ```
 
@@ -42,26 +42,7 @@ are examples; replace them with absolute paths for your installation. The
 manager's prefix path ends in `/pfx`, not the parent compatdata directory.
 
 For an existing installation, use the [migration checklist](#migrate-an-existing-mo2-installation).
-For a fresh instance, Fluorine 0.4.1 provides `create-portable`:
-
-```sh
-env XDG_CONFIG_HOME="/path/to/ttwvr/config" \
-    XDG_DATA_HOME="/path/to/ttwvr/share" \
-    "/path/to/fluorine-manager/fluorine-manager" create-portable \
-    --name instance --output "/path/to/ttwvr" \
-    --game TTW --game-path "/path/to/ttwvr/game" \
-    --prefix "/path/to/ttwvr/compat/pfx" \
-    --proton "/path/to/steamapps/common/Proton - Experimental"
-```
-
-This creates instance configuration and an empty `Default` profile. It does not
-install TTW, patch Fallout or prepare the game's prefix. The CLI arguments were
-checked against the pinned Fluorine source; full gameplay validation here used
-the migrated instance. Do not run it over an existing instance.
-
-Open the new instance with the launcher below using
-`--manager-only --profile Default`. In Fluorine, create **TTW - Flat** and **TTW - VR** as described in the
-installation guide. For subsequent launches, use the desired TTW profile.
+For a fresh instance, follow [the preparation steps](preparation.md#3-create-and-open-the-native-instance). They set a workspace path once and use Fluorine's `create-portable` command to create the instance. The [setup.json reference](configuration.md) explains automatic path discovery and optional overrides.
 
 Configure the supported Proton build, the private prefix, Steam app ID **22380**,
 **FUSE**, and executable **Tale of Two Wastelands** pointing to the managed
@@ -123,7 +104,7 @@ Neither path changes the desktop's default runtime registration.
 
 ## Native manager and Steam entry point
 
-Use the generated `fixes/launch-ttwvr.py` after applying the patch tool. The
+Use the generated `linux-fixes/launch-ttwvr.py` after applying the patch tool. The
 command below is the underlying entry point for manual preparation/migration.
 
 Launch the dedicated instance using:
@@ -179,7 +160,7 @@ neural settings menu and loaded a copied save (confirmed by the user). The
 simulated-headset run used full 2944×2208 eye images. DLAA logs included
 `dlaa_evaluate ... output_applied=1` for both eyes on consecutive frames.
 At that migration checkpoint NR was off and DLAA was on. The later
-[Rendering Addon deployment](../archive/rendering-addon/neural/docs/STEAM.md#native-rendering-addon-deployment-2026-11-12)
+[Rendering Addon deployment](../archive/rendering-addon/neural/docs/STEAM.md#initial-native-addon-deployment-before-the-113-upgrade)
 retained the subsequently saved state with both features off; the two records
 describe different checkpoints.
 The user subsequently confirmed that the native setup works in normal use.

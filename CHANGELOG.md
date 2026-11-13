@@ -1,5 +1,12 @@
 # Changes
 
+## Shorter configuration and illustrated setup guide — 2026-11-13
+
+- Reduce the standard setup file to workspace, manager and Steam-library paths. Derive workspace folders and read the selected Proton, prefix and enabled TTWVR mod from the native instance.
+- Keep explicit path overrides and older full-path configs working. Reject ambiguous mod discovery and invalid profile/mod paths before changes; display resolved paths during preflight.
+- Replace the dense installation guide with five actionable steps. Add separate preparation, downloads, optional configuration and maintenance pages, plus real Fluorine screenshots of FUSE and profile controls.
+- Rewrite the README and four-part Discord resource post around those steps. Verify 45 tests, real-fixture path equivalence, documentation links and Discord message lengths.
+
 ## Project license and Discord invite — 2026-11-13
 
 - License the project's original tools, tests and patch contributions under GPL-3.0-only; add the root license, source identifiers and third-party notices while preserving upstream licenses.

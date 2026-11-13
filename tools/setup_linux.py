@@ -46,26 +46,85 @@ def digest(path):
         return hashlib.file_digest(f, 'sha256').hexdigest()
 
 
+def config_path(value, key, workspace=None):
+    if not isinstance(value, (str, Path)) or not str(value).strip():
+        raise ValueError(f'{key}: provide a non-empty path')
+    p = Path(value).expanduser()
+    if not p.is_absolute():
+        if workspace is None:
+            raise ValueError(f'{key}: use an absolute path, ~, or set workspace for relative paths')
+        p = workspace/p
+    if any(ch in str(p) for ch in '\n\r\0:"\\'):
+        raise ValueError(f'{key}: unsupported path character (spaces are supported)')
+    return p.resolve()
+
+
+def enabled_ttwvr_mod(instance, profile):
+    listing = instance/'profiles'/profile/'modlist.txt'
+    if not listing.is_file():
+        raise ValueError(f'create the {profile} profile in Fluorine first: {listing}')
+    candidates = []
+    for line in listing.read_text(encoding='utf-8-sig').splitlines():
+        if not line.startswith('+'):
+            continue
+        name = line[1:]
+        if Path(name).name != name or name in ('.', '..'):
+            raise ValueError(f'invalid enabled mod name: {name}')
+        mod = instance/'mods'/name
+        if (mod/'NVSE/Plugins/TTWVR.dll').is_file():
+            candidates.append(mod)
+    if len(candidates) != 1:
+        names = ', '.join(p.name for p in candidates) or 'none'
+        raise ValueError('enable exactly one original TTWVR mod in ' + profile +
+                         f', or set mod explicitly; found: {names}')
+    return candidates[0]
+
+
 def read_config(path):
     raw = json.loads(Path(path).read_text())
-    for key in REQUIRED:
-        if not raw.get(key):
-            raise ValueError(f'missing setup.json path: {key}')
+    if not isinstance(raw, dict):
+        raise ValueError('setup.json must contain a JSON object')
     c = dict(raw)
-    for key in (*REQUIRED, 'xrizer', 'xr_runtime', 'dxvk_dir', 'compiler32', 'compiler64'):
-        default = {'xrizer': '/opt/xrizer', 'xr_runtime': '/usr/share/openxr/1/openxr_wivrn.json'}.get(key)
-        value = raw.get(key, default)
-        if value is not None:
-            p = Path(value).expanduser()
-            if not p.is_absolute():
-                raise ValueError(f'{key}: use an absolute path')
-            if any(ch in str(p) for ch in '\n\r\0:"\\'):
-                raise ValueError(f'{key}: unsupported path character (spaces are supported)')
-            c[key] = p.resolve()
     c.setdefault('profile', 'TTW - VR')
     c.setdefault('executable', 'Tale of Two Wastelands')
-    if Path(c['profile']).name != c['profile'] or c['profile'] in ('.', '..'):
+    profile = c['profile']
+    if not isinstance(profile, str) or not profile.strip() or Path(profile).name != profile or profile in ('.', '..'):
         raise ValueError('profile must be a single directory name')
+    workspace = config_path(raw['workspace'], 'workspace') if 'workspace' in raw else None
+    if workspace:
+        c['workspace'] = workspace
+        for key, folder in (('instance','instance'), ('config_home','config'),
+                            ('data_home','share'), ('fixes','linux-fixes')):
+            c.setdefault(key, workspace/folder)
+    if not c.get('instance'):
+        raise ValueError('set workspace, or supply the explicit instance path')
+    c['instance'] = config_path(c['instance'], 'instance', workspace)
+    if not c.get('proton') or not c.get('prefix'):
+        settings = c['instance']/'ModOrganizer.ini'
+        if not settings.is_file():
+            raise ValueError(f'prepare the native Fluorine instance first: {settings}')
+        cp = ini(settings)
+        for key, setting in (('proton','proton_path'), ('prefix','prefix_path')):
+            if not c.get(key):
+                value = unqt(cp.get('fluorine',setting,fallback=''))
+                if not value:
+                    raise ValueError(f'select {setting} in the Fluorine instance, or set {key} explicitly')
+                # Native Fluorine stores absolute paths, independent of setup.json.
+                c[key] = config_path(value, setting)
+    if c.get('steam_library'):
+        c['steam_library'] = config_path(c['steam_library'], 'steam_library', workspace)
+        c.setdefault('steam_runtime', c['steam_library']/'steamapps/common/SteamLinuxRuntime_4')
+    if not c.get('mod'):
+        c['mod'] = enabled_ttwvr_mod(c['instance'], profile)
+    for key in REQUIRED:
+        if not c.get(key):
+            hint = ' (or set steam_library)' if key == 'steam_runtime' else ''
+            raise ValueError(f'missing setup.json path: {key}{hint}')
+    c.setdefault('xrizer', '/opt/xrizer')
+    c.setdefault('xr_runtime', '/usr/share/openxr/1/openxr_wivrn.json')
+    for key in (*REQUIRED, 'xrizer', 'xr_runtime', 'dxvk_dir', 'compiler32', 'compiler64'):
+        if c.get(key) is not None:
+            c[key] = config_path(c[key], key, workspace)
     return c
 
 
@@ -265,7 +324,9 @@ def check(c):
             if not shutil.which(command):
                 errors.append(f'install build prerequisite: {command}')
         notes.append('prepare/apply will build the pinned DXVK source with both patches')
-    notes += [f'VR profile: {c["instance"]}/profiles/{c["profile"]}',
+    notes += [f'TTWVR mod: {c["mod"]}',
+              f'Proton directory: {c["proton"]}',
+              f'VR profile: {c["instance"]}/profiles/{c["profile"]}',
               f'Private prefix: {c["prefix"]}',
               f'Patch output/backups: {c["fixes"]}',
               'Original mod, saves and installed Proton are retained.',

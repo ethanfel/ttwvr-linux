@@ -1,15 +1,5 @@
 {
-  "instance": "/path/to/ttwvr/instance",
-  "mod": "/path/to/ttwvr/instance/mods/Tale of Two Realities 1.1.4",
-  "manager": "/path/to/fluorine-manager/fluorine-manager",
-  "proton": "/path/to/proton-cachyos-wineopenxr-fix",
-  "prefix": "/path/to/ttwvr/compat/pfx",
-  "steam_runtime": "/path/to/steamapps/common/SteamLinuxRuntime_4",
-  "config_home": "/path/to/ttwvr/config",
-  "data_home": "/path/to/ttwvr/share",
-  "fixes": "/path/to/ttwvr/linux-fixes",
-  "xrizer": "/opt/xrizer",
-  "xr_runtime": "/usr/share/openxr/1/openxr_wivrn.json",
-  "profile": "TTW - VR",
-  "executable": "Tale of Two Wastelands"
+  "workspace": "~/Games/ttwvr",
+  "manager": "apps/fluorine-manager/fluorine-manager",
+  "steam_library": "~/.local/share/Steam"
 }
