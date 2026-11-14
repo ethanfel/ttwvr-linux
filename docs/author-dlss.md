@@ -11,7 +11,9 @@ The author path is now the primary Linux workflow. Use the
 [prepared-install tool](installation.md), which includes the companion fixes.
 The detailed measurements below record the 1.1.3 isolated tests. The user later
 confirmed good WiVRn output at 200% / DLSS Quality. The [1.1.4 port](ttwvr-1.1.4.md)
-adds separate stereo/movement validation; its physical confirmation is pending.
+adds separate stereo/movement validation, followed by user-confirmed NMC/WiVRn
+play. The [1.1.5 port](ttwvr-1.1.5.md) also passed isolated checks; its physical
+headset confirmation remains pending.
 Custom NR/DLAA/SR/FG are archived and disabled on this path.
 
 ## Diagnosis
@@ -63,8 +65,8 @@ rewinds.
 
 ## Build a candidate without installing
 
-Use the exact original `TTWVR.dll` from your own 1.1.3 or 1.1.4 archive.
-The offsets and measurements below describe 1.1.3; see the [1.1.4 audit](ttwvr-1.1.4.md).
+Use the exact original `TTWVR.dll` from your own 1.1.3, 1.1.4 or 1.1.5 archive.
+The offsets and measurements below describe 1.1.3; see the [1.1.4 audit](ttwvr-1.1.4.md) and [1.1.5 audit](ttwvr-1.1.5.md).
 
 ```sh
 python3 tools/experimental_author_dlss.py original/TTWVR.dll test/TTWVR.dll

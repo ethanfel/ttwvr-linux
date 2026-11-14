@@ -180,7 +180,7 @@ Extract **FalloutNVPatcher** from the Proton patcher download into **game**, bes
 
 1. Click **Profiles** at the top of Fluorine. Select **TTW - Flat**, click **Duplicate**, and name the copy **TTW - VR**.
 2. Select **TTW - VR**.
-3. Install the complete original **TTWVR 1.1.4** archive as its own mod. Keep its helper files and runtimes together.
+3. Install the complete original **TTWVR 1.1.5** archive as its own mod. Keep its helper files and runtimes together.
 4. Enable that mod only in **TTW - VR**. Exactly one original TTWVR mod should be enabled there.
 5. Close Fluorine.
 

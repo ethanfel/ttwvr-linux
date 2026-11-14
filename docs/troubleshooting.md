@@ -8,7 +8,7 @@
 | Configuration finds no TTWVR mod or several candidates | Enable exactly one original TTWVR mod in the selected VR profile, or set `mod` explicitly. The complete archive must provide `NVSE/Plugins/TTWVR.dll`. |
 | Missing Proton/prefix setting | Finish the native instance preparation; the tool reads `[fluorine] proton_path` and `prefix_path` from its ModOrganizer.ini. |
 | Preflight says unsupported/modified Proton | Use the exact tested build. Steam Experimental updates can invalidate both bridge and renderer hashes; do not bypass guards. |
-| Preflight rejects TTWVR | Point `mod` at the complete original 1.1.3/1.1.4 mod, not an already patched copy or mixed-version files. |
+| Preflight rejects TTWVR | Point `mod` at the complete original 1.1.3/1.1.4/1.1.5 mod, not an already patched copy or mixed-version files. |
 | Existing transaction/destination mod | This tool does not overwrite previous patch deployments. Roll back first; retain backups, then use a fresh fixes directory and original mod. A retained copied mod can be moved aside while disabled. |
 | Missing compiler/build command | Install the listed distro prerequisite. MinGW must target i686 with POSIX threads. |
 | DXVK build fails | Inspect the first compiler error. After correcting prerequisites, remove only the reported incomplete dependency source/build directories and retry `prepare`; the prepared game has not been activated. |

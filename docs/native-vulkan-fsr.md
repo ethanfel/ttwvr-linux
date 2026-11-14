@@ -2,7 +2,7 @@
 
 For the current installation, use the [prepared-install tool](installation.md).
 It includes this repair together with author DLSS and the required Linux
-companions. Both exact 1.1.3 and [1.1.4](ttwvr-1.1.4.md) builds are supported.
+companions. Exact 1.1.3, [1.1.4](ttwvr-1.1.4.md) and [1.1.5](ttwvr-1.1.5.md) builds are supported.
 The detailed experiments below record the 1.1.3 diagnosis and validation.
 
 The TTWVR 1.1.3 renderer now reaches **embedded FSR 3.1.4 in the 32-bit game**,

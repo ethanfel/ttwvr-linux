@@ -29,12 +29,12 @@ You supply the games and mod downloads. No game, TTWVR or NVIDIA DLLs are redist
 | Component | Supported / tested |
 |---|---|
 | Mod manager | Native Fluorine **0.4.1**, FUSE backend |
-| TTWVR | Exact supplied **1.1.4** and **1.1.3** archives |
+| TTWVR | Exact supplied **1.1.5**, **1.1.4** and **1.1.3** archives |
 | Proton | Supplied CachyOS WineOpenXR-fix build or exact Experimental; [downloads and versions](docs/requirements.md#proton) |
 | Upscaling | Author's DLSS helper and native Vulkan FSR |
 | Headset connection | WiVRn; validation used Quest 3 and RTX 5090 |
 
-Both-eye rendering, consecutive frames and movement were checked. The user confirmed good headset output at **200% / DLSS Quality** on 1.1.3. The 1.1.4 and CachyOS runs passed isolated GPU checks; physical confirmation of that combination remains pending. Other GPUs, all mod features and long sessions have not all been validated.
+Both-eye rendering, consecutive frames and movement were checked. The user confirmed good headset output with the author renderer and later played 1.1.4 through CachyOS/WiVRn with NMC. The [1.1.5 update](docs/ttwvr-1.1.5.md) passed isolated DLSS/FSR GPU checks; physical 1.1.5 confirmation remains pending. Other GPUs, all mod features and long sessions have not all been validated.
 
 [Compatibility and limits](docs/compatibility.md) ·
 [DLSS evidence](docs/author-dlss.md) · [FSR evidence](docs/native-vulkan-fsr.md)

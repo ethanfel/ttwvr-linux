@@ -23,7 +23,7 @@ author runtimes stay selected. The original TTWVR menu remains in use.
 
 [Compiler evidence](simulated-vr.md) · [OpenXR bridge](openxr-layers.md) ·
 [Pool diagnosis](dxvk-pools.md) · [Native FSR/fences](native-vulkan-fsr.md) ·
-[DLSS output diagnosis](author-dlss.md) · [1.1.4 exact-build port](ttwvr-1.1.4.md)
+[DLSS output diagnosis](author-dlss.md) · [1.1.5 exact-build port](ttwvr-1.1.5.md) · [1.1.4 audit](ttwvr-1.1.4.md)
 
 ## Dependency build
 

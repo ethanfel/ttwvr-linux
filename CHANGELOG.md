@@ -1,5 +1,11 @@
 # Changes
 
+## TTWVR 1.1.5 compatibility — 2026-11-14
+
+- Add exact-build 1.1.5 renderer, author DLSS and native Vulkan FSR patches, helper preflight hashes and status-counter locations. Retain identical 1.1.3/1.1.4 outputs and rejection of unknown binaries.
+- Validate saved gameplay with NMC, consecutive stereo images, translated-head output and successful per-eye NGX evaluations; publish [the audit and evidence](docs/ttwvr-1.1.5.md). Physical 1.1.5 WiVRn confirmation remains pending.
+- Update preparation, installation and Discord resource guides. Preserve existing VR settings, NMC and saves when upgrading; retain the earlier mod for rollback.
+
 ## Shorter configuration and illustrated setup guide — 2026-11-13
 
 - Reduce the standard setup file to workspace, manager and Steam-library paths. Derive workspace folders and read the selected Proton, prefix and enabled TTWVR mod from the native instance.

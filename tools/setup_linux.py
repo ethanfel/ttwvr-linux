@@ -21,7 +21,7 @@ import tempfile
 import urllib.request
 
 from experimental_author_dlss import build, BUILDS
-from experimental_native_fsr import SOURCE_SHA256_114
+from experimental_native_fsr import SOURCE_SHA256_114, SOURCE_SHA256_115
 from patch_openxr_bridge import patch_bytes
 from proton_builds import identify_proton
 
@@ -232,16 +232,19 @@ def check(c):
     def check_mod():
         h = digest(plugin)
         if h not in BUILDS:
-            raise ValueError('install the original, unpatched TTWVR 1.1.3 or 1.1.4 archive first')
-        c['version'] = '1.1.4' if h == SOURCE_SHA256_114 else '1.1.3'
+            raise ValueError('install the original, unpatched TTWVR 1.1.3, 1.1.4 or 1.1.5 archive first')
+        c['version'] = '1.1.5' if h == SOURCE_SHA256_115 else '1.1.4' if h == SOURCE_SHA256_114 else '1.1.3'
         c['new_mod'] = c['instance']/'mods'/('TTWVR Linux ' + c['version'])
         if c['new_mod'].exists():
             raise ValueError(f'new mod destination already exists: {c["new_mod"]}')
         hashes = {
             'ttwvr_dxvk_d3d9.dll': 'c7f64a18da8fd5f455e9453ade4abcfaef9dec63cc1cb80a89215a12b6131cf2',
             'nvngx_dlss.dll': '3975567b8943c53acce397f2b72380092f84f162d00b0d2c7d08a1025c563983',
-            'ttwvr_dlss_host.exe': ('194676411d6161b4420d753cfae20f9d1b308d0b99a8b5226ad9ef2e9f44ef38'
-                if c['version']=='1.1.4' else 'c9122a1b6464f04ecdcd9760f1c7a8593ae69ea9e6814ad6e82a3f9af2b73b10'),
+            'ttwvr_dlss_host.exe': {
+                '1.1.3': 'c9122a1b6464f04ecdcd9760f1c7a8593ae69ea9e6814ad6e82a3f9af2b73b10',
+                '1.1.4': '194676411d6161b4420d753cfae20f9d1b308d0b99a8b5226ad9ef2e9f44ef38',
+                '1.1.5': 'd8d0aaf106b17a3a29193a5e23ed0dccfc59b0772ee06bf1c64df80d2d769bc8',
+            }[c['version']],
         }
         for name, expected in hashes.items():
             hash_is(c['mod']/'NVSE/Plugins/TTWVR'/name, expected)

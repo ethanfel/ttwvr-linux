@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Ethanfel and contributors
 # SPDX-License-Identifier: GPL-3.0-only
-"""Read TTWVR 1.1.3/1.1.4 upscaler counters from a specified Linux/Wine process.
+"""Read TTWVR 1.1.3/1.1.4/1.1.5 upscaler counters from a specified Linux/Wine process.
 
 Read-only diagnostic. These are the original status-panel counters, not proof
 of valid or fresh pixels. Capture both eyes and test motion separately.
@@ -22,7 +22,9 @@ SUPPORTED = {
 }
 # 1.1.4 status formatter and resource-state instructions independently reviewed.
 BUILD_114 = {'7eb72860d209d9b9bdd774607220ee63323367aa9fa525f6eb1b23184f30f91e', 'd35cc677ea792bbfbb21936656cfdb2d4bc023a1a4e757b79eb8cb31a2e00616', 'e54dccb5e29e1361d36dd9f9a7ee23294b07663f29690cabbaff7168cbd62413', '216e74fae62df07f7b1cea9857097288f1d946b510b5d6bb26effb368efcf127'}
-SUPPORTED |= BUILD_114
+# 1.1.5 status/resource references retain their layout at the new global base.
+BUILD_115 = {'19a09590e5a76ca8d93394180ff320561a7390a292d36b9021dd2184ea12d5d1', '78dddb7294cca8b21bc9cec6bf8950c956d536946bb9520cca8cbe4b9d48a48a', 'e14567bc1c7d183130f902f9489b8cffe6269de06eea0d79bf8d1d3098c595b1', '4c6b2d9cccf0adffd3376a4a7eadffccc5f32c90537922064c35c2bf3c65dfdf'}
+SUPPORTED |= BUILD_114 | BUILD_115
 # Independently checked against the supplied 1.1.3 status formatter.
 COUNTERS = {
     "render_width": 0x19987B4, "render_height": 0x19987B8,
@@ -55,7 +57,7 @@ def inspect(pid):
     digest = hashlib.sha256(dll.read_bytes()).hexdigest()
     if digest not in SUPPORTED:
         raise ValueError("unsupported mapped DLL hash; refusing unverified offsets")
-    shift = 0x64978 if digest in BUILD_114 else 0
+    shift = 0x13e200 if digest in BUILD_115 else 0x64978 if digest in BUILD_114 else 0
     fd = os.open(proc / "mem", os.O_RDONLY)
     try:
         def read(rva, size):

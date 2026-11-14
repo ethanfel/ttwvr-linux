@@ -40,7 +40,7 @@ The tool deliberately refuses to overwrite an existing deployment.
 1. Close Fallout and Fluorine.
 2. Keep your old prefix, rollback records and current settings backed up.
 3. Run the recorded rollback above.
-4. Move the retained, disabled **TTWVR Linux 1.1.4** (or 1.1.3) mod folder outside `instance/mods`.
+4. Move the retained, disabled **TTWVR Linux 1.1.5**, **1.1.4** or **1.1.3** mod folder outside `instance/mods`.
 5. Install and enable the complete supported **original TTWVR** mod in the VR profile.
 6. Add a fresh output path to setup.json, for example `"fixes": "linux-fixes-new"`.
 7. Run `check`, then `apply`, following [the installation guide](installation.md#4-check-and-apply).

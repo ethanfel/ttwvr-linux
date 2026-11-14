@@ -10,7 +10,7 @@
 ## Before you start
 
 - [ ] Native **Fluorine 0.4.1** can launch your **TTW - Flat** profile; utilities pass, and a save reloads.
-- [ ] A **TTW - VR** profile has one complete, original **TTWVR 1.1.4** or **1.1.3** mod enabled.
+- [ ] A **TTW - VR** profile has one complete, original **TTWVR 1.1.5**, **1.1.4** or **1.1.3** mod enabled.
 - [ ] Fluorine uses a private prefix and one of the [supported Proton builds](requirements.md#proton).
 - [ ] WiVRn connects to your headset, and the [Linux prerequisites](requirements.md#linux-packages) are installed.
 

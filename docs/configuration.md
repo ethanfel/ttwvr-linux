@@ -45,7 +45,7 @@ An explicit mod path must name the installed original mod under `instance/mods`,
   "manager": "/opt/fluorine-manager/fluorine-manager",
   "steam_library": "/games/SteamLibrary",
   "instance": "my-ttw-instance",
-  "fixes": "linux-fixes-114",
+  "fixes": "linux-fixes-115",
   "xrizer": "apps/xrizer"
 }
 ```

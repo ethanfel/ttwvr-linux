@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Ethanfel and contributors
 # SPDX-License-Identifier: GPL-3.0-only
-"""Create an EXPERIMENTAL TTWVR 1.1.3/1.1.4 native-Vulkan-FSR candidate.
+"""Create an EXPERIMENTAL TTWVR 1.1.3/1.1.4/1.1.5 native-Vulkan-FSR candidate.
 
 Reads only the exact original DLL, writes a NEW file, and never installs it.
 Includes bundled-DXVK activation, Wine Vulkan lookup, missing FSR startup,
@@ -133,14 +133,67 @@ PATCHES_114 = (('Initialize embedded Vulkan FSR', 5452443, 'e846f0aeff', 'e9c044
  ('VkBuffer / GetResource', 7565925, '8b8b10390000', 'e916f8ffff90'))
 
 
+# 1.1.5 locations, branch destinations, status fields and trampoline padding
+# independently checked; no modified range intersects a PE relocation.
+SOURCE_SHA256_115 = 'e14567bc1c7d183130f902f9489b8cffe6269de06eea0d79bf8d1d3098c595b1'
+PATCHED_SHA256_115 = '4c6b2d9cccf0adffd3376a4a7eadffccc5f32c90537922064c35c2bf3c65dfdf'
+PATCHES_115 = (('Initialize embedded Vulkan FSR', 5626923, 'e8004dacff', 'e980420300'),
+ ('FSR startup trampoline',
+  5840560,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  'e80badffffe800000000598881764b5401e86a0aa9ffe965bdfcff'),
+ ('VkImage',
+  5829184,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '8b8c24dc0000008988a4000000c780a0000000564b36345f5e81c4c8000000c3'),
+ ('VkImage', 5829163, '5f5e81c4c8000000', 'e910000000909090'),
+ ('VkImage',
+  5829648,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '31c081baa0000000564b363475068b82a400000089443e04e95b4b1d00'),
+ ('VkImage', 7749504, 'c7443e0400000000', 'e98bb4e2ff909090'),
+ ('VkPipeline',
+  7738944,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '83c40c8b8c240c010000898f548e0000c787508e0000564b503431c0e97bffffff'),
+ ('VkPipeline', 7738839, '83c40c33c0', 'e964000000'),
+ ('VkPipeline',
+  7738992,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '31c981bbd48e0000564b503475068b8bd88e000051ffb390000000e932410000'),
+ ('VkPipeline', 7755706, '6a00ffb390000000', 'e9b1beffff909090'),
+ ('VkPipeline',
+  7739040,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '31d281bb508e0000564b503475068b93548e00006a005251e9fb120000'),
+ ('VkPipeline', 7743923, '6a006a0051', 'e9e8ecffff'),
+ ('VkBuffer / GetResource',
+  7747072,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '8b873c3900008981a4000000c781a0000000564b36348b8738390000e9e7fdffff'),
+ ('VkBuffer / GetResource', 7746562, '8b8738390000', 'e9f901000090'),
+ ('VkBuffer / GetResource',
+  7747120,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '5031c081bc2410010000564b363475078b84241401000089460458e98a200000'),
+ ('VkBuffer / GetResource', 7755475, 'c7460400000000', 'e958dfffff9090'),
+ ('VkBuffer / GetResource',
+  7747168,
+  'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
+  '8b8b103900008b4411048987a4000000c787a0000000564b3634e9cc070000'),
+ ('VkBuffer / GetResource', 7749189, '8b8b10390000', 'e916f8ffff90'))
+
+
 def build(original):
     digest = hashlib.sha256(original).hexdigest()
     if digest == SOURCE_SHA256:
         renderer, loader, patches, expected = 0x513f2c, 0xa3df70, PATCHES, PATCHED_SHA256
     elif digest == SOURCE_SHA256_114:
         renderer, loader, patches, expected = 0x52618c, 0xa51fd0, PATCHES_114, PATCHED_SHA256_114
+    elif digest == SOURCE_SHA256_115:
+        renderer, loader, patches, expected = 0x550b4c, 0xa83870, PATCHES_115, PATCHED_SHA256_115
     else:
-        raise ValueError("unsupported TTWVR.dll; need the exact original 1.1.3 or 1.1.4 archive build")
+        raise ValueError("unsupported TTWVR.dll; need the exact original 1.1.3, 1.1.4 or 1.1.5 archive build")
     result = bytearray(original)
     changes = [("Bundled DXVK", renderer, BEFORE, AFTER),
                ("Wine Vulkan lookup", loader, LOADER_BEFORE, LOADER_AFTER)]

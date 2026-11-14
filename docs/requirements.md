@@ -12,7 +12,7 @@
 | TTW utilities and INI presets | [The Best of Times: Essential Mods](https://thebestoftimes.moddinglinked.com/essentials.html) | Include the separately listed INI downloads. |
 | FNV4GB for Proton | [Nexus files](https://www.nexusmods.com/newvegas/mods/62552?tab=files) | The **Proton** download; tested version 1.5. |
 | Fluorine | [Official 0.4.1 release](https://github.com/SulfurNitride/Fluorine-Manager/releases/tag/v0.4.1) | Native Linux x86_64 archive. |
-| TTWVR | [Author's download thread](https://discord.com/channels/747967102895390741/1560413111423344730), [community invite](https://discord.com/invite/ttwvr) | Complete original **1.1.4** archive; exact supplied **1.1.3** is also supported. |
+| TTWVR | [Author's download thread](https://discord.com/channels/747967102895390741/1560413111423344730), [community invite](https://discord.com/invite/ttwvr) | Complete original **1.1.5** archive; exact supplied **1.1.4** and **1.1.3** are also supported. |
 | WiVRn | [WiVRn](https://github.com/WiVRn/WiVRn) | Install the desktop server and headset client; verify they connect. |
 | xrizer | [Download and installation](https://github.com/Supreeeme/xrizer#download--usage) | Extract the runtime; note its folder for setup.json. Our launcher selects it without changing global runtime registration. |
 
