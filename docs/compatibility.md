@@ -12,7 +12,7 @@
 | Container / startup probe | Steam Linux Runtime 4 / xrizer `0.6.r5.g63fc7eb`, 64-bit |
 | Native manager | Fluorine 0.4.1, FUSE |
 | TTW / xNVSE | 3.4 / 6.4.9 |
-| TTWVR | Supplied 1.1.3, 1.1.4 and 1.1.5 archives, exact hashes |
+| TTWVR | Supplied 1.1.3, 1.1.4, 1.1.5 and 1.1.6 archives, exact hashes |
 | DXVK patch source | `cf0a0d90f8965147741ad17dcd0b263817572ab3`, mapped-pool and opaque-fence changes |
 
 ## Current status
@@ -26,6 +26,7 @@
 | Resolution slider | 1.1.3: 100/150/200%; outputs 2944×2208 / 4480×3360 / 5888×4416 in this runtime configuration |
 | Physical author-path image quality | User confirmed good 200% DLSS Quality output with 1.1.3; no controlled sustained headset benchmark |
 | 1.1.4 port | DLSS Quality 200% and FSR Quality 100% passed isolated stereo/movement checks; successful NGX calls for DLSS; subsequent NMC/WiVRn play confirmed by the user |
+| 1.1.6 port | DLSS Quality 200% and FSR Quality 100% passed isolated consecutive stereo/movement checks with NMC; per-eye NGX success; physical 1.1.6 testing pending |
 | 1.1.5 port | DLSS Quality 200% and FSR Quality 100% passed isolated stereo/movement checks with NMC; successful alternating NGX calls; physical 1.1.5 confirmation pending |
 | Original menu/settings | Preserved; 1.1.4 adds Turn Speed and Loot Menu keys. Every setting's behavior has not been exhaustively tested. |
 | CachyOS combined setup | Exact supplied build: native Fluorine save load and live DLSS evaluations passed; original stereo DLSS/FSR checks passed; subsequent 1.1.4/NMC WiVRn play confirmed by the user |
@@ -41,6 +42,7 @@ The launcher does not replace global runtime registration.
 
 ## Evidence
 
+- [1.1.6 patch audit, captures and timing scope](ttwvr-1.1.6.md)
 - [1.1.5 patch hashes, stereo captures and timing scope](ttwvr-1.1.5.md)
 
 - [CachyOS source, combined patch workflow and validation](cachyos-openxr-validation.md)

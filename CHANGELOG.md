@@ -1,5 +1,11 @@
 # Changes
 
+## TTWVR 1.1.6 compatibility — 2026-11-15
+
+- Support the exact 1.1.6 archive with relocated renderer/DLSS/FSR repairs, helper preflight hashes and verified status fields. Preserve all prior patch outputs.
+- Validate loaded saves with NMC, consecutive stereo images, simulated head translation and successful per-eye NGX evaluations. Publish [audit and evidence](docs/ttwvr-1.1.6.md); physical 1.1.6 WiVRn testing is pending.
+- Update installation and Discord resource guides. Preserve user settings, saves, calibration and the existing Steam command.
+
 ## TTWVR 1.1.5 compatibility — 2026-11-14
 
 - Add exact-build 1.1.5 renderer, author DLSS and native Vulkan FSR patches, helper preflight hashes and status-counter locations. Retain identical 1.1.3/1.1.4 outputs and rejection of unknown binaries.

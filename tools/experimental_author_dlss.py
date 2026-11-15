@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Ethanfel and contributors
 # SPDX-License-Identifier: GPL-3.0-only
-"""Build an isolated TTWVR 1.1.3/1.1.4/1.1.5 author-DLSS compatibility candidate.
+"""Build an isolated TTWVR 1.1.3/1.1.4/1.1.5/1.1.6 author-DLSS compatibility candidate.
 
 Accepts only the exact original plugin. Includes bundled-renderer activation,
 Wine Vulkan lookup and full-size shared output instead of unavailable direct
@@ -15,7 +15,7 @@ import json
 from pathlib import Path
 
 from experimental_ttwvr_renderer import BEFORE, AFTER, LOADER_BEFORE, LOADER_AFTER
-from experimental_native_fsr import SOURCE_SHA256, SOURCE_SHA256_114, SOURCE_SHA256_115, build as build_native_fsr
+from experimental_native_fsr import SOURCE_SHA256, SOURCE_SHA256_114, SOURCE_SHA256_115, SOURCE_SHA256_116, build as build_native_fsr
 
 # This indirect capability query is a two-byte instruction with no relocation.
 # Preserve the later absolute-address store and its existing relocation entry.
@@ -30,6 +30,9 @@ EXPECTED_DLSS_SHA256 = '8384261c4b5fafd90a7fe860ccb7e1e24953a653c2fdbeafb8bd46ab
 # Exact-build renderer/loader/capability locations; see the versioned audits.
 # The capability instructions are outside PE relocation entries.
 BUILDS = {
+    SOURCE_SHA256_116: (0x58388c, 0xabaf70, 0x58f9b2,
+                        '67fbe92416420840763c0264d697e42826661f6e77685f28856c633a71766ff9',
+                        '63712922499b2155a3d2c6f54abbdfc1eaf95d08712b937c6276d6a8ae0d774d'),
     SOURCE_SHA256_115: (0x550b4c, 0xa83870, 0x55cc72,
                         '19a09590e5a76ca8d93394180ff320561a7390a292d36b9021dd2184ea12d5d1',
                         '78dddb7294cca8b21bc9cec6bf8950c956d536946bb9520cca8cbe4b9d48a48a'),
@@ -44,7 +47,7 @@ BUILDS = {
 def build(original, native_fsr=False):
     digest = hashlib.sha256(original).hexdigest()
     if digest not in BUILDS:
-        raise ValueError('need the exact original TTWVR 1.1.3, 1.1.4 or 1.1.5 plugin')
+        raise ValueError('need the exact original TTWVR 1.1.3, 1.1.4, 1.1.5 or 1.1.6 plugin')
     renderer, loader, capability, dlss_hash, combined_hash = BUILDS[digest]
     if native_fsr:
         result = build_native_fsr(original)
