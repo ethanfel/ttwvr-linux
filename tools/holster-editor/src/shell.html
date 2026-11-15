@@ -1,0 +1,74 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<html lang="en" data-theme="green">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Field Kit · TTWVR Holster Editor</title>
+<style>{{STYLE}}</style>
+</head>
+<body>
+<div class="app">
+  <header class="masthead">
+    <div class="identity">
+      <svg class="emblem" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="25"/><path d="M17 21h26v24H17zM23 21v-6h14v6M30 26v14M23 33h14"/></svg>
+      <div><p class="eyebrow">PERSONAL EQUIPMENT TERMINAL <span class="serial">// 08</span></p><h1>FIELD KIT<span class="cursor">_</span></h1><p class="subtitle">TTWVR HOLSTER CONFIGURATOR</p></div>
+    </div>
+    <div class="header-controls"><span class="local-badge"><i></i> OFFLINE UTILITY</span><div class="themes" role="group" aria-label="Display color"><button type="button" id="green" aria-pressed="true">GREEN</button><button type="button" id="amber" aria-pressed="false">AMBER</button></div><button type="button" class="icon-button" id="help" aria-label="Open instructions">?</button></div>
+  </header>
+
+  <section class="file-bar" aria-label="Configuration file">
+    <div class="file-info"><span class="file-icon" aria-hidden="true">▤</span><div><p class="eyebrow" id="file-kind">CONFIGURATION FILE</p><p id="filename">No state file loaded</p></div><span id="file-badge" class="badge">STANDBY</span></div>
+    <div class="file-actions"><button type="button" id="demo" class="quiet">Try a sample</button><button type="button" id="load">↥ &nbsp; Load state file</button><button type="button" id="export" class="primary" disabled>↧ &nbsp; Export .state</button><input id="file-input" type="file" accept=".state,.txt,.bak,.ini" hidden></div>
+  </section>
+  <div id="notice" class="notice" role="status" aria-live="polite">Load <strong>TTWVR.state</strong> to configure your holsters. Your file stays on this device.</div>
+
+  <main class="workspace" id="drop-zone">
+    <section class="slots-panel" aria-labelledby="slots-title"><div class="panel-title"><h2 id="slots-title">HOLSTER SLOTS</h2><span id="enabled-count">— / 8</span></div><div id="slot-list" class="slot-list"></div><div class="slot-footer"><span class="dot-key"><i></i> ENABLED</span><span>01–08 · GAME HOTKEYS</span></div></section>
+
+    <section class="map-panel" aria-labelledby="map-title">
+      <div class="panel-title"><h2 id="map-title">ANCHOR MAP</h2><span>FRONT VIEW</span></div>
+      <div class="body-view">
+        <div class="map-corner top-left" aria-hidden="true">BODY / 01<br>ANCHOR SELECT</div><div class="map-corner top-right" aria-hidden="true">R <span>│</span> L</div>
+        <svg id="body-map" viewBox="0 0 440 540" role="group" aria-label="Choose a body anchor for the selected holster">
+          <defs><pattern id="grid" width="22" height="22" patternUnits="userSpaceOnUse"><path d="M22 0H0V22" fill="none" stroke="currentColor" stroke-width=".4"/></pattern></defs>
+          <rect x="40" y="10" width="360" height="500" fill="url(#grid)" class="map-grid"/>
+          <path class="guide-line" d="M220 12V510M50 260H390"/>
+          <g class="figure-fill"><path d="M201 102V121L163 130L144 142L125 185L112 211L95 254L94 272L106 278L119 263L137 225L148 204L160 177L169 210L172 248L166 274L176 321L176 381L180 433L178 481L168 499L169 506H204L211 482L214 435L215 383L216 326L220 292L224 326L225 383L226 435L229 482L236 506H271L272 499L262 481L260 433L264 381L264 321L274 274L268 248L271 210L280 177L292 204L303 225L321 263L334 278L346 272L345 254L328 211L315 185L296 142L277 130L239 121V102"/><path d="M198 58Q220 42 242 58L248 76L244 104L233 117H207L196 104L192 76Z"/></g>
+          <g class="figure-detail"><path d="M197 76H243M206 95H234M201 123L220 142L239 123M165 149L220 164L275 149M170 196L220 209L270 196M172 238L220 243L268 238M170 254H270M172 275L220 291L268 275M179 326L211 329M229 329L261 326M177 381L214 384M226 384L263 381M180 430H213M227 430H260M179 482H211M229 482H261M124 195L144 206M296 206L316 195M103 242L122 251M318 251L337 242M209 142V236M231 142V236"/><path d="M213 254V272H227V254"/></g>
+          <g id="anchor-points"></g><g id="slot-markers" aria-hidden="true"></g>
+          <text x="60" y="526" class="map-direction">YOUR RIGHT</text><text x="380" y="526" text-anchor="end" class="map-direction">YOUR LEFT</text>
+        </svg>
+        <div id="map-empty" class="map-empty"><span>AWAITING CONFIGURATION</span><p>Drop a state file here<br>or load one above.</p></div>
+      </div>
+      <p class="map-caption" id="map-caption">Choose a slot, then click its body anchor.</p><p class="map-note">Schematic anchors · does not simulate your avatar’s pose or offsets.</p>
+    </section>
+
+    <section class="editor-panel" aria-labelledby="editor-title">
+      <div class="panel-title"><h2 id="editor-title">SLOT DETAILS</h2><button type="button" class="text-button" id="reset-slot" disabled>Reset slot</button></div>
+      <div class="selected-heading"><span class="large-slot" id="selected-number">01</span><div><p class="eyebrow">SELECTED HOLSTER</p><h3 id="selected-name">Awaiting file</h3></div><label class="switch" title="Enable this holster"><input type="checkbox" id="enabled" disabled><span></span><span class="sr-only">Enable selected holster</span></label></div>
+      <form id="editor-form" novalidate>
+        <fieldset id="editor-fields" disabled>
+          <label class="field-label" for="anchor">BODY ANCHOR</label><select id="anchor"></select>
+          <p class="field-help" id="anchor-help">Pick an anchor on the map or from this list.</p>
+          <div class="field-heading"><label class="field-label" for="radius">GRAB RADIUS</label><span class="unit">CM</span></div>
+          <div class="radius-row"><input type="range" id="radius-slider" min="5" max="45" step="0.1" value="6.5" aria-label="Grab radius in centimetres"><input type="number" id="radius" min="5" max="45" step="0.01" value="6.5" aria-label="Grab radius in centimetres"></div><div class="range-labels"><span>5 CM</span><span>45 CM</span></div>
+          <div class="field-heading offset-heading"><span class="field-label">ANCHOR-LOCAL OFFSET</span><span class="unit">CM</span></div>
+          <div class="coordinate-row" id="offset-fields"><label>X<input type="number" id="offset-x" step="0.01" value="0" aria-label="Anchor-local X offset in centimetres"></label><label>Y<input type="number" id="offset-y" step="0.01" value="0" aria-label="Anchor-local Y offset in centimetres"></label><label>Z<input type="number" id="offset-z" step="0.01" value="0" aria-label="Anchor-local Z offset in centimetres"></label></div>
+          <p class="field-help" id="offset-help">Axes follow the chosen bone. Changing the anchor keeps these offsets.</p>
+          <details id="fallback-details"><summary>Body-relative position <span>ADVANCED</span></summary><div class="coordinate-row"><label>FORWARD<input type="number" id="position-f" step="0.01" value="0" aria-label="Body-relative forward position in centimetres"></label><label>RIGHT<input type="number" id="position-r" step="0.01" value="0" aria-label="Body-relative right position in centimetres"></label><label>UP<input type="number" id="position-u" step="0.01" value="0" aria-label="Body-relative up position in centimetres"></label></div><p class="field-help">Automatic anchoring uses this saved position to choose a nearby bone when the avatar is ready. A fixed bone anchor drives the position afterward.</p></details>
+          <label class="visibility"><input type="checkbox" id="show" checked><span>Always show enabled holsters<small>Applies to all eight slots.</small></span></label>
+        </fieldset>
+      </form>
+      <div class="apply-note"><span class="eyebrow">AFTER EXPORT</span><p>Close the game, back up your current file, and replace it with the exported <b>TTWVR.state</b>. Check the placement in VR.</p></div>
+    </section>
+  </main>
+  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">TTWVR 1.1.5 / 1.1.6 <span>·</span> FIELD KIT 1.0</span></footer>
+  <p class="bottom-note">Independent community utility · Fallout-inspired interface · no game assets bundled</p>
+</div>
+<dialog id="instructions"><div class="dialog-heading"><p class="eyebrow">FIELD MANUAL</p><button type="button" id="close-help" class="icon-button" aria-label="Close instructions">×</button></div><h2>Configure. Export. Equip.</h2><ol><li><b>Quit Fallout and your mod manager.</b> This tool edits a copy; the game writes its state when it closes.</li><li><b>Load TTWVR.state.</b> It contains the numbered holsters and their anchors. A savegame or TTWVR.ini is a different file.</li><li><b>Choose a slot and an anchor.</b> Numbers match the game’s 1–8 hotkeys. Enable a slot, choose its grab radius, and adjust its local offset if needed.</li><li><b>Export the file.</b> Keep a backup of the original and replace it with the downloaded copy. Its filename must be <code>TTWVR.state</code>, without a browser-added “(1)”.</li><li><b>Launch the game and check the fit.</b> The map shows anchor locations schematically. Fine placement depends on your avatar and calibration.</li></ol><h3>Where is the file?</h3><p><b>Windows</b> — your Documents folder, which may be redirected to OneDrive:</p><code class="path">My Games\FalloutNV\TTWVR.state</code><p><b>Linux / Proton</b> — inside the prefix used by your VR profile:</p><code class="path">drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state</code><p>TTWVR stores this configuration in New Vegas’s <code>FalloutNV</code> folder. Place a holster in VR and quit once if the holster sections have not been created yet.</p><h3>What gets edited?</h3><p>Only holster records in <code>[SavedSlots]</code> and <code>[SavedSlotsOn]</code>. Other sections, encoding and line endings are preserved. This does not assign weapons to hotkeys or change a savegame.</p><p><b>Automatic</b> removes an explicit bone binding. TTWVR then chooses a nearby bone from the saved body-relative position. New explicit bindings start at a zero local offset; adjust the offset or finish placement in VR.</p><p class="field-help">Runs entirely offline. No installation, uploads, runtime libraries or network connection required. Original tool code: GPL-3.0-only.</p></dialog>
+<script>{{STATE}}</script>
+<script>{{APP}}</script>
+</body></html>

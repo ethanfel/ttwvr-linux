@@ -1,5 +1,11 @@
 # Changes
 
+## Portable holster editor — 2026-11-15
+
+- Add [Field Kit](tools/holster-editor/README.md), a standalone offline HTML editor for TTWVR 1.1.5/1.1.6 on Windows and Linux: eight slots, ten bone anchors, offsets, radius, enabled/visibility flags, undo/redo and green/amber themes.
+- Preserve unrelated state sections and original encoding/line endings; reject ambiguous or malformed records and verify exported data by parsing it again.
+- Validate parser behavior, real browser file operations and actual 1.1.6 game-loader readback in the isolated simulated setup. Physical placement and Windows OS testing remain separate.
+
 ## TTWVR 1.1.6 compatibility — 2026-11-15
 
 - Support the exact 1.1.6 archive with relocated renderer/DLSS/FSR repairs, helper preflight hashes and verified status fields. Preserve all prior patch outputs.

@@ -42,6 +42,7 @@ The author renderer has user-confirmed WiVRn/Quest 3 playback with NMC. The [1.1
 ## Help and reference
 
 - [TTWVR Discord community](https://discord.com/invite/ttwvr)
+- [Holster Editor for Windows and Linux](tools/holster-editor/README.md) — offline green/amber tool for slot anchors, offsets and radius.
 - [Troubleshooting](docs/troubleshooting.md)
 - [Optional setup.json fields](docs/configuration.md)
 - [What the Linux patches change](docs/linux-fixes.md)

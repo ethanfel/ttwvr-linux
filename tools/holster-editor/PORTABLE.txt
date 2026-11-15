@@ -1,0 +1,39 @@
+TTWVR HOLSTER EDITOR — FIELD KIT 1.0
+
+1. Extract this ZIP to a folder.
+2. Open TTWVR-Holster-Editor.html in a current browser (Edge, Chrome or Firefox).
+3. Load your TTWVR.state file. Select a numbered holster, then choose a body
+   anchor from the diagram or list. Adjust its offset/radius in centimetres.
+4. Export a copy. With the game and mod manager closed, back up the original
+   TTWVR.state and replace it with the exported file. Remove any browser-added
+   suffix such as "(1)". Launch the game and check the placement in VR.
+
+Windows location, inside your Documents folder (possibly redirected to OneDrive):
+  My Games\FalloutNV\TTWVR.state
+
+Linux/Proton location, inside the prefix used by your VR profile:
+  drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state
+
+The file needs SavedSlots and SavedSlotsOn sections. If these do not exist,
+place/toggle a holster in VR and quit once so TTWVR saves the full configuration.
+
+The editor runs offline on Windows and Linux. No Python, Node, installation,
+account or server is needed. It does not upload anything or overwrite game files.
+Try a sample demonstrates the controls; load your own file before exporting.
+
+Supported format: TTWVR 1.1.5 / 1.1.6. Eight game hotkey slots, ten explicit bone
+anchors, automatic anchoring, local offsets, enabled flags, visibility and grab
+radius. The map shows anchor choices; it is not a physical placement preview.
+Changing an anchor preserves its local offsets. New bindings start at zero.
+Automatic removes the explicit binding: the game chooses a nearby bone using
+its saved body-relative position when the avatar is ready.
+
+Other state sections, including calibration and Pip-Boy settings, are retained.
+This tool does not assign inventory items or fix holster drift.
+
+Instructions and source:
+https://github.com/ethanfel/ttwvr-linux/tree/main/tools/holster-editor
+
+Original tool code: GPL-3.0-only (LICENSE.txt). The HTML includes its JavaScript
+and CSS source. Independent community utility; no Fallout or TTWVR assets are
+bundled. Fallout and TTWVR belong to their respective owners.
