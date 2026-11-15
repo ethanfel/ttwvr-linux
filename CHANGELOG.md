@@ -1,5 +1,11 @@
 # Changes
 
+## Forward-facing holster preset profiles — 2026-11-15
+
+- Add seven previewable layouts using limb and torso anchors, with forward clearance for torso grab points, mirrored pairs, right/left slot order and optional extra forward spacing.
+- Apply profiles in one undoable edit; retain calibration, visibility, fallbacks and unused slot placements. Preserve the export precision fix.
+- Check reference spacing and serialization across all preset variants, plus browser preview/apply/export/undo and mobile behavior. Layouts remain starting points for headset fitting.
+
 ## Holster export precision fix — 2026-11-15
 
 - Fix valid dragged offsets failing export verification after premature decimal rounding. Preserve full edited precision and keep the export checks enabled.

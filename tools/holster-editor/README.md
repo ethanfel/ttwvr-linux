@@ -28,6 +28,45 @@ extension. The file contains all scripts, styles and artwork.
 **Try a sample** demonstrates the controls. Load your own file to enable export.
 The tool never overwrites game files directly.
 
+## Preset layouts — Field Kit 1.2
+
+Open **Preset layouts** above the slot list. Select a profile to see its front
+and side previews, then choose **Apply**. Browsing or closing the preview does
+not change your layout; applying is one undoable edit.
+
+| Profile | Enabled slots | Anchors and intended placement |
+|---|---:|---|
+| Front reach | 6 | Upper arms, forearms and upper thighs; forward grab points |
+| Upper body | 6 | Upper arms, chest and pelvis; chest/belt targets offset in front |
+| Torso front | 4 | Chest and pelvis only, with clearance in front of the torso |
+| Arms only | 4 | Upper arms and forearms; no lower targets |
+| Large targets | 4 | Upper arms and upper thighs, with larger 10.5 cm grab radii |
+| Thigh kit | 4 | Two targets on the front of each thigh |
+| Full kit | 8 | Front reach plus a second, lower pair on the thighs |
+
+Both torso and limb anchors are available. Torso targets are offset forward so
+reaching them does not require putting your hand inside the reference body.
+You can choose whether odd-numbered slots are on your right or left and move
+all preset targets **5 or 10 cm farther forward**. Each pair is mirrored using
+the verified bone frames. Previews show radii and the smallest sphere-to-sphere
+gap in the reference pose; side views label a mirrored pair together because
+both occupy the same projected location.
+
+Apply updates the chosen slots' anchors, local offsets, radii and enabled state.
+Other slots are disabled while retaining their existing placements. All saved
+body-relative fallback positions, global visibility, calibration and unrelated
+state sections stay unchanged. The explicit anchors drive the placement; TTWVR
+can refresh the fallback positions when it runs. Presets do not assign inventory
+items to hotkeys.
+
+These are practical **starting layouts**, not measured ergonomic optima. Their
+reference positions and separation have been checked, but the current body pose,
+calibration, clothing and wrist Pip-Boy can affect reach. Test the fit in VR and
+adjust individual slots with the usual controls. The lower thigh pair takes a
+longer reach. Export each finished layout to keep it as a separate profile.
+
+![Preset layout chooser](images/field-kit-presets.png)
+
 ## Export recovery for an already-open 1.1 tab
 
 Field Kit **1.1.1** fixes `Export verification failed for a position value` after

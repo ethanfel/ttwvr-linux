@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 (() => {
   'use strict';
-  const H = globalThis.HolsterState, G = globalThis.HolsterGeometry, $ = id => document.getElementById(id);
+  const H = globalThis.HolsterState, G = globalThis.HolsterGeometry, P = globalThis.HolsterPresets, $ = id => document.getElementById(id);
   const svgNS = 'http://www.w3.org/2000/svg';
   const labels = Object.fromEntries(H.ANCHORS.map(a => [a.id, a.label]));
   let doc = null, model = null, selected = 1, filename = '', history = [], historyIndex = 0, exported = null, loading = 0, demoMode = false;
-  let view = 'front', mirrorTarget = 2, drag = null;
+  let view = 'front', mirrorTarget = 2, drag = null, presetId = 'front_reach';
   const errors = new Map(), drafts = new Map(), numericFields = new Map();
   const dirty = () => model && (drafts.size > 0 || !H.same(model, exported || doc.original));
   const changedCount = () => model ? model.slots.filter((s, i) => !H.same(s, doc.original.slots[i])).length : 0;
@@ -142,11 +142,12 @@
     return row;
   }
   function project(point) { return G.project(point, view); }
-  function linePath(points) { return points.map((p,i) => `${i ? 'L' : 'M'}${project(p).join(' ')}`).join(' '); }
-  function drawBody() {
-    const body = $('reference-body'); body.replaceChildren();
+  function drawBody(body = $('reference-body'), projection = view) {
+    body.replaceChildren();
+    const projected = p => G.project(p, projection);
+    const shape = points => points.map((p,i) => `${i ? 'L' : 'M'}${projected(p).join(' ')}`).join(' ');
     const j = G.joints;
-    const path = (points, width, className) => body.append(svg('path', {d: linePath(points), 'stroke-width': width * G.SCALE, class: className}));
+    const path = (points, width, className) => body.append(svg('path', {d: shape(points), 'stroke-width': width * G.SCALE, class: className}));
     // Original vector schematic, no mesh assets. Capsules follow the reference joints.
     const limb = (a,b,width) => {
       path([j[a],j[b]], width + .008, 'body-outline');
@@ -160,20 +161,20 @@
       limb(`${side}_forearm`,`${side}_hand`,.075);
       const foot = j[`${side}_foot`]; path([foot,[foot[0],foot[1]-.12,foot[2]-.02]],.08,'body-limb');
     }
-    if (view === 'front') {
+    if (projection === 'front') {
       const torso = ['right_upper_arm','chest','left_upper_arm','left_thigh','pelvis','right_thigh'].map(k=>j[k]);
       // Shoulder-to-hip silhouette, with a short neck.
       torso[1] = j.neck;
-      body.append(svg('path',{d:linePath(torso)+'Z',class:'body-torso'}));
+      body.append(svg('path',{d:shape(torso)+'Z',class:'body-torso'}));
     } else {
       path([j.neck,j.chest,j.pelvis],.22,'body-outline');
       path([j.neck,j.chest,j.pelvis],.21,'body-limb');
     }
     path([j.neck,j.head],.09,'body-limb');
     path([j.pelvis,j.chest,j.neck],.003,'body-bone');
-    const head = project([j.head[0],j.head[1],j.head[2]+.055]);
+    const head = projected([j.head[0],j.head[1],j.head[2]+.055]);
     body.append(svg('ellipse',{cx:head[0],cy:head[1],rx:.084*G.SCALE,ry:.118*G.SCALE,class:'body-torso'}));
-    if (view === 'side') body.append(svg('path',{d:`M${head[0]+17} ${head[1]-6}l9 8-9 3`,class:'body-torso'}));
+    if (projection === 'side') body.append(svg('path',{d:`M${head[0]+17} ${head[1]-6}l9 8-9 3`,class:'body-torso'}));
     const floor = svg('text',{x:18,y:506,class:'map-direction'}); floor.textContent='REFERENCE / ~1.8 M'; body.append(floor);
   }
   function renderPreview() {
@@ -229,6 +230,51 @@
       if (x<box.x || y<box.y || x>box.x+box.width || y>box.y+box.height) $('preview-hint').textContent='Selected holster is outside this view. Use Fit selected to see it, then drag it closer.';
     }
   }
+  function renderPreset() {
+    const profile=P.list().find(p=>p.id===presetId);
+    const side=$('preset-side').value, forward=Number($('preset-forward').value);
+    const placements=P.slots(presetId,side,forward), metrics=P.metrics(placements);
+    $('preset-name').textContent=`${profile.name} · ${profile.count} holsters`;
+    $('preset-description').textContent=profile.description;
+    $('preset-note').textContent=profile.note;
+    $('preset-pairs').replaceChildren();
+    profile.pairs.forEach((pair,i)=>$('preset-pairs').append(element('li',{},`${i*2+1} / ${i*2+2} · ${pair.label} · ${pair.radius} cm radius`)));
+    for(const button of document.querySelectorAll('[data-preset]'))button.setAttribute('aria-pressed',String(button.dataset.preset===presetId));
+    for(const direction of ['front','side']) {
+      const drawing=$(direction==='front'?'preset-front':'preset-side-view');drawing.replaceChildren();
+      const body=svg('g',{});drawing.append(body);drawBody(body,direction);
+      for(const row of placements) {
+        if(direction==='side' && row.id%2===0)continue;
+        const [x,y]=G.project(G.world(row),direction);
+        const group=svg('g',{class:'holster-volume selected preset-volume','data-preset-slot':row.id});
+        group.append(svg('circle',{cx:x,cy:y,r:row.radius*G.SCALE,class:'grab-sphere'}));
+        const label=svg('g',{class:'holster-centre'});label.append(svg('circle',{cx:x,cy:y,r:direction==='side'?15:12}));
+        const text=svg('text',{x,y});text.textContent=direction==='side'?`${row.id}/${row.id+1}`:String(row.id).padStart(2,'0');label.append(text);group.append(label);drawing.append(group);
+      }
+    }
+    const radius=metrics.minRadius===metrics.maxRadius ? `${numberDisplay(metrics.minRadius)} cm` : `${numberDisplay(metrics.minRadius)}–${numberDisplay(metrics.maxRadius)} cm`;
+    $('preset-metrics').textContent=`Radii ${radius} · nearest sphere gap ${(metrics.gap*100).toFixed(1)} cm in this pose`;
+    $('apply-preset').disabled=!doc || !!errors.size;
+    $('apply-preset').textContent=`Apply ${profile.name}`;
+    $('preset-impact').textContent=!doc ? 'Load your TTWVR.state file before applying a layout.' : errors.size ? 'Close this preview and correct the highlighted value before applying.' : `Updates slots 1–${profile.count}.${profile.count<8 ? ` Disables ${profile.count+1}–8, retaining their positions.` : ''} One Undo restores your layout. Calibration and visibility stay unchanged.`;
+  }
+  for(const profile of P.list()) {
+    const button=element('button',{type:'button','data-preset':profile.id,'aria-pressed':String(profile.id===presetId)});
+    button.append(element('span',{class:'preset-card-title'},profile.name),element('span',{class:'preset-card-tag'},`${profile.tag} · ${profile.count} SLOTS`));
+    button.addEventListener('click',()=>{presetId=profile.id;renderPreset();});$('preset-list').append(button);
+  }
+  $('open-presets').addEventListener('click',()=>{renderPreset();$('presets').showModal();});
+  $('close-presets').addEventListener('click',()=>$('presets').close());
+  $('preset-side').addEventListener('change',renderPreset);
+  $('preset-forward').addEventListener('change',renderPreset);
+  $('apply-preset').addEventListener('click',()=>{
+    if(!doc || errors.size)return;
+    const profile=P.list().find(p=>p.id===presetId);
+    commit(m=>Object.assign(m,P.apply(m,presetId,$('preset-side').value,Number($('preset-forward').value))));
+    $('presets').close();$('body-map').setAttribute('viewBox','0 0 440 540');
+    selected=1;$('show-other').checked=true;render();
+    notify(`${profile.name} applied: ${profile.count} enabled holsters. Undo restores your previous layout. Check the fit in VR before relying on it.`, 'success');
+  });
   function mousePoint(e) {
     const p=new DOMPoint(e.clientX,e.clientY).matrixTransform($('body-map').getScreenCTM().inverse());
     return [p.x,p.y];
@@ -352,7 +398,7 @@
   } });
   $('editor-form').addEventListener('submit', e => e.preventDefault());
   document.addEventListener('keydown', e => {
-    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName) || $('instructions').open) return;
+    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName) || $('instructions').open || $('presets').open) return;
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); travel(e.shiftKey ? 1 : -1); }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); travel(1); }
   });

@@ -42,7 +42,7 @@ The author renderer has user-confirmed WiVRn/Quest 3 playback with NMC. The [1.1
 ## Help and reference
 
 - [TTWVR Discord community](https://discord.com/invite/ttwvr)
-- [Holster Editor for Windows and Linux](tools/holster-editor/README.md) — offline green/amber tool with draggable placement/radius previews and mirrored holster layouts.
+- [Holster Editor for Windows and Linux](tools/holster-editor/README.md) — offline green/amber tool with draggable previews, mirrored holsters and seven preset layouts.
 - [Troubleshooting](docs/troubleshooting.md)
 - [Optional setup.json fields](docs/configuration.md)
 - [What the Linux patches change](docs/linux-fixes.md)

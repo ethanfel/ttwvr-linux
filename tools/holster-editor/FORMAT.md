@@ -69,6 +69,38 @@ unsupported anchors, incomplete slot data and non-finite numbers are rejected.
 An existing radius outside the mod's range is preserved on an unedited round-trip;
 any radius edit must fall within the verified range.
 
+## Preset profiles, Field Kit 1.2
+
+`src/presets.js` defines paired target centres in the same reference coordinate
+system as the preview: right, back, up, in centimetres. Negative back is forward.
+Each right target is converted to the chosen bone's local offset via `G.local`;
+the left target uses the verified mirror transform. Additional forward spacing
+is applied in the reference frame before conversion, not by assuming a common
+bone-local axis. Slot order can be reversed without changing geometric placement.
+
+The seven profiles use upper-arm, forearm, thigh, chest and pelvis anchors.
+No automatic bindings are introduced. Torso profiles explicitly retain chest
+and pelvis anchors; their centres are offset forward, outside the reference
+body. All preset spheres' rear edges are in front of a conservative reference
+plane at `back = -0.10 m`; the largest rear-edge coordinate is `-0.135 m`.
+This is a simple reference-placement check, not collision detection against a
+live avatar or a proof of reachability. Minimum sphere-to-sphere gaps range from
+about 6.5 to 19 cm in that pose. Rotation and individual calibration change
+these relationships during play.
+
+Apply replaces only anchors, offsets, radii and enabled flags in the chosen
+slots. Other slots are disabled with their placements retained. Saved fallback
+positions and global visibility are preserved; unrelated state and calibration
+remain protected by the existing serializer. There are no inferred item bindings.
+
+Validation: 37 Node tests, including seven profile tests across both side orders
+and all three forward-spacing choices, explicit torso-anchor coverage, reference
+clearance/separation, symmetric positions, immutable input, unused-slot retention
+and exports in UTF-8/UTF-16. Chromium checks browsing without mutation, disabled
+apply before loading/with invalid input, real profile export, one-step undo/redo,
+front/side previews and mobile overflow, alongside the existing editing tests.
+Physical headset placement remains a user fit check.
+
 ## Export precision fix, Field Kit 1.1.1
 
 The old nine-significant-digit formatter could change `Math.fround(value)` when

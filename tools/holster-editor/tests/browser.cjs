@@ -7,6 +7,7 @@ const {pathToFileURL} = require('node:url');
 const {spawn} = require('node:child_process');
 const assert = require('node:assert/strict');
 const H = require('../src/state.js');
+const P = require('../src/presets.js');
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 (async () => {
   const chrome = process.env.CHROME_BIN || '/opt/google/chrome/chrome';
@@ -60,6 +61,13 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await cdp('Page.navigate', {url:pathToFileURL(process.env.LEGACY_EDITOR ? path.resolve(process.env.LEGACY_EDITOR) : path.resolve(__dirname,'../index.html')).href});
     await waitFor('document.querySelectorAll(".slot").length === 8', 'initial UI');
     assert.equal(await evaluate('document.querySelector("#export").disabled'), true);
+    if(!process.env.LEGACY_EDITOR) {
+      await click('#open-presets');
+      assert.equal(await evaluate('document.querySelector("#presets").open'),true);
+      assert.equal(await evaluate('document.querySelectorAll("[data-preset]").length'),7);
+      assert.equal(await evaluate('document.querySelector("#apply-preset").disabled'),true);
+      await click('#close-presets');
+    }
     await click('#demo'); assert.equal(await evaluate('document.querySelector("#export").disabled'), true);
     await upload(input); await waitFor('document.querySelector("#filename").textContent === "TTWVR.state"','state load');
     assert.equal(await evaluate('document.querySelector("#offset-x").value'), '10');
@@ -93,6 +101,39 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
       return;
     }
     await upload(input);await waitFor('document.querySelector("#offset-x").value === "10"','reload after precision regression');
+    // Presets are preview-only until applied, and each application is one undo step.
+    await click('#open-presets');await click('[data-preset="full_kit"]');
+    assert.equal(await evaluate('document.querySelectorAll("#preset-front [data-preset-slot]").length'),8);
+    await change('#preset-side','left');await change('#preset-forward','10');
+    await click('#close-presets');await click('#export');
+    for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
+    assert.deepEqual(await fs.readFile(path.join(downloads,'TTWVR.state')),await fs.readFile(input));
+    await fs.unlink(path.join(downloads,'TTWVR.state'));
+    await click('#open-presets');await click('[data-preset="front_reach"]');
+    await change('#preset-side','right');await change('#preset-forward','0');
+    await screenshot('holster-editor-presets-library.png');
+    await click('[data-preset="arms_only"]');
+    await change('#preset-side','left');await change('#preset-forward','5');
+    await screenshot('holster-editor-presets.png');
+    await cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+    assert.equal(await evaluate('document.querySelector("#presets").scrollWidth <= document.querySelector("#presets").clientWidth'),true);
+    await screenshot('holster-editor-presets-mobile.png');
+    await cdp('Emulation.setDeviceMetricsOverride',{width:1440,height:1250,deviceScaleFactor:1,mobile:false});
+    await click('#apply-preset');
+    assert.equal(await evaluate('document.querySelector("#presets").open'),false);
+    assert.equal(await evaluate('document.querySelector("#anchor").value'),'left_upper_arm');
+    assert.equal(await evaluate('document.querySelector("#enabled-count").textContent'),'4 / 8');
+    await click('#export');
+    for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
+    const presetExport=H.parse(await fs.readFile(path.join(downloads,'TTWVR.state'))).model;
+    assert.deepEqual(presetExport,P.apply(H.parse(H.demo()).model,'arms_only','left',5));
+    await fs.unlink(path.join(downloads,'TTWVR.state'));
+    await click('#undo');await click('#export');
+    for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
+    assert.deepEqual(await fs.readFile(path.join(downloads,'TTWVR.state')),await fs.readFile(input));
+    await fs.unlink(path.join(downloads,'TTWVR.state'));
+    await click('#redo');assert.equal(await evaluate('document.querySelector("#anchor").value'),'left_upper_arm');
+    await click('#undo');
     // Live preview: real mouse drags, physical dimensions, and one undo per gesture.
     const currentWorld = () => evaluate(`HolsterGeometry.world({anchor:document.querySelector('#anchor').value,offset:['x','y','z'].map(a=>Number(document.querySelector('#offset-'+a).value)/100)})`);
     const near = (a,b,eps=1e-6) => a.forEach((v,i)=>assert.ok(Math.abs(v-b[i])<eps, `${a} != ${b}`));
@@ -154,6 +195,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await click('#redo'); assert.equal(await evaluate('document.querySelector("#radius").value'),'10');
     await change('#radius','0'); assert.equal(await evaluate('document.querySelector("#export").disabled'),true);
     assert.equal(await evaluate('document.querySelector("#mirror-slot").disabled'),true);
+    await click('#open-presets');assert.equal(await evaluate('document.querySelector("#apply-preset").disabled'),true);await click('#close-presets');
     await click('#enabled');
     assert.equal(await evaluate('document.querySelector("#radius").value'),'0');
     assert.equal(await evaluate('document.querySelector("#enabled").checked'),true);
@@ -182,7 +224,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await cdp('Emulation.setDeviceMetricsOverride', {width:1024,height:768,deviceScaleFactor:1,mobile:false});
     assert.equal(await evaluate('document.documentElement.scrollWidth <= window.innerWidth'),true);
     assert.equal(errors.length,0,JSON.stringify(errors));assert.equal(requests.some(u=>/^https?:/.test(u)),false,JSON.stringify(requests));
-    console.log('PASS browser: local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
+    console.log('PASS browser: preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
     console.log('PASS no network requests; source file unchanged; no browser exceptions.');
   } finally {
     try { await send('Browser.close'); } catch {}
