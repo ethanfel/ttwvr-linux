@@ -1,4 +1,4 @@
-TTWVR HOLSTER EDITOR — FIELD KIT 1.2
+TTWVR HOLSTER EDITOR — FIELD KIT 1.3
 
 1. Extract this ZIP to a folder.
 2. Open TTWVR-Holster-Editor.html in a current browser (Edge, Chrome or Firefox).
@@ -54,13 +54,16 @@ Once saved, open the updated editor and load that downloaded file.
 The repair only changes the open editor; it does not install the state in-game.
 
 PRESET LAYOUTS
-Open Preset layouts above the slot list to compare seven profiles:
-Front reach (6), Upper body (6), Torso front (4), Arms only (4),
-Large targets (4), Thigh kit (4), and Full kit (8).
-Both limb and torso anchors are available. Torso grab points sit in front of
-the reference body, with clearance for your hands. Choose right/left slot order
-and optional 5 or 10 cm extra forward reach, preview, then Apply.
-One Undo restores your previous layout. Unused slots are disabled while their
+Open Preset layouts above the slot list to compare seven gear-style profiles:
+Wasteland rig (8), Gun belt (4), Chest rig (6), Travel vest (6),
+Shoulder rig (6), Field rig (8), and Utility rig (8).
+The default has four belt positions and four chest/abdomen pockets. The belt
+wraps around the waist, with front pouches and side hip holsters. There are no
+double targets on the arms. Utility rig adds one forearm target opposite the
+selected Pip-Boy arm: right reserved, left forearm available by default.
+Choose paired slot order and optional 5 or 10 cm extra forward reach, preview,
+then Apply. Pip-Boy arm reserves that arm; it does not move the in-game Pip-Boy.
+One Undo restores the previous layout. Unused slots are disabled while their
 placements are retained. Calibration, visibility and other state stay unchanged.
 Profiles are starting points: check comfort and reach in VR. Export each edited
 layout to keep it as a separate profile.

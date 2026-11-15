@@ -28,6 +28,10 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
 /* Preset library: compare layouts without changing the working state. */
 .preset-launch{margin:12px 10px 2px;text-align:left;border-color:var(--muted);font-size:12px}.preset-launch span{display:block;color:var(--muted);font-size:8px;letter-spacing:.6px;margin-top:6px}#presets{max-width:1040px;padding:24px 28px}#presets .dialog-heading h2{margin-top:4px}#presets .preset-intro{margin:0 0 20px}#presets .preset-browser{display:grid;grid-template-columns:190px minmax(0,1fr);gap:26px}.preset-list{display:flex;flex-direction:column;gap:8px}.preset-list button{text-align:left;padding:14px 12px;color:var(--muted)}.preset-list button[aria-pressed=true]{background:var(--tint);border-color:var(--accent);color:var(--accent)}.preset-card-title,.preset-card-tag{display:block}.preset-card-title{font-size:13px}.preset-card-tag{font-size:8px;letter-spacing:.4px;margin-top:7px;color:var(--muted)}#presets .preset-detail h3{margin:0;font-size:18px}#presets .preset-detail>p{margin-top:8px;font-size:11px}.preset-options{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:15px 0}.preset-options label{font-size:8px;letter-spacing:.8px;color:var(--muted)}.preset-options select{font-size:11px;margin-top:5px;letter-spacing:0}.preset-projections{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:var(--bg);border:1px solid var(--line);padding:12px 8px 0}.preset-projections figure{margin:0;min-width:0}.preset-projections figcaption{text-align:center;font-size:7px;letter-spacing:.7px;color:var(--muted)}.preset-projections svg{display:block;width:100%;height:auto;max-height:320px}.preset-volume .holster-centre{cursor:default}#presets .preset-metrics{color:var(--accent);font-size:10px}.preset-pairs{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;padding:0;list-style:none;margin:10px 0}#presets .preset-pairs li{font-size:9px;margin:0;padding:0}#presets .preset-caveat{font-size:10px;border-top:1px solid var(--line);padding-top:12px;margin-top:18px}#presets .preset-apply-row{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:16px}#presets .preset-apply-row p{font-size:10px;max-width:580px;margin:0}#presets .preset-apply-row button{flex-shrink:0}.preset-options select:focus-visible{outline-offset:2px}
 @media(max-width:700px){#presets{padding:18px}#presets .preset-browser{grid-template-columns:1fr;gap:20px}.preset-list{display:grid;grid-template-columns:1fr 1fr;gap:7px}.preset-list button{padding:10px}.preset-card-title{font-size:11px}.preset-card-tag{font-size:7px}.preset-options{grid-template-columns:1fr;gap:10px}.preset-pairs{grid-template-columns:1fr}#presets .preset-apply-row{flex-direction:column;align-items:stretch}.preset-projections{gap:0;padding:8px 0 0}.preset-projections figcaption{font-size:6px;letter-spacing:0}.preset-launch{margin-bottom:6px}}
+
+/* Waist reference and gear layout options. */
+.body-belt{fill:var(--panel);stroke:var(--muted);stroke-width:1.1;stroke-linejoin:round}.body-buckle{fill:var(--dim);stroke:var(--accent);stroke-width:1}.preset-options{grid-template-columns:1fr 1fr 1fr;gap:10px}.preset-options select:disabled{opacity:.45;cursor:default}
+@media(max-width:700px){.preset-options{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -90,17 +94,17 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       <div class="apply-note"><span class="eyebrow">AFTER EXPORT</span><p>Close the game, back up your current file, and replace it with the exported <b>TTWVR.state</b>. Check the placement in VR.</p></div>
     </section>
   </main>
-  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">TTWVR 1.1.5 / 1.1.6 <span>·</span> FIELD KIT 1.2</span></footer>
+  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">TTWVR 1.1.5 / 1.1.6 <span>·</span> FIELD KIT 1.3</span></footer>
   <p class="bottom-note">Independent community utility · Fallout-inspired interface · no game assets bundled</p>
 </div>
 <dialog id="presets" aria-labelledby="presets-title">
   <div class="dialog-heading"><div><p class="eyebrow">EQUIPMENT LAYOUTS</p><h2 id="presets-title">Choose your reach.</h2></div><button type="button" id="close-presets" class="icon-button" aria-label="Close preset layouts">×</button></div>
-  <p class="preset-intro">Targets sit in front of your body. Compare arm, thigh and torso anchors, then adjust the layout to your reach.</p>
+  <p class="preset-intro">Belt pouches, hip holsters and vest pockets. Choose a gear layout and adjust it to your reach.</p>
   <div class="preset-browser">
     <div id="preset-list" class="preset-list" role="group" aria-label="Preset layouts"></div>
     <div class="preset-detail">
       <h3 id="preset-name"></h3><p id="preset-description"></p>
-      <div class="preset-options"><label>ODD-NUMBERED SLOTS<select id="preset-side"><option value="right">On your right</option><option value="left">On your left</option></select></label><label>EXTRA FORWARD REACH<select id="preset-forward"><option value="0">Standard spacing</option><option value="5">5 cm farther forward</option><option value="10">10 cm farther forward</option></select></label></div>
+      <div class="preset-options"><label>PAIRED SLOT ORDER<select id="preset-side"><option value="right">Odd slots on your right</option><option value="left">Odd slots on your left</option></select></label><label>EXTRA FORWARD REACH<select id="preset-forward"><option value="0">Standard spacing</option><option value="5">5 cm farther forward</option><option value="10">10 cm farther forward</option></select></label><label>PIP-BOY ARM<select id="preset-pipboy" title="Choose the arm already carrying your Pip-Boy. This does not move it."><option value="right">Right — keep clear</option><option value="left">Left — keep clear</option></select></label></div>
       <div class="preset-projections"><figure><figcaption>FRONT · YOUR RIGHT | YOUR LEFT</figcaption><svg id="preset-front" viewBox="0 0 440 540" role="img" aria-label="Preset front preview"></svg></figure><figure><figcaption>SIDE · BEHIND | IN FRONT</figcaption><svg id="preset-side-view" viewBox="0 0 440 540" role="img" aria-label="Preset side preview"></svg></figure></div>
       <p class="preset-metrics" id="preset-metrics"></p><ul id="preset-pairs" class="preset-pairs"></ul>
       <p id="preset-note"></p>
@@ -109,7 +113,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   <p class="preset-caveat">Reference pose only: spacing changes as you move. These are starting layouts, not headset-tested fits. Fine-tune with your equipment and wrist Pip-Boy in VR.</p>
   <div class="preset-apply-row"><p id="preset-impact" aria-live="polite"></p><button type="button" id="apply-preset" class="primary" disabled>Apply layout</button></div>
 </dialog>
-<dialog id="instructions"><div class="dialog-heading"><p class="eyebrow">FIELD MANUAL</p><button type="button" id="close-help" class="icon-button" aria-label="Close instructions">×</button></div><h2>Configure. Export. Equip.</h2><ol><li><b>Quit Fallout and your mod manager.</b> This tool edits a copy; the game writes its state when it closes.</li><li><b>Load TTWVR.state.</b> It contains the numbered holsters and their anchors. A savegame or TTWVR.ini is a different file.</li><li><b>Choose a slot and an anchor.</b> Numbers match the game’s 1–8 hotkeys. Drag its numbered centre to position it; drag the square handle to resize its grab sphere. Use Front for left/right and Side for depth. Both views adjust height. Arrow keys move 1 cm (Shift: 5 cm). Numeric controls remain available.</li><li><b>Export the file.</b> Keep a backup of the original and replace it with the downloaded copy. Its filename must be <code>TTWVR.state</code>, without a browser-added “(1)”.</li><li><b>Launch the game and check the fit.</b> The preview uses an approximate reference body and pose. Fine placement depends on your avatar and calibration.</li></ol><h3>Start from a preset</h3><p><b>Preset layouts</b> offers seven limb and torso layouts, from four to eight enabled holsters. Preview both views, choose right/left slot order and optional extra forward reach, then apply. One Undo restores your previous layout. Slots outside the chosen layout are disabled while their positions are retained. Visibility, calibration and other state sections stay as loaded. Export and check your reach in VR.</p><h3>Mirror a holster</h3><p>Choose a different destination slot under <b>Mirror to another slot</b>, then press the mirror button. Right upper arm becomes left upper arm, for example, with the matching local offset and grab radius. The destination is replaced in one undoable action. Subsequent edits are independent; this does not link the slots. Automatic slots mirror their saved body-relative position but have no bone preview until you choose an anchor.</p><h3>Where is the file?</h3><p><b>Windows</b> — your Documents folder, which may be redirected to OneDrive:</p><code class="path">My Games\FalloutNV\TTWVR.state</code><p><b>Linux / Proton</b> — inside the prefix used by your VR profile:</p><code class="path">drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state</code><p>TTWVR stores this configuration in New Vegas’s <code>FalloutNV</code> folder. Place a holster in VR and quit once if the holster sections have not been created yet.</p><h3>What gets edited?</h3><p>Only holster records in <code>[SavedSlots]</code> and <code>[SavedSlotsOn]</code>. Other sections, encoding and line endings are preserved. This does not assign weapons to hotkeys or change a savegame.</p><p><b>Automatic</b> removes an explicit bone binding. TTWVR then chooses a nearby bone from the saved body-relative position. New explicit bindings start at a zero local offset; adjust the offset or finish placement in VR.</p><p class="field-help">Runs entirely offline. No installation, uploads, runtime libraries or network connection required. Original tool code: GPL-3.0-only.</p></dialog>
+<dialog id="instructions"><div class="dialog-heading"><p class="eyebrow">FIELD MANUAL</p><button type="button" id="close-help" class="icon-button" aria-label="Close instructions">×</button></div><h2>Configure. Export. Equip.</h2><ol><li><b>Quit Fallout and your mod manager.</b> This tool edits a copy; the game writes its state when it closes.</li><li><b>Load TTWVR.state.</b> It contains the numbered holsters and their anchors. A savegame or TTWVR.ini is a different file.</li><li><b>Choose a slot and an anchor.</b> Numbers match the game’s 1–8 hotkeys. Drag its numbered centre to position it; drag the square handle to resize its grab sphere. Use Front for left/right and Side for depth. Both views adjust height. Arrow keys move 1 cm (Shift: 5 cm). Numeric controls remain available.</li><li><b>Export the file.</b> Keep a backup of the original and replace it with the downloaded copy. Its filename must be <code>TTWVR.state</code>, without a browser-added “(1)”.</li><li><b>Launch the game and check the fit.</b> The preview uses an approximate reference body and pose. Fine placement depends on your avatar and calibration.</li></ol><h3>Start from a preset</h3><p><b>Preset layouts</b> offers seven belt, vest and holster layouts, from four to eight enabled holsters. Preview both views, choose right/left pair order and optional extra forward reach, then apply. Utility rig puts one forearm target opposite the selected Pip-Boy arm; this remains independent of pair order. One Undo restores your previous layout. Slots outside the chosen layout are disabled while their positions are retained. Visibility, calibration and other state sections stay as loaded. Export and check your reach in VR.</p><h3>Mirror a holster</h3><p>Choose a different destination slot under <b>Mirror to another slot</b>, then press the mirror button. Right upper arm becomes left upper arm, for example, with the matching local offset and grab radius. The destination is replaced in one undoable action. Subsequent edits are independent; this does not link the slots. Automatic slots mirror their saved body-relative position but have no bone preview until you choose an anchor.</p><h3>Where is the file?</h3><p><b>Windows</b> — your Documents folder, which may be redirected to OneDrive:</p><code class="path">My Games\FalloutNV\TTWVR.state</code><p><b>Linux / Proton</b> — inside the prefix used by your VR profile:</p><code class="path">drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state</code><p>TTWVR stores this configuration in New Vegas’s <code>FalloutNV</code> folder. Place a holster in VR and quit once if the holster sections have not been created yet.</p><h3>What gets edited?</h3><p>Only holster records in <code>[SavedSlots]</code> and <code>[SavedSlotsOn]</code>. Other sections, encoding and line endings are preserved. This does not assign weapons to hotkeys or change a savegame.</p><p><b>Automatic</b> removes an explicit bone binding. TTWVR then chooses a nearby bone from the saved body-relative position. New explicit bindings start at a zero local offset; adjust the offset or finish placement in VR.</p><p class="field-help">Runs entirely offline. No installation, uploads, runtime libraries or network connection required. Original tool code: GPL-3.0-only.</p></dialog>
 <script>/* SPDX-License-Identifier: GPL-3.0-only */
 /* Lossless TTWVR 1.1.5/1.1.6 state editor. No filesystem or network access. */
 (function (root) {
@@ -503,47 +507,67 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   else root.HolsterPresets = factory(root.HolsterGeometry);
 })(globalThis, G => {
   'use strict';
-  // Reference targets in centimetres: right, back, up. Negative back = in front.
-  // Each definition describes a right-side slot and its mirrored partner.
-  // Limb and torso layouts are both available; all targets are placed forward.
-  // No shin/ankle targets or automatic bindings are used.
-  const upper = {anchor:'right_upper_arm', target:[31,-23,139], radius:8, label:'Front of upper arms'};
-  const fore = {anchor:'right_forearm', target:[50,-23,129], radius:7, label:'Front of forearms'};
-  const thigh = {anchor:'right_thigh', target:[18,-22,91], radius:8.5, label:'Front of upper thighs'};
-  const chest = {anchor:'chest', target:[16,-26,130], radius:8.5, label:'In front of chest'};
-  const belt = {anchor:'pelvis', target:[24,-26,99], radius:8.5, label:'In front of belt'};
-  const lower = {anchor:'right_thigh', target:[20,-22,68], radius:7.5, label:'Front of lower thighs'};
+  // Reference targets: right, back, up in cm. Negative back = forward.
+  // Belt pieces follow a shallow arc around the waist. Torso pockets use chest
+  // or pelvis frames; their offsets put the targets outside the reference body.
+  const frontBelt = {anchor:'pelvis', target:[9.5,-19,100], radius:6, label:'Front belt pouches'};
+  const hip = {anchor:'pelvis', target:[25,-7.5,100], radius:6.5, label:'Hip holsters'};
+  const chest = {anchor:'chest', target:[12,-18.5,135], radius:6.5, label:'Chest pockets'};
+  const lowerChest = {anchor:'chest', target:[10,-18.5,117], radius:6, label:'Lower vest pockets'};
+  const shoulder = {anchor:'chest', target:[22,-16,132], radius:6.5, label:'Underarm holsters'};
+  const thigh = {anchor:'right_thigh', target:[20,-13,80], radius:7, label:'Upper thigh holsters'};
+  const centre = {anchor:'chest', target:[0,-21,117], radius:6, label:'Centre vest pouch', single:true};
+  const forearm = {anchor:'free_forearm', target:[50,-18,129], radius:6, label:'Forearm utility', single:true};
   const definitions = [
-    {id:'front_reach', name:'Front reach', tag:'START HERE', description:'Six targets in front of your upper arms, forearms and upper thighs. A compact layout without torso anchors.', note:'Start with this layout, then adjust the fit in VR.', pairs:[upper,fore,thigh]},
-    {id:'upper_body', name:'Upper body', tag:'ARMS + TORSO', description:'Six forward targets carried by the upper arms, chest and pelvis. Torso holsters sit clear of the body rather than on the bone centres.', note:'Chest and belt targets follow torso rotation. Test them while turning and reaching.', pairs:[upper,{...chest,target:[14,-25,118],radius:7.5},{...belt,target:[22,-25,97]}]},
-    {id:'torso_front', name:'Torso front', tag:'CHEST + BELT', description:'Four targets in front of the chest and belt, using chest and pelvis anchors. No arm or leg bindings.', note:'A direct comparison with limb layouts: the targets follow the torso, with extra space in front for your hands.', pairs:[chest,belt]},
-    {id:'arms_only', name:'Arms only', tag:'NO LEG REACH', description:'Four targets carried by the arms. No bending down to reach leg holsters.', note:'Check the left forearm target with your wrist Pip-Boy open.', pairs:[upper,fore]},
-    {id:'large_targets', name:'Large targets', tag:'WIDE SPACING', description:'Four larger grab spheres in front of your upper arms and upper thighs, with room between them.', note:'10.5 cm radii make these more forgiving to grab. Fine-tune if they catch your hands during normal movement.', pairs:[{...upper,target:[33,-28,140],radius:10.5},{...thigh,target:[20,-28,91],radius:10.5}]},
-    {id:'thigh_kit', name:'Thigh kit', tag:'THIGH ANCHORS', description:'Two targets on the front of each thigh. All four follow thigh bones instead of the pelvis.', note:'The lower pair takes a longer reach; choose Arms only if you want to keep every target high.', pairs:[{...thigh,target:[16,-26,94],radius:8},{...lower,target:[27,-23,74],radius:7.5}]},
-    {id:'full_kit', name:'Full kit', tag:'EXTRA CAPACITY', description:'Front reach plus a second pair lower on the thighs. Eight targets across arms and legs.', note:'Slots 7–8 are lower and may need a bend to reach. Start with Front reach if six slots are enough.', pairs:[upper,fore,thigh,lower]}
+    {id:'wasteland_rig', name:'Wasteland rig', tag:'BELT + VEST', description:'Four belt positions and four vest pockets fill the waist and torso. A gear-style starting layout with no arm-mounted holsters.', note:'Belt pouches sit across the front; hip holsters wrap toward the sides. Vest pockets fill two rows on the torso.', parts:[frontBelt,hip,chest,lowerChest]},
+    {id:'gun_belt', name:'Gun belt', tag:'WAIST ONLY', description:'Two front pouches and a holster on each hip, arranged at one belt height.', note:'A compact belt layout. Use the side view to see the front pouches and hip holsters wrapping around the waist.', parts:[frontBelt,hip]},
+    {id:'chest_rig', name:'Chest rig', tag:'CHEST + BELT', description:'A pair of chest pockets above a four-position belt. All six slots follow the torso and waist.', note:'Leaves the arms free and uses distinct chest, front-belt and hip locations.', parts:[frontBelt,hip,chest]},
+    {id:'travel_vest', name:'Travel vest', tag:'TORSO POCKETS', description:'Four vest pockets across the chest and abdomen, with two front-belt pouches below.', note:'A pocket-style layout without side hip holsters. Check lower vest and belt reach in VR.', parts:[frontBelt,chest,lowerChest]},
+    {id:'shoulder_rig', name:'Shoulder rig', tag:'UNDERARM + BELT', description:'Two underarm holsters carried by the chest frame, plus the four-position belt.', note:'Reach across to the underarm targets. They follow the torso rather than moving with the upper arms.', parts:[frontBelt,hip,shoulder]},
+    {id:'field_rig', name:'Field rig', tag:'BELT + CHEST + THIGHS', description:'Four belt positions, two chest pockets and one upper-thigh holster on each leg.', note:'The thigh holsters sit below the belt. There is only one target on each leg.', parts:[frontBelt,hip,chest,thigh]},
+    {id:'utility_rig', name:'Utility rig', tag:'BELT + VEST + UTILITY', description:'Four belt positions, two chest pockets, a centre vest pouch and one forearm utility target.', note:'The forearm target always goes opposite your selected Pip-Boy arm. Right is reserved by default, leaving the left forearm available.', parts:[frontBelt,hip,chest,centre,forearm]}
   ];
   function get(id) {
     const preset=definitions.find(p=>p.id===id);
     if(!preset)throw new Error('Unknown preset layout.');
     return preset;
   }
-  const list = () => definitions.map(p=>({id:p.id,name:p.name,tag:p.tag,description:p.description,note:p.note,count:p.pairs.length*2,pairs:p.pairs.map(pair=>({label:pair.label,radius:pair.radius}))}));
-  function slots(id, side='right', forwardCm=0) {
+  function checkPipBoy(side) {
+    if(!['right','left'].includes(side))throw new Error('Choose the arm carrying your Pip-Boy.');
+  }
+  function list(pipBoySide='right') {
+    checkPipBoy(pipBoySide);
+    return definitions.map(p=>{
+      let nextId=1;
+      const rows=p.parts.map(part=>{
+        const ids=part.single?[nextId++]:[nextId++,nextId++];
+        const label=part.anchor==='free_forearm'?`${pipBoySide==='right'?'Left':'Right'} forearm utility`:part.label;
+        return {ids,label,radius:part.radius};
+      });
+      return {id:p.id,name:p.name,tag:p.tag,description:p.description,note:p.note,count:nextId-1,rows,usesForearm:p.parts.some(part=>part.anchor==='free_forearm')};
+    });
+  }
+  function slots(id,side='right',forwardCm=0,pipBoySide='right') {
     if(!['right','left'].includes(side))throw new Error('Slot order must be right or left.');
     if(![0,5,10].includes(forwardCm))throw new Error('Choose 0, 5 or 10 cm of extra forward reach.');
-    return get(id).pairs.flatMap((pair,i)=>{
-      const point=pair.target.map(v=>v/100);point[1]-=forwardCm/100;
-      const right={id:i*2+1,anchor:pair.anchor,offset:G.local(pair.anchor,point),radius:pair.radius/100,enabled:true};
-      // Mirror through the verified bone frames. Fallback is only a placeholder
-      // for this preview; apply() retains each real slot's existing fallback.
-      right.position=[0,0,0];
-      const left=G.mirror(right,i*2+2);
-      if(side==='left') [right.id,left.id]=[left.id,right.id];
-      return [right,left];
+    checkPipBoy(pipBoySide);
+    let nextId=1;
+    return get(id).parts.flatMap(part=>{
+      const point=part.target.map(v=>v/100);point[1]-=forwardCm/100;
+      let anchor=part.anchor;
+      if(anchor==='free_forearm') {
+        anchor=pipBoySide==='right'?'left_forearm':'right_forearm';
+        if(anchor==='left_forearm')point[0]*=-1;
+      }
+      const first={id:nextId++,anchor,offset:G.local(anchor,point),radius:part.radius/100,enabled:true,position:[0,0,0]};
+      if(part.single)return [first];
+      const second=G.mirror(first,nextId++);
+      if(side==='left')[first.id,second.id]=[second.id,first.id];
+      return [first,second];
     }).sort((a,b)=>a.id-b.id);
   }
-  function apply(model,id,side='right',forwardCm=0) {
-    const placements=slots(id,side,forwardCm),next=JSON.parse(JSON.stringify(model));
+  function apply(model,id,side='right',forwardCm=0,pipBoySide='right') {
+    const placements=slots(id,side,forwardCm,pipBoySide),next=JSON.parse(JSON.stringify(model));
     // Slots outside the chosen layout are disabled without erasing their placement.
     next.slots.forEach(s=>{s.enabled=false;});
     for(const placement of placements) {
@@ -570,7 +594,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   const svgNS = 'http://www.w3.org/2000/svg';
   const labels = Object.fromEntries(H.ANCHORS.map(a => [a.id, a.label]));
   let doc = null, model = null, selected = 1, filename = '', history = [], historyIndex = 0, exported = null, loading = 0, demoMode = false;
-  let view = 'front', mirrorTarget = 2, drag = null, presetId = 'front_reach';
+  let view = 'front', mirrorTarget = 2, drag = null, presetId = 'wasteland_rig';
   const errors = new Map(), drafts = new Map(), numericFields = new Map();
   const dirty = () => model && (drafts.size > 0 || !H.same(model, exported || doc.original));
   const changedCount = () => model ? model.slots.filter((s, i) => !H.same(s, doc.original.slots[i])).length : 0;
@@ -740,6 +764,10 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     const head = projected([j.head[0],j.head[1],j.head[2]+.055]);
     body.append(svg('ellipse',{cx:head[0],cy:head[1],rx:.084*G.SCALE,ry:.118*G.SCALE,class:'body-torso'}));
     if (projection === 'side') body.append(svg('path',{d:`M${head[0]+17} ${head[1]-6}l9 8-9 3`,class:'body-torso'}));
+    // A waist band makes the belt row legible in front and side projections.
+    const band=projection==='front'?[[-.18,-.12,1.025],[.18,-.12,1.025],[.18,-.12,.975],[-.18,-.12,.975]]:[[0,-.12,1.025],[0,.12,1.025],[0,.12,.975],[0,-.12,.975]];
+    body.append(svg('path',{d:shape(band)+'Z',class:'body-belt'}));
+    if(projection==='front')body.append(svg('path',{d:shape([[-.025,-.125,1.025],[.025,-.125,1.025],[.025,-.125,.975],[-.025,-.125,.975]])+'Z',class:'body-buckle'}));
     const floor = svg('text',{x:18,y:506,class:'map-direction'}); floor.textContent='REFERENCE / ~1.8 M'; body.append(floor);
   }
   function renderPreview() {
@@ -796,25 +824,32 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     }
   }
   function renderPreset() {
-    const profile=P.list().find(p=>p.id===presetId);
+    const pipBoySide=$('preset-pipboy').value;
+    const profile=P.list(pipBoySide).find(p=>p.id===presetId);
+    $('preset-pipboy').disabled=!profile.usesForearm;
     const side=$('preset-side').value, forward=Number($('preset-forward').value);
-    const placements=P.slots(presetId,side,forward), metrics=P.metrics(placements);
+    const placements=P.slots(presetId,side,forward,pipBoySide), metrics=P.metrics(placements);
     $('preset-name').textContent=`${profile.name} · ${profile.count} holsters`;
     $('preset-description').textContent=profile.description;
     $('preset-note').textContent=profile.note;
     $('preset-pairs').replaceChildren();
-    profile.pairs.forEach((pair,i)=>$('preset-pairs').append(element('li',{},`${i*2+1} / ${i*2+2} · ${pair.label} · ${pair.radius} cm radius`)));
+    profile.rows.forEach(row=>$('preset-pairs').append(element('li',{},`${row.ids.join(' / ')} · ${row.label} · ${row.radius} cm radius`)));
     for(const button of document.querySelectorAll('[data-preset]'))button.setAttribute('aria-pressed',String(button.dataset.preset===presetId));
     for(const direction of ['front','side']) {
       const drawing=$(direction==='front'?'preset-front':'preset-side-view');drawing.replaceChildren();
       const body=svg('g',{});drawing.append(body);drawBody(body,direction);
+      const groups=new Map();
       for(const row of placements) {
-        if(direction==='side' && row.id%2===0)continue;
         const [x,y]=G.project(G.world(row),direction);
-        const group=svg('g',{class:'holster-volume selected preset-volume','data-preset-slot':row.id});
-        group.append(svg('circle',{cx:x,cy:y,r:row.radius*G.SCALE,class:'grab-sphere'}));
-        const label=svg('g',{class:'holster-centre'});label.append(svg('circle',{cx:x,cy:y,r:direction==='side'?15:12}));
-        const text=svg('text',{x,y});text.textContent=direction==='side'?`${row.id}/${row.id+1}`:String(row.id).padStart(2,'0');label.append(text);group.append(label);drawing.append(group);
+        const key=direction==='side'?`${x.toFixed(5)},${y.toFixed(5)},${row.radius}`:String(row.id);
+        if(groups.has(key))groups.get(key).ids.push(row.id);
+        else groups.set(key,{x,y,radius:row.radius,ids:[row.id]});
+      }
+      for(const {x,y,radius,ids} of groups.values()) {
+        const group=svg('g',{class:'holster-volume selected preset-volume','data-preset-slot':ids.join(',')});
+        group.append(svg('circle',{cx:x,cy:y,r:radius*G.SCALE,class:'grab-sphere'}));
+        const label=svg('g',{class:'holster-centre'});label.append(svg('circle',{cx:x,cy:y,r:ids.length>1?15:12}));
+        const text=svg('text',{x,y});text.textContent=ids.length>1?ids.join('/'):String(ids[0]).padStart(2,'0');label.append(text);group.append(label);drawing.append(group);
       }
     }
     const radius=metrics.minRadius===metrics.maxRadius ? `${numberDisplay(metrics.minRadius)} cm` : `${numberDisplay(metrics.minRadius)}–${numberDisplay(metrics.maxRadius)} cm`;
@@ -832,10 +867,11 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   $('close-presets').addEventListener('click',()=>$('presets').close());
   $('preset-side').addEventListener('change',renderPreset);
   $('preset-forward').addEventListener('change',renderPreset);
+  $('preset-pipboy').addEventListener('change',renderPreset);
   $('apply-preset').addEventListener('click',()=>{
     if(!doc || errors.size)return;
     const profile=P.list().find(p=>p.id===presetId);
-    commit(m=>Object.assign(m,P.apply(m,presetId,$('preset-side').value,Number($('preset-forward').value))));
+    commit(m=>Object.assign(m,P.apply(m,presetId,$('preset-side').value,Number($('preset-forward').value),$('preset-pipboy').value)));
     $('presets').close();$('body-map').setAttribute('viewBox','0 0 440 540');
     selected=1;$('show-other').checked=true;render();
     notify(`${profile.name} applied: ${profile.count} enabled holsters. Undo restores your previous layout. Check the fit in VR before relying on it.`, 'success');

@@ -5,7 +5,7 @@
   const svgNS = 'http://www.w3.org/2000/svg';
   const labels = Object.fromEntries(H.ANCHORS.map(a => [a.id, a.label]));
   let doc = null, model = null, selected = 1, filename = '', history = [], historyIndex = 0, exported = null, loading = 0, demoMode = false;
-  let view = 'front', mirrorTarget = 2, drag = null, presetId = 'front_reach';
+  let view = 'front', mirrorTarget = 2, drag = null, presetId = 'wasteland_rig';
   const errors = new Map(), drafts = new Map(), numericFields = new Map();
   const dirty = () => model && (drafts.size > 0 || !H.same(model, exported || doc.original));
   const changedCount = () => model ? model.slots.filter((s, i) => !H.same(s, doc.original.slots[i])).length : 0;
@@ -175,6 +175,10 @@
     const head = projected([j.head[0],j.head[1],j.head[2]+.055]);
     body.append(svg('ellipse',{cx:head[0],cy:head[1],rx:.084*G.SCALE,ry:.118*G.SCALE,class:'body-torso'}));
     if (projection === 'side') body.append(svg('path',{d:`M${head[0]+17} ${head[1]-6}l9 8-9 3`,class:'body-torso'}));
+    // A waist band makes the belt row legible in front and side projections.
+    const band=projection==='front'?[[-.18,-.12,1.025],[.18,-.12,1.025],[.18,-.12,.975],[-.18,-.12,.975]]:[[0,-.12,1.025],[0,.12,1.025],[0,.12,.975],[0,-.12,.975]];
+    body.append(svg('path',{d:shape(band)+'Z',class:'body-belt'}));
+    if(projection==='front')body.append(svg('path',{d:shape([[-.025,-.125,1.025],[.025,-.125,1.025],[.025,-.125,.975],[-.025,-.125,.975]])+'Z',class:'body-buckle'}));
     const floor = svg('text',{x:18,y:506,class:'map-direction'}); floor.textContent='REFERENCE / ~1.8 M'; body.append(floor);
   }
   function renderPreview() {
@@ -231,25 +235,32 @@
     }
   }
   function renderPreset() {
-    const profile=P.list().find(p=>p.id===presetId);
+    const pipBoySide=$('preset-pipboy').value;
+    const profile=P.list(pipBoySide).find(p=>p.id===presetId);
+    $('preset-pipboy').disabled=!profile.usesForearm;
     const side=$('preset-side').value, forward=Number($('preset-forward').value);
-    const placements=P.slots(presetId,side,forward), metrics=P.metrics(placements);
+    const placements=P.slots(presetId,side,forward,pipBoySide), metrics=P.metrics(placements);
     $('preset-name').textContent=`${profile.name} · ${profile.count} holsters`;
     $('preset-description').textContent=profile.description;
     $('preset-note').textContent=profile.note;
     $('preset-pairs').replaceChildren();
-    profile.pairs.forEach((pair,i)=>$('preset-pairs').append(element('li',{},`${i*2+1} / ${i*2+2} · ${pair.label} · ${pair.radius} cm radius`)));
+    profile.rows.forEach(row=>$('preset-pairs').append(element('li',{},`${row.ids.join(' / ')} · ${row.label} · ${row.radius} cm radius`)));
     for(const button of document.querySelectorAll('[data-preset]'))button.setAttribute('aria-pressed',String(button.dataset.preset===presetId));
     for(const direction of ['front','side']) {
       const drawing=$(direction==='front'?'preset-front':'preset-side-view');drawing.replaceChildren();
       const body=svg('g',{});drawing.append(body);drawBody(body,direction);
+      const groups=new Map();
       for(const row of placements) {
-        if(direction==='side' && row.id%2===0)continue;
         const [x,y]=G.project(G.world(row),direction);
-        const group=svg('g',{class:'holster-volume selected preset-volume','data-preset-slot':row.id});
-        group.append(svg('circle',{cx:x,cy:y,r:row.radius*G.SCALE,class:'grab-sphere'}));
-        const label=svg('g',{class:'holster-centre'});label.append(svg('circle',{cx:x,cy:y,r:direction==='side'?15:12}));
-        const text=svg('text',{x,y});text.textContent=direction==='side'?`${row.id}/${row.id+1}`:String(row.id).padStart(2,'0');label.append(text);group.append(label);drawing.append(group);
+        const key=direction==='side'?`${x.toFixed(5)},${y.toFixed(5)},${row.radius}`:String(row.id);
+        if(groups.has(key))groups.get(key).ids.push(row.id);
+        else groups.set(key,{x,y,radius:row.radius,ids:[row.id]});
+      }
+      for(const {x,y,radius,ids} of groups.values()) {
+        const group=svg('g',{class:'holster-volume selected preset-volume','data-preset-slot':ids.join(',')});
+        group.append(svg('circle',{cx:x,cy:y,r:radius*G.SCALE,class:'grab-sphere'}));
+        const label=svg('g',{class:'holster-centre'});label.append(svg('circle',{cx:x,cy:y,r:ids.length>1?15:12}));
+        const text=svg('text',{x,y});text.textContent=ids.length>1?ids.join('/'):String(ids[0]).padStart(2,'0');label.append(text);group.append(label);drawing.append(group);
       }
     }
     const radius=metrics.minRadius===metrics.maxRadius ? `${numberDisplay(metrics.minRadius)} cm` : `${numberDisplay(metrics.minRadius)}–${numberDisplay(metrics.maxRadius)} cm`;
@@ -267,10 +278,11 @@
   $('close-presets').addEventListener('click',()=>$('presets').close());
   $('preset-side').addEventListener('change',renderPreset);
   $('preset-forward').addEventListener('change',renderPreset);
+  $('preset-pipboy').addEventListener('change',renderPreset);
   $('apply-preset').addEventListener('click',()=>{
     if(!doc || errors.size)return;
     const profile=P.list().find(p=>p.id===presetId);
-    commit(m=>Object.assign(m,P.apply(m,presetId,$('preset-side').value,Number($('preset-forward').value))));
+    commit(m=>Object.assign(m,P.apply(m,presetId,$('preset-side').value,Number($('preset-forward').value),$('preset-pipboy').value)));
     $('presets').close();$('body-map').setAttribute('viewBox','0 0 440 540');
     selected=1;$('show-other').checked=true;render();
     notify(`${profile.name} applied: ${profile.count} enabled holsters. Undo restores your previous layout. Check the fit in VR before relying on it.`, 'success');

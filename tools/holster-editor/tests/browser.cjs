@@ -102,18 +102,26 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     }
     await upload(input);await waitFor('document.querySelector("#offset-x").value === "10"','reload after precision regression');
     // Presets are preview-only until applied, and each application is one undo step.
-    await click('#open-presets');await click('[data-preset="full_kit"]');
+    await click('#open-presets');await click('[data-preset="field_rig"]');
     assert.equal(await evaluate('document.querySelectorAll("#preset-front [data-preset-slot]").length'),8);
     await change('#preset-side','left');await change('#preset-forward','10');
     await click('#close-presets');await click('#export');
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     assert.deepEqual(await fs.readFile(path.join(downloads,'TTWVR.state')),await fs.readFile(input));
     await fs.unlink(path.join(downloads,'TTWVR.state'));
-    await click('#open-presets');await click('[data-preset="front_reach"]');
+    await click('#open-presets');await click('[data-preset="wasteland_rig"]');
     await change('#preset-side','right');await change('#preset-forward','0');
     await screenshot('holster-editor-presets-library.png');
-    await click('[data-preset="arms_only"]');
+    await click('[data-preset="gun_belt"]');await screenshot('holster-editor-gun-belt.png');
+    await click('[data-preset="utility_rig"]');
+    assert.equal(await evaluate('document.querySelector("#preset-pipboy").value'),'right');
+    assert.match(await evaluate('document.querySelector("#preset-pairs").textContent'),/8 · Left forearm utility/);
+    await change('#preset-pipboy','left');
+    assert.match(await evaluate('document.querySelector("#preset-pairs").textContent'),/8 · Right forearm utility/);
+    await change('#preset-pipboy','right');
+    assert.equal(await evaluate('document.querySelectorAll("#preset-side-view [data-preset-slot]").length'),5);
     await change('#preset-side','left');await change('#preset-forward','5');
+    assert.match(await evaluate('document.querySelector("#preset-pairs").textContent'),/8 · Left forearm utility/);
     await screenshot('holster-editor-presets.png');
     await cdp('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
     assert.equal(await evaluate('document.querySelector("#presets").scrollWidth <= document.querySelector("#presets").clientWidth'),true);
@@ -121,18 +129,20 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await cdp('Emulation.setDeviceMetricsOverride',{width:1440,height:1250,deviceScaleFactor:1,mobile:false});
     await click('#apply-preset');
     assert.equal(await evaluate('document.querySelector("#presets").open'),false);
-    assert.equal(await evaluate('document.querySelector("#anchor").value'),'left_upper_arm');
-    assert.equal(await evaluate('document.querySelector("#enabled-count").textContent'),'4 / 8');
+    assert.equal(await evaluate('document.querySelector("#anchor").value'),'pelvis');
+    assert.equal(await evaluate('document.querySelector("#enabled-count").textContent'),'8 / 8');
     await click('#export');
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     const presetExport=H.parse(await fs.readFile(path.join(downloads,'TTWVR.state'))).model;
-    assert.deepEqual(presetExport,P.apply(H.parse(H.demo()).model,'arms_only','left',5));
+    assert.deepEqual(presetExport,P.apply(H.parse(H.demo()).model,'utility_rig','left',5,'right'));
+    assert.equal(presetExport.slots[7].anchor,'left_forearm');
+    assert.equal(presetExport.slots.some(s=>s.anchor==='right_forearm'),false);
     await fs.unlink(path.join(downloads,'TTWVR.state'));
     await click('#undo');await click('#export');
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     assert.deepEqual(await fs.readFile(path.join(downloads,'TTWVR.state')),await fs.readFile(input));
     await fs.unlink(path.join(downloads,'TTWVR.state'));
-    await click('#redo');assert.equal(await evaluate('document.querySelector("#anchor").value'),'left_upper_arm');
+    await click('#redo');assert.equal(await evaluate('document.querySelector("#anchor").value'),'pelvis');
     await click('#undo');
     // Live preview: real mouse drags, physical dimensions, and one undo per gesture.
     const currentWorld = () => evaluate(`HolsterGeometry.world({anchor:document.querySelector('#anchor').value,offset:['x','y','z'].map(a=>Number(document.querySelector('#offset-'+a).value)/100)})`);

@@ -5,45 +5,83 @@ const H=require('../src/state.js');
 const G=require('../src/geometry.js');
 const P=require('../src/presets.js');
 const close=(a,b)=>a.forEach((v,i)=>assert.ok(Math.abs(v-b[i])<1e-10,`${a} != ${b}`));
-test('seven distinct layouts include forward-facing limb and torso choices',()=>{
- assert.deepEqual(P.list().map(p=>[p.id,p.count]),[['front_reach',6],['upper_body',6],['torso_front',4],['arms_only',4],['large_targets',4],['thigh_kit',4],['full_kit',8]]);
+const variants=function*(){for(const p of P.list())for(const side of ['right','left'])for(const forward of [0,5,10])for(const pipBoy of ['right','left'])yield {p,side,forward,pipBoy,slots:P.slots(p.id,side,forward,pipBoy)};};
+test('seven gear layouts include a belt/vest default and one optional forearm utility',()=>{
+ assert.deepEqual(P.list().map(p=>[p.id,p.count]),[['wasteland_rig',8],['gun_belt',4],['chest_rig',6],['travel_vest',6],['shoulder_rig',6],['field_rig',8],['utility_rig',8]]);
  assert.equal(new Set(P.list().map(p=>JSON.stringify(P.slots(p.id)))).size,7);
- const copy=P.list();copy[0].pairs[0].radius=42;assert.equal(P.list()[0].pairs[0].radius,8);
+ const copy=P.list();copy[0].rows[0].radius=42;assert.equal(P.list()[0].rows[0].radius,6);
 });
-test('all variants stay in front and keep grab spheres separated',()=>{
- for(const p of P.list())for(const side of ['right','left'])for(const forward of [0,5,10]) {
-  const slots=P.slots(p.id,side,forward);
-  assert.equal(slots.length,p.count);assert.ok(P.metrics(slots).gap>.06);
+test('belt targets form a single-height arc with front pouches and side hip holsters',()=>{
+ const s=P.slots('gun_belt'),front=G.world(s[0]),hip=G.world(s[2]);
+ assert.ok(s.every(x=>x.anchor==='pelvis'));assert.ok(s.every(x=>Math.abs(G.world(x)[2]-1)<1e-10));
+ assert.ok(front[0]<hip[0]);assert.ok(front[1]<hip[1]);
+ close(front,[.095,-.19,1]);close(hip,[.25,-.075,1]);
+ const all=P.slots('wasteland_rig');assert.deepEqual(all.map(s=>s.anchor),['pelvis','pelvis','pelvis','pelvis','chest','chest','chest','chest']);
+ assert.ok(G.world(all[4])[2]>G.world(all[6])[2]);assert.ok(G.world(all[6])[2]>hip[2]);
+});
+test('every variant retains separate spheres, useful height and no duplicate arm targets',()=>{
+ for(const {p,slots} of variants()) {
+  assert.equal(slots.length,p.count);assert.ok(P.metrics(slots).gap>.0499);
+  for(const anchor of ['left_upper_arm','right_upper_arm','left_forearm','right_forearm'])assert.ok(slots.filter(s=>s.anchor===anchor).length<=1);
   slots.forEach((s,i)=>{
-   assert.equal(s.id,i+1);assert.equal(s.enabled,true);assert.match(s.anchor,/^((right|left)_(upper_arm|forearm|thigh)|chest|pelvis)$/);
-   if(!['upper_body','torso_front'].includes(p.id))assert.match(s.anchor,/^(right|left)_(upper_arm|forearm|thigh)$/);
-   assert.ok(s.radius>=.05 && s.radius<=.45);
-   // Conservative reference front plane. This does not claim live collision validation.
-   const world=G.world(s);assert.ok(world[1]+s.radius<-.10);
-   assert.ok(world[2]>=.67); // no shin/ankle targets
+   assert.equal(s.id,i+1);assert.equal(s.enabled,true);assert.match(s.anchor,/^((right|left)_(forearm|thigh)|chest|pelvis)$/);
+   assert.ok(s.radius>=.05 && s.radius<=.45);assert.ok(G.world(s)[1]<0);assert.ok(G.world(s)[2]>=.7999);
   });
  }
 });
-test('slot order swaps sides and additional forward reach preserves height and lateral position',()=>{
+// A conservative reference torso cylinder and capsule limbs, not a live avatar
+// collision model. Unlike a single forward plane, this allows real side holsters.
+function torsoDistance(p) {
+ const x=Math.abs(p[0]),y=Math.abs(p[1]-.01),a=.18,b=.115;
+ let lateral=0;
+ if((x/a)**2+(y/b)**2>1) {
+  const squared=t=>(x-a*Math.cos(t))**2+(y-b*Math.sin(t))**2;
+  let lo=0,hi=Math.PI/2;
+  for(let i=0;i<90;i++){const m1=lo+(hi-lo)/3,m2=hi-(hi-lo)/3;if(squared(m1)<squared(m2))hi=m2;else lo=m1;}
+  lateral=Math.sqrt(squared((lo+hi)/2));
+ }
+ return Math.hypot(lateral,Math.max(.90-p[2],p[2]-1.48,0));
+}
+function segmentDistance(p,a,b) {
+ const ab=b.map((v,i)=>v-a[i]),ap=p.map((v,i)=>v-a[i]);
+ const dot=(u,v)=>u.reduce((s,x,i)=>s+x*v[i],0);
+ const t=Math.max(0,Math.min(1,dot(ap,ab)/dot(ab,ab)));
+ return Math.hypot(...p.map((v,i)=>v-a[i]-t*ab[i]));
+}
+test('grab spheres stay outside the reference torso and limb volumes, including side belt holsters',()=>{
+ for(const {slots} of variants())for(const s of slots) {
+  const p=G.world(s);assert.ok(torsoDistance(p)-s.radius>.01,`${s.anchor} intersects reference torso`);
+  for(const side of ['right','left'])for(const [a,b,r] of [['upper_arm','forearm',.05],['forearm','hand',.0375],['thigh','shin',.065],['shin','foot',.0475]]) {
+   assert.ok(segmentDistance(p,G.joints[`${side}_${a}`],G.joints[`${side}_${b}`])-r-s.radius>.01,`${s.anchor} intersects reference ${side} ${a}`);
+  }
+ }
+});
+test('pair order swaps only paired slots; forward spacing preserves height and lateral position',()=>{
  for(const p of P.list()) {
   const right=P.slots(p.id),left=P.slots(p.id,'left'),forward=P.slots(p.id,'right',10);
-  right.forEach((slot,i)=>{
-   const a=G.world(slot),b=G.world(left[i]);close(b,G.reflect(a));
-   close(G.world(forward[i]),[a[0],a[1]-.1,a[2]]);
-   if(i%2===0){assert.ok(a[0]>0);assert.ok(b[0]<0);close(G.world(right[i+1]),G.reflect(a));}
-  });
+  for(const row of p.rows)for(const id of row.ids) {
+   const a=G.world(right[id-1]),b=G.world(left[id-1]);
+   close(b,row.ids.length===2?G.reflect(a):a);
+   close(G.world(forward[id-1]),[a[0],a[1]-.1,a[2]]);
+  }
  }
 });
-test('apply is atomic data transformation: preserves input, fallbacks, visibility and unused placements',()=>{
+test('Pip-Boy forearm is reserved independently of pair order and forward spacing',()=>{
+ for(const {p,slots,pipBoy} of variants()) {
+  assert.ok(!slots.some(s=>s.anchor===`${pipBoy}_forearm`));
+  const forearm=slots.filter(s=>s.anchor.endsWith('_forearm'));
+  assert.equal(forearm.length,p.id==='utility_rig'?1:0);
+  if(forearm.length){assert.equal(forearm[0].id,8);assert.equal(forearm[0].anchor,`${pipBoy==='right'?'left':'right'}_forearm`);}
+ }
+ assert.equal(P.slots('utility_rig')[7].anchor,'left_forearm');
+ assert.equal(P.list('right').find(p=>p.id==='utility_rig').rows.at(-1).label,'Left forearm utility');
+});
+test('apply preserves input, fallbacks, visibility and unused placements',()=>{
  const source=H.parse(H.demo()).model;source.show=false;const snapshot=H.clone(source);
  for(const p of P.list()) {
   const next=P.apply(source,p.id,'left',5);H.validate(next);
-  assert.deepEqual(source,snapshot);assert.equal(next.show,false);
-  assert.equal(next.slots.filter(s=>s.enabled).length,p.count);
-  next.slots.forEach((s,i)=>{
-   assert.deepEqual(s.position,source.slots[i].position);
-   if(i>=p.count)assert.deepEqual(s,{...source.slots[i],enabled:false});
-  });
+  assert.deepEqual(source,snapshot);assert.equal(next.show,false);assert.equal(next.slots.filter(s=>s.enabled).length,p.count);
+  next.slots.forEach((s,i)=>{assert.deepEqual(s.position,source.slots[i].position);if(i>=p.count)assert.deepEqual(s,{...source.slots[i],enabled:false});});
  }
 });
 test('each profile exports and reloads while retaining unrelated state and original bytes',()=>{
@@ -55,18 +93,11 @@ test('each profile exports and reloads while retaining unrelated state and origi
   assert.deepEqual(d.bytes,bytes);assert.equal(read.encoding,encoding);
   assert.match(read.text,/\[SavedHeight\]\r\nHead=1.700\r\nHips=0.000/);
   assert.match(read.text,/\[SavedWristBoy\]\r\n1=hud/);
-  assert.match(read.text,/\[Keep\]\r\nsetting=original calibration ☢\r\n/);
-  assert.deepEqual(read.model,model);
+  assert.match(read.text,/\[Keep\]\r\nsetting=original calibration ☢\r\n/);assert.deepEqual(read.model,model);
  }
 });
-test('invalid preset options are rejected without changing the source state',()=>{
+test('invalid preset options are rejected without changing source state',()=>{
  const model=H.parse(H.demo()).model,snapshot=H.clone(model);
- for(const args of [['unknown'],['front_reach','up'],['arms_only','right',-5],['full_kit','left',Infinity]])assert.throws(()=>P.apply(model,...args));
+ for(const args of [['unknown'],['gun_belt','up'],['utility_rig','right',-5],['field_rig','left',Infinity],['utility_rig','right',0,'up']])assert.throws(()=>P.apply(model,...args));
  assert.deepEqual(model,snapshot);
-});
-
-test('torso options explicitly retain chest and pelvis bindings with targets in front',()=>{
- const torso=P.slots('torso_front');assert.deepEqual(torso.map(s=>s.anchor),['chest','chest','pelvis','pelvis']);
- for(const s of torso){const p=G.world(s);assert.ok(p[1]<-.25);assert.ok(s.radius>=.08);}
- assert.deepEqual(P.slots('upper_body').map(s=>s.anchor),['right_upper_arm','left_upper_arm','chest','chest','pelvis','pelvis']);
 });

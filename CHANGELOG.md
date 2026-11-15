@@ -1,5 +1,11 @@
 # Changes
 
+## Belt, vest and realistic holster layouts — 2026-11-15
+
+- Replace the limb-heavy preset collection with seven gear-style layouts. Default to four belt positions and four torso pockets; add a visible belt reference and front-pouch/side-hip placement.
+- Keep only one optional forearm utility target, opposite the selected Pip-Boy arm. Reserve the right forearm by default, independently of paired slot order.
+- Validate belt geometry, torso/limb proxy clearance, separation, state preservation and exports across all 84 variants, plus actual browser downloads and undo. Physical fit remains a headset check.
+
 ## Forward-facing holster preset profiles — 2026-11-15
 
 - Add seven previewable layouts using limb and torso anchors, with forward clearance for torso grab points, mirrored pairs, right/left slot order and optional extra forward spacing.

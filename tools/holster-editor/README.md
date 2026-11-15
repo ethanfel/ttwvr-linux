@@ -28,42 +28,47 @@ extension. The file contains all scripts, styles and artwork.
 **Try a sample** demonstrates the controls. Load your own file to enable export.
 The tool never overwrites game files directly.
 
-## Preset layouts — Field Kit 1.2
+## Preset layouts — Field Kit 1.3
 
-Open **Preset layouts** above the slot list. Select a profile to see its front
-and side previews, then choose **Apply**. Browsing or closing the preview does
-not change your layout; applying is one undoable edit.
+Open **Preset layouts** above the slot list. The presets now follow wearable
+gear positions: a belt around the waist, hip holsters, chest and vest pockets,
+with optional underarm, thigh or single-forearm storage. The default uses the
+belt and torso, leaving the arms free.
 
-| Profile | Enabled slots | Anchors and intended placement |
+| Profile | Enabled slots | Placement |
 |---|---:|---|
-| Front reach | 6 | Upper arms, forearms and upper thighs; forward grab points |
-| Upper body | 6 | Upper arms, chest and pelvis; chest/belt targets offset in front |
-| Torso front | 4 | Chest and pelvis only, with clearance in front of the torso |
-| Arms only | 4 | Upper arms and forearms; no lower targets |
-| Large targets | 4 | Upper arms and upper thighs, with larger 10.5 cm grab radii |
-| Thigh kit | 4 | Two targets on the front of each thigh |
-| Full kit | 8 | Front reach plus a second, lower pair on the thighs |
+| Wasteland rig | 8 | Four belt positions and four vest pockets; the default |
+| Gun belt | 4 | Two front pouches and a holster on each hip, at one belt height |
+| Chest rig | 6 | Four belt positions plus two chest pockets |
+| Travel vest | 6 | Two front-belt pouches plus four chest/abdomen pockets |
+| Shoulder rig | 6 | Four belt positions plus two underarm holsters, anchored to the chest |
+| Field rig | 8 | Four belt positions, two chest pockets and one upper-thigh holster per leg |
+| Utility rig | 8 | Four belt positions, two chest pockets, a centre vest pouch and one free-forearm target |
 
-Both torso and limb anchors are available. Torso targets are offset forward so
-reaching them does not require putting your hand inside the reference body.
-You can choose whether odd-numbered slots are on your right or left and move
-all preset targets **5 or 10 cm farther forward**. Each pair is mirrored using
-the verified bone frames. Previews show radii and the smallest sphere-to-sphere
-gap in the reference pose; side views label a mirrored pair together because
-both occupy the same projected location.
+**Your right forearm is reserved for the Pip-Boy by default.** Utility rig uses
+only the **left forearm**, with no second target on that arm. If your Pip-Boy is
+on the other arm, set **Pip-Boy arm** accordingly. This changes the preset's
+reserved arm; it does not move the in-game Pip-Boy. Swapping paired slot order
+never moves the utility target onto the reserved arm.
 
-Apply updates the chosen slots' anchors, local offsets, radii and enabled state.
-Other slots are disabled while retaining their existing placements. All saved
-body-relative fallback positions, global visibility, calibration and unrelated
-state sections stay unchanged. The explicit anchors drive the placement; TTWVR
-can refresh the fallback positions when it runs. Presets do not assign inventory
-items to hotkeys.
+Preview both views before applying. The belt follows an arc: front pouches sit
+farther forward, while the hip holsters sit farther out to the sides. Torso
+pockets sit clear of the reference body. A waist band in the preview makes the
+belt height visible. You can reverse right/left **paired** slot order or move
+all targets another **5 or 10 cm forward**. Single centre/forearm targets retain
+their intended locations. Side views combine labels only when their projections
+coincide.
 
-These are practical **starting layouts**, not measured ergonomic optima. Their
-reference positions and separation have been checked, but the current body pose,
-calibration, clothing and wrist Pip-Boy can affect reach. Test the fit in VR and
-adjust individual slots with the usual controls. The lower thigh pair takes a
-longer reach. Export each finished layout to keep it as a separate profile.
+Browsing or closing the preview leaves your layout unchanged. **Apply** updates
+anchors, offsets, radii and enabled flags in one undoable edit. Other slots are
+disabled without erasing their placements. Saved fallback positions, global
+visibility, calibration and unrelated state sections are preserved. Presets do
+not assign inventory items to hotkeys.
+
+The profiles are gear-inspired starting layouts. Reference body clearance and
+sphere separation have been checked; actual reach still depends on calibration,
+pose and equipment. Check the fit in VR, then adjust individual slots. Export
+each finished layout to keep it as a separate profile.
 
 ![Preset layout chooser](images/field-kit-presets.png)
 
