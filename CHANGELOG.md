@@ -1,5 +1,11 @@
 # Changes
 
+## Holster front/back correction — 2026-11-15
+
+- Correct the editor’s reference-world Y direction in Field Kit 1.4. Earlier previews and presets could place front body holsters behind the player. Skeleton toes and recorded gameplay establish the forward direction.
+- Add an explicit, undoable body-placement repair under Help. Preserve arm holsters, radii, toggles, fallback positions and unrelated state; never auto-migrate a loaded file.
+- Cover the reported offsets, independent orientation evidence, tilted bones, repeat safety, preserved state and real browser repair/export/undo. Rebuild the standalone HTML and portable ZIP. Physical fit still needs a headset check.
+
 ## Belt, vest and realistic holster layouts — 2026-11-15
 
 - Replace the limb-heavy preset collection with seven gear-style layouts. Default to four belt positions and four torso pockets; add a visible belt reference and front-pouch/side-hip placement.

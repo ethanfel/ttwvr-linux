@@ -79,6 +79,9 @@
     const count = changedCount(), changed = model && !H.same(model, doc.original);
     $('export').disabled = !doc || demoMode || !!errors.size;
     $('mirror-slot').disabled = !doc || !!errors.size;
+    const repairCount = model?.slots.filter(s => G.repairBodyPlacement(s) !== s).length || 0;
+    $('repair-body').disabled = !repairCount || !!errors.size;
+    $('repair-body').textContent = `Repair old body placement${repairCount ? ` (${repairCount} slots)` : ''}`;
     $('export').title = demoMode ? 'Load your own state file to export changes' : 'Download a copy of TTWVR.state';
     $('undo').disabled = historyIndex <= 0; $('redo').disabled = historyIndex >= history.length - 1;
     $('revert').disabled = !changed && !errors.size;
@@ -159,7 +162,7 @@
       limb(`${side}_shin`,`${side}_foot`,.095);
       limb(`${side}_upper_arm`,`${side}_forearm`,.10);
       limb(`${side}_forearm`,`${side}_hand`,.075);
-      const foot = j[`${side}_foot`]; path([foot,[foot[0],foot[1]-.12,foot[2]-.02]],.08,'body-limb');
+      path([j[`${side}_foot`],j[`${side}_toe`]],.08,'body-limb');
     }
     if (projection === 'front') {
       const torso = ['right_upper_arm','chest','left_upper_arm','left_thigh','pelvis','right_thigh'].map(k=>j[k]);
@@ -402,6 +405,13 @@
     try { localStorage.setItem('ttwvr-holster-theme', color); } catch { /* File URLs may disallow storage. */ }
   });
   try { if (localStorage.getItem('ttwvr-holster-theme') === 'amber') $('amber').click(); } catch { /* optional preference */ }
+  $('repair-body').addEventListener('click', () => {
+    if (!doc || errors.size) return;
+    let count = 0;
+    commit(m => { m.slots = m.slots.map(s => { const fixed = G.repairBodyPlacement(s); if (fixed !== s) count++; return fixed; }); });
+    $('instructions').close(); $('view-side').click();
+    notify(`Moved ${count} body holster${count === 1 ? '' : 's'} from behind to in front of the reference body. Arm placements are unchanged. Review, then export; Undo restores the layout.`, 'success');
+  });
   $('help').addEventListener('click', () => $('instructions').showModal());
   $('close-help').addEventListener('click', () => $('instructions').close());
   $('instructions').addEventListener('click', e => { if (e.target === $('instructions')) {

@@ -32,7 +32,7 @@ test('every variant retains separate spheres, useful height and no duplicate arm
 // A conservative reference torso cylinder and capsule limbs, not a live avatar
 // collision model. Unlike a single forward plane, this allows real side holsters.
 function torsoDistance(p) {
- const x=Math.abs(p[0]),y=Math.abs(p[1]-.01),a=.18,b=.115;
+ const x=Math.abs(p[0]),y=Math.abs(p[1]+.01),a=.18,b=.115;
  let lateral=0;
  if((x/a)**2+(y/b)**2>1) {
   const squared=t=>(x-a*Math.cos(t))**2+(y-b*Math.sin(t))**2;

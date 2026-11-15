@@ -28,7 +28,23 @@ extension. The file contains all scripts, styles and artwork.
 **Try a sample** demonstrates the controls. Load your own file to enable export.
 The tool never overwrites game files directly.
 
-## Preset layouts — Field Kit 1.3
+## Fix placements from Field Kit 1.1–1.3
+
+**Field Kit 1.4 corrects reversed front/back positioning in the editor.** Earlier
+previews and presets could place a sphere behind you while showing it in front.
+The forward direction is now checked against skeleton toes and recorded gameplay.
+
+To retain a customized layout, load it in the updated editor, open **Help**, and
+choose **Repair old body placement**. It moves body-anchored centres behind the
+reference body to the front, preserving their sideways position, height and radius.
+This includes pelvis, chest, thigh and shin anchors, even disabled slots. It leaves
+arm anchors, Automatic slots, fallbacks, calibration and other state untouched.
+Intentionally rear-mounted body holsters would also move; inspect **Side** and use
+**Undo** if needed. Loading a file never changes it automatically. Repeating the
+repair cannot flip a repaired sphere back. Export, back up and replace the state
+with the game closed, then check the fit in VR. Alternatively, apply a fresh preset.
+
+## Preset layouts — Field Kit 1.4
 
 Open **Preset layouts** above the slot list. The presets now follow wearable
 gear positions: a belt around the waist, hip holsters, chest and vest pockets,

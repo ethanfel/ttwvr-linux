@@ -8,6 +8,7 @@ const {spawn} = require('node:child_process');
 const assert = require('node:assert/strict');
 const H = require('../src/state.js');
 const P = require('../src/presets.js');
+const G = require('../src/geometry.js');
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 (async () => {
   const chrome = process.env.CHROME_BIN || '/opt/google/chrome/chrome';
@@ -101,6 +102,33 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
       return;
     }
     await upload(input);await waitFor('document.querySelector("#offset-x").value === "10"','reload after precision regression');
+    // Repair an old body layout through the real UI; load alone must not alter it.
+    const legacyDoc=H.parse(H.demo()),legacyModel=H.clone(legacyDoc.model);
+    Object.assign(legacyModel.slots[3],{anchor:'pelvis',offset:[.031845,-.2493891,-.095]});
+    const legacyInput=path.join(temp,'old-placement.state'),legacyBytes=H.serialize(legacyDoc,legacyModel);
+    await fs.writeFile(legacyInput,legacyBytes);await upload(legacyInput);
+    await waitFor('document.querySelector("#filename").textContent === "old-placement.state"','old layout load');
+    await click('#export');
+    for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
+    assert.deepEqual(await fs.readFile(path.join(downloads,'TTWVR.state')),Buffer.from(legacyBytes));
+    await fs.unlink(path.join(downloads,'TTWVR.state'));
+    await click('#help');assert.equal(await evaluate('document.querySelector("#repair-body").disabled'),false);
+    await click('#repair-body');assert.equal(await evaluate('document.querySelector("#instructions").open'),false);
+    assert.equal(await evaluate('document.querySelector("#view-side").getAttribute("aria-pressed")'),'true');
+    assert.equal(await evaluate('document.querySelector("#repair-body").disabled'),true);
+    await click('#export');
+    for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
+    const repaired=H.parse(await fs.readFile(path.join(downloads,'TTWVR.state'))).model;
+    assert.deepEqual(repaired,{...legacyModel,slots:legacyModel.slots.map(G.repairBodyPlacement)});
+    await fs.unlink(path.join(downloads,'TTWVR.state'));
+    await click('#undo');await click('#export');
+    for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
+    assert.deepEqual(await fs.readFile(path.join(downloads,'TTWVR.state')),Buffer.from(legacyBytes));
+    await fs.unlink(path.join(downloads,'TTWVR.state'));
+    await click('#redo');assert.equal(await evaluate('document.querySelector("#repair-body").disabled'),true);
+    assert.deepEqual(await fs.readFile(legacyInput),Buffer.from(legacyBytes));
+    await upload(input);await waitFor('document.querySelector("#filename").textContent === "TTWVR.state"','reload after body repair');
+    await click('#view-front');
     // Presets are preview-only until applied, and each application is one undo step.
     await click('#open-presets');await click('[data-preset="field_rig"]');
     assert.equal(await evaluate('document.querySelectorAll("#preset-front [data-preset-slot]").length'),8);
@@ -205,6 +233,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await click('#redo'); assert.equal(await evaluate('document.querySelector("#radius").value'),'10');
     await change('#radius','0'); assert.equal(await evaluate('document.querySelector("#export").disabled'),true);
     assert.equal(await evaluate('document.querySelector("#mirror-slot").disabled'),true);
+    assert.equal(await evaluate('document.querySelector("#repair-body").disabled'),true);
     await click('#open-presets');assert.equal(await evaluate('document.querySelector("#apply-preset").disabled'),true);await click('#close-presets');
     await click('#enabled');
     assert.equal(await evaluate('document.querySelector("#radius").value'),'0');
@@ -234,7 +263,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await cdp('Emulation.setDeviceMetricsOverride', {width:1024,height:768,deviceScaleFactor:1,mobile:false});
     assert.equal(await evaluate('document.documentElement.scrollWidth <= window.innerWidth'),true);
     assert.equal(errors.length,0,JSON.stringify(errors));assert.equal(requests.some(u=>/^https?:/.test(u)),false,JSON.stringify(requests));
-    console.log('PASS browser: preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
+    console.log('PASS browser: explicit body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
     console.log('PASS no network requests; source file unchanged; no browser exceptions.');
   } finally {
     try { await send('Browser.close'); } catch {}

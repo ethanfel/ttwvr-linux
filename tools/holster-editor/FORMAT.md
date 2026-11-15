@@ -69,7 +69,41 @@ unsupported anchors, incomplete slot data and non-finite numbers are rejected.
 An existing radius outside the mod's range is preserved on an unedited round-trip;
 any radius edit must fall within the verified range.
 
-## Gear-style preset profiles, Field Kit 1.3
+## Front/back correction, Field Kit 1.4
+
+Field Kit 1.1–1.3 used the supplied skeleton's world Y as the editor's **back**
+coordinate. This was incorrect: the skeleton is right/**forward**/up. Both toes
+extend roughly 11.63 skeleton units in positive Y from the feet. The corrected
+editor applies `B = diag(1,-1,1)` to reference origins and rotation rows after
+orthonormalizing the native frames. The resulting preview matrices are orthogonal
+with determinant -1; transpose remains their inverse. Local offsets do not change
+merely by loading a file. Sideways mirroring still reflects local Z.
+
+[Independent direction fixture](tests/direction-fixture.json) records both foot/toe
+positions from the original skeleton and one gameplay pelvis rotation with relative
+foot-to-toe vectors. Across 194 body-ready samples from the reported session, the
+horizontal toe heading agrees with pelvis local +Y: minimum dot 0.8661, median
+0.9975, maximum nearly 1. The old front pouch's local Y was -0.2493891 m, placing
+it behind the pelvis. This evidence establishes the direction, independently of
+the editor's projection math. It does not establish comfort or every live pose.
+
+**Repair old body placement** is explicit and undoable. For pelvis/chest/leg
+slots whose corrected preview centre has positive back, reflect that centre's
+back coordinate, then transform it into the same bone's local frame. This retains
+the old intended preview position and handles tilted bones and nonzero origins;
+it is not a local-Y sign flip. Arms and Automatic slots are untouched. Radii,
+enabled/visibility flags, fallback positions and other state remain unchanged.
+A repaired centre cannot be repaired back to the rear. No automatic migration is
+performed because state files do not record which editor version produced them,
+and deliberately rear-mounted holsters must remain valid.
+
+Regression coverage includes independent direction evidence, actual old belt/thigh
+offsets, tilted chest/shin repair, arm preservation, repeat safety, UTF export,
+and browser download/undo/redo. The earlier loader readback below verifies the
+state format, not the old preview's incorrect direction. Physical fit after this
+correction still needs a headset check.
+
+## Gear-style preset profiles, Field Kit 1.4
 
 `src/presets.js` defines target centres in reference right/back/up centimetres.
 The waist layouts use four points at 1.00 m reference height: front pouches at
@@ -88,7 +122,7 @@ The Pip-Boy selector affects preset placement only, not the actual wrist setting
 
 A single forward plane is inappropriate for real side belt holsters. Regression
 checks instead use a conservative reference torso cylinder with elliptical
-cross-section (right radius 0.18 m, depth radius 0.115 m, centred at back 0.01 m,
+cross-section (right radius 0.18 m, depth radius 0.115 m, centred at back -0.01 m,
 height interval 0.90–1.48 m), plus capsule limbs following the reference joints.
 Every preset sphere clears those proxy volumes by over 1 cm across both paired
 slot orders, all three forward-spacing choices and both Pip-Boy sides. The
@@ -100,7 +134,7 @@ Apply replaces anchors, offsets, radii and enabled flags in chosen slots. Others
 are disabled with their placements retained. Saved fallbacks, global visibility,
 calibration and unrelated state remain unchanged. No item binding is inferred.
 
-Validation: 39 Node tests, including nine profile tests and 84 preset variants.
+Validation: 43 Node tests, including nine profile tests and 84 preset variants.
 Checks cover belt arc/height, torso usage, sphere spacing, proxy body clearance,
 pair order, independent Pip-Boy reservation, input immutability and UTF-8/UTF-16
 exports. Chromium checks preview/cancel, actual utility-profile downloads with

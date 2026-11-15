@@ -42,5 +42,13 @@
       "maximum_rotation_residual": 2.9242653346896186e-06,
       "maximum_origin_residual_units": 2.0262700801687572e-05
     }
-  ]
+  ],
+  "direction_correction": {
+    "version": "Field Kit 1.4",
+    "native_axes": "right, forward, up",
+    "preview_axes": "right, back, up",
+    "conversion": "diag(1,-1,1) applied to origins and rotation rows after native-frame orthonormalization",
+    "evidence": "tests/direction-fixture.json",
+    "previous_limitation": "The bilateral mirror checks above did not validate front/back. Field Kit 1.1\u20131.3 mislabeled native +Y as back."
+  }
 }

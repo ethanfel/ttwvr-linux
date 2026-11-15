@@ -25,7 +25,7 @@ test('upper-arm offset along bone runs outward and downward on both sides',()=>{
  const rp=G.world(right),lp=G.world(left);
  assert.ok(rp[0]>G.frames.right_upper_arm.origin[0]);assert.ok(lp[0]<G.frames.left_upper_arm.origin[0]);
  assert.ok(rp[2]<G.frames.right_upper_arm.origin[2]);assert.ok(lp[2]<G.frames.left_upper_arm.origin[2]);
- near(rp.map((x,i)=>x-G.frames.right_upper_arm.origin[i]),[.087983,-.003999,-.04736],.0001);
+ near(rp.map((x,i)=>x-G.frames.right_upper_arm.origin[i]),[.087983,.003999,-.04736],.0001);
 });
 test('front and side dragging changes only the two displayed dimensions',()=>{
  for(const anchor of Object.keys(G.frames))for(const view of ['front','side']) {

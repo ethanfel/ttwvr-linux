@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
 // Reference coordinates: right, back, up (metres). Orthographic views, no perspective.
-// Frame orientation checked against TTWVR 1.1.6's supplied skeleton. See FORMAT.md.
+// Source skeleton is right, FORWARD, up; convert its world basis below. See FORMAT.md.
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -133,6 +133,7 @@
     -0.0032341,
     1.2184703
   ],
+  "right_toe": [0.1168718, 0.1371308, 0.0169413],
   "right_foot": [
     0.0942197,
     -0.0290597,
@@ -157,8 +158,17 @@
       frames[opposite(key)] = {origin: reflect(f.origin), rotation: f.rotation.map((v,i) => v * (i < 3 ? -1 : 1) * (i % 3 === 2 ? -1 : 1))};
     }
   }
-  for (const [key, f] of Object.entries(frames)) joints[key] = f.origin;
-  for (const key of ['right_hand', 'right_foot']) joints[opposite(key)] = reflect(joints[key]);
+  // NIF +Y points toward the toes. The UI uses +Y for BACK, so reflect the
+  // world basis AFTER orthonormalizing the source frames. This changes their
+  // determinant, not their inverse (transpose). Never reflect bone-local Y.
+  const toPreview = p => [p[0], -p[1], p[2]];
+  for (const [key, p] of Object.entries(joints)) joints[key] = toPreview(p);
+  for (const [key, f] of Object.entries(frames)) {
+    f.origin = toPreview(f.origin);
+    f.rotation = f.rotation.map((v, i) => i >= 3 && i < 6 ? -v : v);
+    joints[key] = f.origin;
+  }
+  for (const key of ['right_hand', 'right_foot', 'right_toe']) joints[opposite(key)] = reflect(joints[key]);
   function world(slot) {
     const f = frames[slot.anchor]; if (!f) return null;
     return multiply(f.rotation, slot.offset).map((v,i) => v + f.origin[i]);
@@ -178,7 +188,16 @@
     // Bilateral bone frames mirror local Z, NOT local X. Central anchors also use Z laterally.
     return {...slot, id: targetId, anchor: opposite(slot.anchor), offset: slot.anchor === 'auto' ? [0,0,0] : [slot.offset[0],slot.offset[1],-slot.offset[2]], position: [slot.position[0],-slot.position[1],slot.position[2]]};
   }
+  function repairBodyPlacement(slot) {
+    // Explicit recovery for pre-1.4 editor exports. Leave arms and Automatic
+    // untouched. Only move centres behind the reference body's centre plane;
+    // repeating this operation therefore cannot send a repaired slot back.
+    if (!['pelvis','chest','left_thigh','right_thigh','left_shin','right_shin'].includes(slot.anchor)) return slot;
+    const p = world(slot);
+    if (p[1] <= 1e-6) return slot;
+    return {...slot, offset: local(slot.anchor, [p[0], -p[1], p[2]])};
+  }
   const SCALE = 230;
   const project = (p, view = 'front') => [220 - p[view === 'side' ? 1 : 0] * SCALE, 490 - p[2] * SCALE];
-  return {frames, joints, world, local, move, mirror, opposite, reflect, project, SCALE};
+  return {frames, joints, world, local, move, mirror, opposite, reflect, repairBodyPlacement, project, SCALE};
 });
