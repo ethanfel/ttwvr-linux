@@ -20,6 +20,7 @@
 | Registry game path mismatch | Verify the managed game and private prefix first. Accept the path update when they are the intended copy. |
 | Missing GECK INIs | Accept the manager's copy prompt; these are editor INIs. |
 | Wrong prefix/game starts | Check setup.json, instance settings and dedicated global `fluorine/config.json`; global paths take precedence. |
+| `steam_mo2.py`: "supplied Steam runtime differs from the prepared command" | Try removing the explicit `--steam-runtime` argument and its path from the executable's **Wrapper options in Fluorine**, retaining `-- %command%`. See [Steam runtime mismatch](#steam-runtime-mismatch). |
 | Utility warning in game | Finish The Best of Times utilities and their separate INI presets. The patch tool does not replace ML Utilities Checker. |
 | WiVRn unavailable / `/run/user/0` | Use the generated launcher and its UID-preserving save-mount adapter. Connect WiVRn before starting. |
 | Black headset after loading | Check the OpenXR bridge hash/overlay and that the generated launcher is used. A newer Proton needs a revalidated patch. |
@@ -28,6 +29,39 @@
 | Manager waits for Fallout to close | Quit the game first; it is still using the mounted mods and saves. |
 | Flat play opens VR | Use `--profile "TTW - Flat"`, disable TTWVR in that profile, and close the previous manager/game first. |
 | FPS near half refresh rate | Runtime pacing can produce this at current frame times. 90 Hz does not universally impose a 45 FPS cap. Check GPU time/load as well as application FPS. |
+
+## Steam runtime mismatch
+
+If `steam_mo2.py` reports:
+
+```text
+supplied Steam runtime differs from the prepared command
+```
+
+Fluorine has already included a Steam runtime in its prepared launch command,
+but the wrapper's explicit `--steam-runtime` setting conflicts with it.
+The explicit setting is a fallback for cases where Fluorine cannot locate a
+runtime, such as some secondary-library setups.
+
+A user-confirmed workaround:
+
+1. Open the selected game executable's **Wrapper options inside Fluorine**.
+2. Remove only `--steam-runtime` and the path immediately following it, for example:
+
+   ```text
+   --steam-runtime "/path/to/SteamLinuxRuntime_4"
+   ```
+
+3. Keep all other arguments, including the final `-- %command%`.
+4. Save the executable settings and retry the launch.
+
+This lets the wrapper retain the runtime Fluorine already selected. Make this
+change in Fluorine's executable settings, not in Steam's Launch Options.
+
+If it still fails, include the complete **Wrapper options** and the latest log
+from `<instance>/logs/` in your support report. Those show the prepared command
+and runtime paths; a fresh Proton log may not exist because the wrapper rejects
+this launch before running Proton.
 
 ## Logs and checks
 
