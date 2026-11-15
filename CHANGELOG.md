@@ -1,5 +1,11 @@
 # Changes
 
+## Holster export precision fix — 2026-11-15
+
+- Fix valid dragged offsets failing export verification after premature decimal rounding. Preserve full edited precision and keep the export checks enabled.
+- Add a no-reload repair script to recover edits from an already-open Field Kit 1.1 tab; ship Field Kit 1.1.1 in the standalone HTML and ZIP.
+- Reproduce the old failure in Chromium, verify recovery and normal exports, and cover rounding boundaries and 500 generated drag/mirror layouts in regression tests.
+
 ## Visual holster placement and mirroring — 2026-11-15
 
 - Add front/side reference-body previews with physical grab spheres, live numeric updates, drag-to-position/resize, keyboard adjustment and one undo step per gesture.

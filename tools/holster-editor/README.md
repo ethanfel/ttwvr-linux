@@ -28,6 +28,26 @@ extension. The file contains all scripts, styles and artwork.
 **Try a sample** demonstrates the controls. Load your own file to enable export.
 The tool never overwrites game files directly.
 
+## Export recovery for an already-open 1.1 tab
+
+Field Kit **1.1.1** fixes `Export verification failed for a position value` after
+some drag operations. The old exporter rounded a coordinate before checking it,
+occasionally moving it across a game-float rounding boundary. The corrected
+exporter retains the edited value and keeps verification enabled.
+
+If your edits are still in the old tab, **do not reload it yet**:
+
+1. Open the browser console **in the editor tab** (Chrome/Edge: Ctrl+Shift+J;
+   Firefox: Ctrl+Shift+K).
+2. Paste the contents of [recover-export.js](recover-export.js) and press Enter.
+   It repairs that tab's export function in memory and requests a `TTWVR.state`
+   download with your existing edits. It has no network access and does not
+   write to the installed game. Only changed numbers are rounded to the game's
+   float32 values for compatibility with the old serializer.
+3. Once the download succeeds, open the updated editor and load that file.
+
+The portable ZIP includes the same script as `Recover-Open-Tab.js`.
+
 ## Find your configuration
 
 TTWVR stores its configuration in New Vegas's `FalloutNV` Documents folder.

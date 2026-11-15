@@ -129,8 +129,10 @@
   function format(n) {
     number(n, 'Value');
     if (Object.is(n, -0)) return '0';
-    // Enough precision for float32 round-trips without rounding unrelated fields.
-    return String(Number(Number(n).toPrecision(9)));
+    // Keep the shortest decimal that round-trips the edited JavaScript value.
+    // Rounding a double to nine digits can cross a float32 midpoint after a drag.
+    // Unchanged records retain their original spelling in serialize().
+    return String(n);
   }
   function serialize(doc, model = doc.model) {
     validate(model);
@@ -180,7 +182,7 @@
     const actual = parse(bytes).model;
     actual.slots.forEach((s, i) => {
       for (const field of ['position', 'offset']) s[field].forEach((v, j) => {
-        if (Math.fround(v) !== Math.fround(expected.slots[i][field][j])) throw new Error('Export verification failed for a position value.');
+        if (Math.fround(v) !== Math.fround(expected.slots[i][field][j])) throw new Error(`Export verification failed for holster ${s.id} ${field}[${j}].`);
       });
       if (Math.fround(s.radius) !== Math.fround(expected.slots[i].radius) || s.anchor !== expected.slots[i].anchor || s.enabled !== expected.slots[i].enabled) throw new Error('Export verification failed for a holster.');
     });

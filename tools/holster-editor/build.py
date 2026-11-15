@@ -32,5 +32,6 @@ if args.package:
     with zipfile.ZipFile(args.package, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
         archive.writestr('TTWVR-Holster-Editor.html', html.encode('utf-8'))
         archive.writestr('README.txt', (root/'PORTABLE.txt').read_bytes())
+        archive.writestr('Recover-Open-Tab.js', (root/'recover-export.js').read_bytes())
         archive.writestr('LICENSE.txt', (root.parents[1]/'LICENSE').read_bytes())
     print(args.package.resolve())

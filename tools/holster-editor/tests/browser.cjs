@@ -57,7 +57,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await cdp('Page.enable'); await cdp('Runtime.enable'); await cdp('Network.enable');
     await cdp('Emulation.setDeviceMetricsOverride', {width:1440,height:1250,deviceScaleFactor:1,mobile:false});
     await send('Browser.setDownloadBehavior', {behavior:'allow', downloadPath:downloads});
-    await cdp('Page.navigate', {url:pathToFileURL(path.resolve(__dirname,'../index.html')).href});
+    await cdp('Page.navigate', {url:pathToFileURL(process.env.LEGACY_EDITOR ? path.resolve(process.env.LEGACY_EDITOR) : path.resolve(__dirname,'../index.html')).href});
     await waitFor('document.querySelectorAll(".slot").length === 8', 'initial UI');
     assert.equal(await evaluate('document.querySelector("#export").disabled'), true);
     await click('#demo'); assert.equal(await evaluate('document.querySelector("#export").disabled'), true);
@@ -67,6 +67,32 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     assert.deepEqual(await fs.readFile(path.join(downloads,'TTWVR.state')),await fs.readFile(input));
     await fs.unlink(path.join(downloads,'TTWVR.state'));
+    // This drag-generated coordinate failed in 1.1's nine-digit exporter.
+    await change('#offset-x','34.28074171588672');
+    await change('#offset-y','-3.40234804687308');
+    await change('#offset-z','13.368773126694206');
+    await click('#export');
+    if (process.env.LEGACY_EDITOR) {
+      assert.match(await evaluate('document.querySelector("#notice").textContent'),/Export verification failed for a position value/);
+      assert.equal((await fs.readdir(downloads)).includes('TTWVR.state'),false);
+      // Repair the actual old app in place; never reload its document or lose edits.
+      await evaluate(await fs.readFile(path.resolve(__dirname,'../recover-export.js'),'utf8'));
+    }
+    for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
+    const recovered=H.parse(await fs.readFile(path.join(downloads,'TTWVR.state'))).model;
+    assert.equal(Math.fround(recovered.slots[0].offset[1]),Math.fround(-.0340234804687308));
+    assert.deepEqual(recovered.slots.slice(1),H.parse(H.demo()).model.slots.slice(1));
+    assert.deepEqual(recovered.slots[0].position,H.parse(H.demo()).model.slots[0].position);
+    assert.equal(await evaluate('document.querySelector("#offset-y").value'),'-3.40235');
+    assert.deepEqual(await fs.readFile(input),Buffer.from(H.demo()));
+    await fs.unlink(path.join(downloads,'TTWVR.state'));
+    if(process.env.LEGACY_EDITOR) {
+      assert.equal(errors.length,0,JSON.stringify(errors));
+      assert.equal(requests.some(u=>/^https?:/.test(u)),false,JSON.stringify(requests));
+      console.log('PASS old Field Kit 1.1 failure reproduced; console repair exports existing edits without reload, source changes or network requests.');
+      return;
+    }
+    await upload(input);await waitFor('document.querySelector("#offset-x").value === "10"','reload after precision regression');
     // Live preview: real mouse drags, physical dimensions, and one undo per gesture.
     const currentWorld = () => evaluate(`HolsterGeometry.world({anchor:document.querySelector('#anchor').value,offset:['x','y','z'].map(a=>Number(document.querySelector('#offset-'+a).value)/100)})`);
     const near = (a,b,eps=1e-6) => a.forEach((v,i)=>assert.ok(Math.abs(v-b[i])<eps, `${a} != ${b}`));
@@ -137,7 +163,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await click('#show'); await click('#export');
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     const exported = H.parse(await fs.readFile(path.join(downloads,'TTWVR.state')));
-    assert.equal(exported.model.slots[2].anchor,'left_forearm'); assert.deepEqual(exported.model.slots[2].offset,[.123,-.045,.024]);
+    assert.equal(exported.model.slots[2].anchor,'left_forearm'); assert.deepEqual(exported.model.slots[2].offset.map(Math.fround),[.123,-.045,.024].map(Math.fround));
     assert.equal(exported.model.slots[2].radius,.1);assert.equal(exported.model.slots[2].enabled,true);assert.equal(exported.model.show,false);
     assert.deepEqual(await fs.readFile(input), Buffer.from(H.demo()));
     await upload(badInput); await waitFor('document.querySelector("#notice").classList.contains("error")','invalid-file message');

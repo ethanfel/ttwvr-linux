@@ -69,6 +69,23 @@ unsupported anchors, incomplete slot data and non-finite numbers are rejected.
 An existing radius outside the mod's range is preserved on an unedited round-trip;
 any radius edit must fall within the verified range.
 
+## Export precision fix, Field Kit 1.1.1
+
+The old nine-significant-digit formatter could change `Math.fround(value)` when
+rounding a double produced by dragging. A reproduced local offset was
+`-0.0340234804687308`: writing `-0.0340234805` crossed a float32 midpoint and
+correctly triggered the export guard. The serializer now uses the shortest
+round-tripping decimal of the edited JavaScript value. It still preserves
+unchanged record spellings and verifies exported bytes; verification was not
+removed or relaxed.
+
+Regression validation: 30 Node tests, including midpoint-adjacent values across
+all numeric fields and 500 deterministic drag/mirror layouts; full Chromium
+load/edit/download tests; and the actual previous Field Kit 1.1 HTML reproducing
+the failure, then successfully exporting through the no-reload recovery script.
+The latter retains the loaded input, current tab edits and unrelated slot data.
+No additional game/DLL behavior changed.
+
 ## Reference geometry and mirroring
 
 `src/geometry.js` contains small reference coordinate frames, not a model/mesh.

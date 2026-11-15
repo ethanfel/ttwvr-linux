@@ -46,3 +46,19 @@ test('mirror preserves source, replaces a different destination and serializes a
  assert.deepEqual(reloaded.slots.slice(2),doc.model.slots.slice(2));
  assert.throws(()=>G.mirror(before,1));assert.throws(()=>G.mirror(before,9));assert.throws(()=>G.mirror(before,2.5));
 });
+
+test('deterministic front/side drags and mirrored copies remain exportable',()=>{
+ let seed=0x55aa1122;
+ const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/2**32);
+ const anchors=Object.keys(G.frames);
+ for(let i=0;i<500;i++) {
+  const doc=H.parse(H.demo()),m=H.clone(doc.model),s=m.slots[0];
+  s.anchor=anchors[i%anchors.length];
+  s.offset=G.move(s,i%2?'front':'side',(random()-.5)*.6,(random()-.5)*.6);
+  s.radius=.05+random()*.4;
+  m.slots[1]=G.mirror(s,2);
+  const out=H.parse(H.serialize(doc,m)).model;
+  assert.deepEqual(out.slots[0].offset,s.offset.map(n=>n===0?0:n));assert.deepEqual(out.slots[1].offset,m.slots[1].offset.map(n=>n===0?0:n));
+  assert.equal(out.slots[0].radius,s.radius);
+ }
+});

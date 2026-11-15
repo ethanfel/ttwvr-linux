@@ -71,3 +71,32 @@ test('high precision edits survive as the same game float32 values', () => {
   const d=H.parse(fixture());d.model.slots[1].offset=[1/3,-1e-12,123456.789];
   const r=H.parse(H.serialize(d));r.model.slots[1].offset.forEach((v,i)=>assert.equal(Math.fround(v),Math.fround(d.model.slots[1].offset[i])));
 });
+
+// The previous nine-digit formatter crossed a float32 midpoint on this real
+// drag result, even though the edited value itself was valid.
+test('drag coordinates near float32 midpoints export without double rounding', () => {
+  const d=H.parse(fixture());
+  const offsets=[.3428074171588672,-.0340234804687308,.13368773126694206];
+  d.model.slots[0].offset=offsets;
+  d.model.slots[0].position[1]=offsets[1];
+  const bytes=H.serialize(d), reloaded=H.parse(bytes);
+  assert.deepEqual(reloaded.model.slots[0].offset,offsets);
+  assert.equal(reloaded.model.slots[0].position[1],offsets[1]);
+  assert.equal(section(text(bytes),'Unrelated'),section(fixture(),'Unrelated'));
+});
+test('all edited numeric fields retain valid midpoint-adjacent values', () => {
+  // Exact float32 midpoints +/- a tiny double delta exercise both rounding sides.
+  const bits=new DataView(new ArrayBuffer(4));
+  const float32=u=>{bits.setUint32(0,u);return bits.getFloat32(0);};
+  for(const u of [0x00000000,0x007fffff,0x3d4ccccd,0x3e000000,0x3e4ccccd,0x3f7fffff,0x7f7ffffe]) {
+    const lower=float32(u),upper=float32(u+1),mid=(lower+upper)/2;
+    for(const sign of [-1,1])for(const delta of [-1,0,1]) {
+      const n=sign*(mid+delta*(upper-lower)*1e-4),d=H.parse(fixture());
+      d.model.slots[0].offset[1]=n;d.model.slots[0].position[0]=n;
+      if(n>=.05 && n<=.45)d.model.slots[0].radius=n;
+      const actual=H.parse(H.serialize(d)).model;
+      assert.equal(actual.slots[0].offset[1],n);assert.equal(actual.slots[0].position[0],n);
+      assert.equal(actual.slots[0].radius,d.model.slots[0].radius);
+    }
+  }
+});

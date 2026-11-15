@@ -86,7 +86,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       <div class="apply-note"><span class="eyebrow">AFTER EXPORT</span><p>Close the game, back up your current file, and replace it with the exported <b>TTWVR.state</b>. Check the placement in VR.</p></div>
     </section>
   </main>
-  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">TTWVR 1.1.5 / 1.1.6 <span>·</span> FIELD KIT 1.1</span></footer>
+  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">TTWVR 1.1.5 / 1.1.6 <span>·</span> FIELD KIT 1.1.1</span></footer>
   <p class="bottom-note">Independent community utility · Fallout-inspired interface · no game assets bundled</p>
 </div>
 <dialog id="instructions"><div class="dialog-heading"><p class="eyebrow">FIELD MANUAL</p><button type="button" id="close-help" class="icon-button" aria-label="Close instructions">×</button></div><h2>Configure. Export. Equip.</h2><ol><li><b>Quit Fallout and your mod manager.</b> This tool edits a copy; the game writes its state when it closes.</li><li><b>Load TTWVR.state.</b> It contains the numbered holsters and their anchors. A savegame or TTWVR.ini is a different file.</li><li><b>Choose a slot and an anchor.</b> Numbers match the game’s 1–8 hotkeys. Drag its numbered centre to position it; drag the square handle to resize its grab sphere. Use Front for left/right and Side for depth. Both views adjust height. Arrow keys move 1 cm (Shift: 5 cm). Numeric controls remain available.</li><li><b>Export the file.</b> Keep a backup of the original and replace it with the downloaded copy. Its filename must be <code>TTWVR.state</code>, without a browser-added “(1)”.</li><li><b>Launch the game and check the fit.</b> The preview uses an approximate reference body and pose. Fine placement depends on your avatar and calibration.</li></ol><h3>Mirror a holster</h3><p>Choose a different destination slot under <b>Mirror to another slot</b>, then press the mirror button. Right upper arm becomes left upper arm, for example, with the matching local offset and grab radius. The destination is replaced in one undoable action. Subsequent edits are independent; this does not link the slots. Automatic slots mirror their saved body-relative position but have no bone preview until you choose an anchor.</p><h3>Where is the file?</h3><p><b>Windows</b> — your Documents folder, which may be redirected to OneDrive:</p><code class="path">My Games\FalloutNV\TTWVR.state</code><p><b>Linux / Proton</b> — inside the prefix used by your VR profile:</p><code class="path">drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state</code><p>TTWVR stores this configuration in New Vegas’s <code>FalloutNV</code> folder. Place a holster in VR and quit once if the holster sections have not been created yet.</p><h3>What gets edited?</h3><p>Only holster records in <code>[SavedSlots]</code> and <code>[SavedSlotsOn]</code>. Other sections, encoding and line endings are preserved. This does not assign weapons to hotkeys or change a savegame.</p><p><b>Automatic</b> removes an explicit bone binding. TTWVR then chooses a nearby bone from the saved body-relative position. New explicit bindings start at a zero local offset; adjust the offset or finish placement in VR.</p><p class="field-help">Runs entirely offline. No installation, uploads, runtime libraries or network connection required. Original tool code: GPL-3.0-only.</p></dialog>
@@ -221,8 +221,10 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   function format(n) {
     number(n, 'Value');
     if (Object.is(n, -0)) return '0';
-    // Enough precision for float32 round-trips without rounding unrelated fields.
-    return String(Number(Number(n).toPrecision(9)));
+    // Keep the shortest decimal that round-trips the edited JavaScript value.
+    // Rounding a double to nine digits can cross a float32 midpoint after a drag.
+    // Unchanged records retain their original spelling in serialize().
+    return String(n);
   }
   function serialize(doc, model = doc.model) {
     validate(model);
@@ -272,7 +274,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     const actual = parse(bytes).model;
     actual.slots.forEach((s, i) => {
       for (const field of ['position', 'offset']) s[field].forEach((v, j) => {
-        if (Math.fround(v) !== Math.fround(expected.slots[i][field][j])) throw new Error('Export verification failed for a position value.');
+        if (Math.fround(v) !== Math.fround(expected.slots[i][field][j])) throw new Error(`Export verification failed for holster ${s.id} ${field}[${j}].`);
       });
       if (Math.fround(s.radius) !== Math.fround(expected.slots[i].radius) || s.anchor !== expected.slots[i].anchor || s.enabled !== expected.slots[i].enabled) throw new Error('Export verification failed for a holster.');
     });
