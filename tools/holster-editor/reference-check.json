@@ -1,0 +1,46 @@
+{
+  "schema_reference": "https://github.com/niftools/nifxml/blob/develop/nif.xml",
+  "input_sha256": "e55d59bbb06dfad0146847a323ca9dff87f72cb7ef41318936526d4aa33d121c",
+  "input_version": "20.2.0.7 / user 11 / Bethesda 34",
+  "source": "Skeleton supplied with TTWVR 1.1.6; not redistributed",
+  "method": "Compose parent transforms in the supplied reference skeleton. Check R_target = reflect_body_right * R_source * reflect_local_Z and mirrored bone origins. Upper-body mesh orientations were also compared. These checks describe reference frames, not live tracked poses.",
+  "reference_scale_note": "70 skeleton units/metre for the approximate preview; does not read/write user calibration",
+  "checks": [
+    {
+      "source": "Pelvis",
+      "target": "Pelvis",
+      "maximum_rotation_residual": 5.6972071433847304e-06,
+      "maximum_origin_residual_units": 8.343968779834252e-13
+    },
+    {
+      "source": "Spine2",
+      "target": "Spine2",
+      "maximum_rotation_residual": 2.789653767544272e-06,
+      "maximum_origin_residual_units": 4.309080427525566e-07
+    },
+    {
+      "source": "R UpperArm",
+      "target": "L UpperArm",
+      "maximum_rotation_residual": 2.8059879844249958e-06,
+      "maximum_origin_residual_units": 3.95590119874889e-05
+    },
+    {
+      "source": "R Forearm",
+      "target": "L Forearm",
+      "maximum_rotation_residual": 2.747633418065387e-06,
+      "maximum_origin_residual_units": 8.370709801219789e-05
+    },
+    {
+      "source": "R Thigh",
+      "target": "L Thigh",
+      "maximum_rotation_residual": 2.9242653346896186e-06,
+      "maximum_origin_residual_units": 2.0464024206412468e-05
+    },
+    {
+      "source": "R Calf",
+      "target": "L Calf",
+      "maximum_rotation_residual": 2.9242653346896186e-06,
+      "maximum_origin_residual_units": 2.0262700801687572e-05
+    }
+  ]
+}

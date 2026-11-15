@@ -14,12 +14,16 @@ extension. The file contains all scripts, styles and artwork.
 
 1. **Load state file**: select your `TTWVR.state` file, or drop it onto the window.
 2. Select a numbered holster. Click a body anchor or choose it from the list.
-3. Set its enabled state, grab radius and anchor-local offset. Values in the
-   interface are in **centimetres**. The file stores metres.
-4. **Export .state** downloads a copy. With Fallout and the mod manager closed,
+3. Drag the numbered centre to position it. Drag the square handle on the circle
+   to resize its grab sphere. **Front** adjusts left/right and height; **Side**
+   adjusts depth and height. Numeric controls use **centimetres**; the file stores metres.
+4. To match the other side, choose a destination under **Mirror to another slot**
+   and press **Mirror 01 → 02**, for example. The destination is replaced in one
+   undoable action. Right upper arm becomes left upper arm with the matching offset.
+5. **Export .state** downloads a copy. With Fallout and the mod manager closed,
    back up the original and replace it with the downloaded `TTWVR.state`.
    Remove any browser-added suffix such as `(1)` from the filename.
-5. Launch the game and check the placement in VR.
+6. Launch the game and check the placement in VR.
 
 **Try a sample** demonstrates the controls. Load your own file to enable export.
 The tool never overwrites game files directly.
@@ -44,15 +48,34 @@ sections are missing, place/toggle a holster in VR and quit once to create them.
 - Ten explicit anchors: pelvis, chest, left/right upper arm, forearm, thigh and shin.
 - **Automatic** removes an explicit bone binding. TTWVR chooses a nearby bone
   using the saved body-relative position when the avatar is ready.
+- Front and side orthographic previews, a **10 cm grid**, live grab spheres and
+  radius/diameter readout. Numeric edits update the preview while typing.
+- Drag the centre to move in the displayed plane; drag its square handle to resize.
+  Arrow keys move 1 cm; Shift + arrows moves 5 cm. On the radius handle these keys
+  change the radius. Escape cancels a drag; each completed drag is one undo step.
+- **Other slots** shows/hides the remaining explicitly anchored holsters. Disabled
+  slots use faded/dashed outlines. **Fit selected** recentres an off-screen holster;
+  clicking Front or Side restores the whole-body view.
 - Grab radius from **5 to 45 cm**, the range enforced by 1.1.6.
+- **Mirror to another slot** swaps left/right anchors, mirrors the bone-local
+  offset and saved fallback position, and copies radius and enabled state.
+  Pelvis/chest mirror across the same central anchor. Automatic slots mirror
+  their fallback position without adding a bone binding. Undo restores the whole
+  destination. Slots remain independent after the copy.
 - Local X/Y/Z offsets. Axes follow the bone; changing the anchor preserves the
   offsets. A new explicit binding starts at zero local offset.
 - Advanced body-relative forward/right/up position, used by automatic anchoring.
 - Global holster visibility, undo/redo, reset slot and revert all.
 - Green and amber themes; keyboard-accessible anchor buttons; responsive layout.
 
-The body map illustrates anchor choices. It does **not** simulate your avatar's
-pose or preview the effect of offsets. Fine placement still needs a headset check.
+The preview now shows the offset and radius at a consistent physical scale on an
+**approximate reference body (~1.8 m)**. Bone frames were checked against the
+skeleton supplied with TTWVR 1.1.6; no mesh assets are bundled. The state file
+contains no current tracked pose, so this is not a live avatar or a guaranteed
+fit for your calibration. Automatic anchors have no bone preview until you choose
+an explicit anchor. Check final placement in the headset.
+![Side view for depth adjustment](images/field-kit-side.png)
+
 This utility does not assign inventory items to hotkeys or fix holster drift.
 
 ## File preservation
@@ -80,7 +103,7 @@ Edit `src/`, then rebuild using Python 3's standard library:
 python3 tools/holster-editor/build.py
 python3 tools/holster-editor/build.py --check
 python3 tools/holster-editor/build.py --package TTWVR-Holster-Editor.zip
-node --test tools/holster-editor/tests/state.test.cjs
+node --test tools/holster-editor/tests/*.test.cjs
 ```
 
 The browser integration test uses Chromium's DevTools pipe and Node's built-in

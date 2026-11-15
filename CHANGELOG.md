@@ -1,5 +1,11 @@
 # Changes
 
+## Visual holster placement and mirroring — 2026-11-15
+
+- Add front/side reference-body previews with physical grab spheres, live numeric updates, drag-to-position/resize, keyboard adjustment and one undo step per gesture.
+- Mirror a holster into a chosen destination, including opposite anchor, verified local-Z reflection, radius, fallback position and enabled state. Each copy is undoable; later edits remain independent.
+- Verify reference frames from the supplied skeleton, retain all state-preservation checks, and test pointer controls and mirrored exports in an isolated browser. Preview fit still needs a headset check.
+
 ## Portable holster editor — 2026-11-15
 
 - Add [Field Kit](tools/holster-editor/README.md), a standalone offline HTML editor for TTWVR 1.1.5/1.1.6 on Windows and Linux: eight slots, ten bone anchors, offsets, radius, enabled/visibility flags, undo/redo and green/amber themes.

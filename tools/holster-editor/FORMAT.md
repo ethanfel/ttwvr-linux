@@ -69,6 +69,51 @@ unsupported anchors, incomplete slot data and non-finite numbers are rejected.
 An existing radius outside the mod's range is preserved on an unedited round-trip;
 any radius edit must fall within the verified range.
 
+## Reference geometry and mirroring
+
+`src/geometry.js` contains small reference coordinate frames, not a model/mesh.
+The preview uses the supplied 1.1.6 skeleton's parent-composed transforms at a
+nominal 70 skeleton units/metre (roughly a 1.8 m figure). It does not read or
+rewrite the player's height or arm calibration. Bone-local offsets and radii
+remain in metres; front and side are orthographic projections at the same scale.
+Automatic binding is not guessed: its fallback record can be edited/mirrored,
+but a sphere preview requires an explicit anchor.
+
+The mod transforms an explicit offset by the chosen bone rotation and adds the
+bone origin. Body anchors use cached body nodes; arm anchors use the rendered
+hand/forearm/upper-arm chain. The editor uses a fixed reference pose, so the
+preview is approximate when those bones are tracked/animated in-game.
+
+For a bone pair, let `S = diag(-1,1,1)` reflect the reference body's lateral axis
+and `D = diag(1,1,-1)` reflect local Z. The supplied skeleton satisfies
+`R_left ≈ S R_right D` and `origin_left ≈ S origin_right`. Pelvis and chest obey
+the same relation with themselves as the target. Therefore mirror uses
+`[localX, localY, -localZ]`, **not a guessed local-X sign flip**, plus the opposite
+anchor name. The saved forward/right/up fallback uses `[forward, -right, up]`.
+Radius and enabled state copy unchanged. Global visibility is not changed.
+
+The check uses both sides from the original skeleton, independently of the
+editor's symmetric reference frame construction. Maximum matrix residual was
+below `6e-6`; maximum origin residual was below `0.000084` skeleton units.
+The supplied upper-body mesh's arm frames also matched. NIF layout was read
+using the [NifTools schema](https://github.com/niftools/nifxml/blob/develop/nif.xml).
+[Input hash and frame checks](reference-check.json). No NIF, texture, mesh, or
+user configuration is redistributed. This verifies the reference-frame relation;
+it does not prove symmetry for arbitrary live poses, custom skeleton replacements,
+or physical comfort in a headset.
+
+## Placement and mirror validation, 2026-11-15
+
+- Six geometry tests: orthonormal/invertible frames, mirrored world positions
+  for all ten anchors, upper-arm direction, front/side drag axes, automatic
+  fallback handling, and mirrored state serialization without source mutation.
+- Chromium: actual pointer drags in both views, drag radius, live numeric preview,
+  keyboard movement, cancelled drags, one-step undo, source/destination mirror
+  values in downloaded state files,
+  mirror undo/redo, and existing preservation/error/responsive checks.
+- The existing 1.1.6 loader test below remains evidence for the unchanged state
+  format. New physical placement and headset mirror checks have not been run.
+
 ## Validation, 2026-11-15
 
 - 21 Node tests: exact byte round-trips across line endings and UTF encodings;
