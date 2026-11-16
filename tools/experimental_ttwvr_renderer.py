@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Ethanfel and contributors
 # SPDX-License-Identifier: GPL-3.0-only
-"""Create an EXPERIMENTAL TTWVR 1.1.0/1.1.3/1.1.4/1.1.5/1.1.6 copy that loads its bundled DXVK.
+"""Create an EXPERIMENTAL TTWVR 1.1.0/1.1.3/1.1.4/1.1.5/1.1.6/1.1.7 copy that loads its bundled DXVK.
 
 This bypasses only the stock-DXVK detection return. It is not a proven
 performance fix. Keep the original, test with a launch-scoped overlay, and
@@ -15,6 +15,8 @@ from pathlib import Path
 
 # Exact original DLL hashes; offsets independently checked in each build.
 BUILDS = {
+    '119a085a5b0101f0618b8e076a421b4b89e30d72d9b6eae874f4e5af7bd3fb27':
+        ("1.1.7", 0x59ae8c, 0x59ba8c, 0xad6a00),
     '503266c4f4c2350b357c8c15021d8bde28973254745d9302b8e3cfde66489a27':
         ("1.1.6", 0x58388c, 0x58448c, 0xabaf70),
     "e14567bc1c7d183130f902f9489b8cffe6269de06eea0d79bf8d1d3098c595b1":

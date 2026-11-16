@@ -21,7 +21,7 @@ import tempfile
 import urllib.request
 
 from experimental_author_dlss import build, BUILDS
-from experimental_native_fsr import SOURCE_SHA256_114, SOURCE_SHA256_115, SOURCE_SHA256_116
+from experimental_native_fsr import SOURCE_SHA256_114, SOURCE_SHA256_115, SOURCE_SHA256_116, SOURCE_SHA256_117
 from patch_openxr_bridge import patch_bytes
 from proton_builds import identify_proton
 
@@ -232,8 +232,8 @@ def check(c):
     def check_mod():
         h = digest(plugin)
         if h not in BUILDS:
-            raise ValueError('install the original, unpatched TTWVR 1.1.3, 1.1.4, 1.1.5 or 1.1.6 archive first')
-        c['version'] = '1.1.6' if h == SOURCE_SHA256_116 else '1.1.5' if h == SOURCE_SHA256_115 else '1.1.4' if h == SOURCE_SHA256_114 else '1.1.3'
+            raise ValueError('install the original, unpatched TTWVR 1.1.3, 1.1.4, 1.1.5, 1.1.6 or 1.1.7 archive first')
+        c['version'] = '1.1.7' if h == SOURCE_SHA256_117 else '1.1.6' if h == SOURCE_SHA256_116 else '1.1.5' if h == SOURCE_SHA256_115 else '1.1.4' if h == SOURCE_SHA256_114 else '1.1.3'
         c['new_mod'] = c['instance']/'mods'/('TTWVR Linux ' + c['version'])
         if c['new_mod'].exists():
             raise ValueError(f'new mod destination already exists: {c["new_mod"]}')
@@ -245,6 +245,7 @@ def check(c):
                 '1.1.4': '194676411d6161b4420d753cfae20f9d1b308d0b99a8b5226ad9ef2e9f44ef38',
                 '1.1.5': 'd8d0aaf106b17a3a29193a5e23ed0dccfc59b0772ee06bf1c64df80d2d769bc8',
                 '1.1.6': '81804ecd485d1fa618763ac0fed30b75dfee7c5dd967c800fac4b1d1f69d2490',
+                '1.1.7': 'e81ef1aa870cc15a4855265bca7928b14dda9c7b1d18577c5799498d32ad7f18',
             }[c['version']],
         }
         for name, expected in hashes.items():

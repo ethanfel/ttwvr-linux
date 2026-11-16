@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Ethanfel and contributors
 # SPDX-License-Identifier: GPL-3.0-only
-"""Read TTWVR 1.1.3/1.1.4/1.1.5/1.1.6 upscaler counters from a specified Linux/Wine process.
+"""Read TTWVR 1.1.3/1.1.4/1.1.5/1.1.6/1.1.7 upscaler counters from a specified Linux/Wine process.
 
 Read-only diagnostic. These are the original status-panel counters, not proof
 of valid or fresh pixels. Capture both eyes and test motion separately.
@@ -26,7 +26,9 @@ BUILD_114 = {'7eb72860d209d9b9bdd774607220ee63323367aa9fa525f6eb1b23184f30f91e',
 BUILD_115 = {'19a09590e5a76ca8d93394180ff320561a7390a292d36b9021dd2184ea12d5d1', '78dddb7294cca8b21bc9cec6bf8950c956d536946bb9520cca8cbe4b9d48a48a', 'e14567bc1c7d183130f902f9489b8cffe6269de06eea0d79bf8d1d3098c595b1', '4c6b2d9cccf0adffd3376a4a7eadffccc5f32c90537922064c35c2bf3c65dfdf'}
 # 1.1.6 status fields verified by relocated instruction references.
 BUILD_116 = {'67fbe92416420840763c0264d697e42826661f6e77685f28856c633a71766ff9', '63712922499b2155a3d2c6f54abbdfc1eaf95d08712b937c6276d6a8ae0d774d', '676edd310b3f7f24be0da3b1ff139b98b89ab2a1d3c4b8cb53381f83825d9a6c', '503266c4f4c2350b357c8c15021d8bde28973254745d9302b8e3cfde66489a27'}
-SUPPORTED |= BUILD_114 | BUILD_115 | BUILD_116
+# 1.1.7 status/resource globals verified independently from instruction references.
+BUILD_117 = {'ae7dc0d7ba94651af0ccd729122f623d3dbdf0b85c6c787838c04bbc721135d6', '007ac7d466281a032e6b2ceb475dca361f0a7451539aba782a95540592a289bd', '119a085a5b0101f0618b8e076a421b4b89e30d72d9b6eae874f4e5af7bd3fb27', 'ae2159a0ab9158c90c1016e2c0580c625f28f0c93927ff9a8b7609ec7904164c'}
+SUPPORTED |= BUILD_114 | BUILD_115 | BUILD_116 | BUILD_117
 # Independently checked against the supplied 1.1.3 status formatter.
 COUNTERS = {
     "render_width": 0x19987B4, "render_height": 0x19987B8,
@@ -59,7 +61,7 @@ def inspect(pid):
     digest = hashlib.sha256(dll.read_bytes()).hexdigest()
     if digest not in SUPPORTED:
         raise ValueError("unsupported mapped DLL hash; refusing unverified offsets")
-    shift = 0x18a238 if digest in BUILD_116 else 0x13e200 if digest in BUILD_115 else 0x64978 if digest in BUILD_114 else 0
+    shift = 0x1acd38 if digest in BUILD_117 else 0x18a238 if digest in BUILD_116 else 0x13e200 if digest in BUILD_115 else 0x64978 if digest in BUILD_114 else 0
     fd = os.open(proc / "mem", os.O_RDONLY)
     try:
         def read(rva, size):

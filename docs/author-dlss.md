@@ -13,8 +13,10 @@ The detailed measurements below record the 1.1.3 isolated tests. The user later
 confirmed good WiVRn output at 200% / DLSS Quality. The [1.1.4 port](ttwvr-1.1.4.md)
 adds separate stereo/movement validation, followed by user-confirmed NMC/WiVRn
 play. The [1.1.5 port](ttwvr-1.1.5.md) also passed isolated checks. The
-[1.1.6 port](ttwvr-1.1.6.md) adds successful consecutive stereo and movement checks;
-physical 1.1.6 headset confirmation remains pending.
+[1.1.6 port](ttwvr-1.1.6.md) adds successful consecutive stereo and movement checks,
+followed by user-confirmed NMC/LOD headset play. The [1.1.7 port](ttwvr-1.1.7.md)
+passed isolated saved-game stereo/movement checks; physical 1.1.7 confirmation
+is pending.
 Custom NR/DLAA/SR/FG are archived and disabled on this path.
 
 ## Diagnosis
@@ -66,8 +68,8 @@ rewinds.
 
 ## Build a candidate without installing
 
-Use the exact original `TTWVR.dll` from your own 1.1.3, 1.1.4, 1.1.5 or 1.1.6 archive.
-The offsets and measurements below describe 1.1.3; see the [1.1.4 audit](ttwvr-1.1.4.md), [1.1.5 audit](ttwvr-1.1.5.md) and [1.1.6 audit](ttwvr-1.1.6.md).
+Use the exact original `TTWVR.dll` from your own 1.1.3, 1.1.4, 1.1.5, 1.1.6 or 1.1.7 archive.
+The offsets and measurements below describe 1.1.3; see the [1.1.4 audit](ttwvr-1.1.4.md), [1.1.5 audit](ttwvr-1.1.5.md), [1.1.6 audit](ttwvr-1.1.6.md) and [1.1.7 audit](ttwvr-1.1.7.md).
 
 ```sh
 python3 tools/experimental_author_dlss.py original/TTWVR.dll test/TTWVR.dll

@@ -1,5 +1,11 @@
 # Changes
 
+## TTWVR 1.1.7 compatibility — 2026-11-16
+
+- Add exact-build renderer, DLSS and native Vulkan FSR repairs for 1.1.7, with verified instruction/global locations and a pinned helper hash. Preserve all earlier outputs.
+- Validate copied saves with NMC/LOD, consecutive stereo captures, simulated head translation and successful per-eye NGX calls. [Audit and evidence](docs/ttwvr-1.1.7.md); physical headset confirmation remains pending.
+- Update installer preflight and installation/Discord guides. Keep saves, calibration, graphics settings and the Steam command.
+
 ## Holster front/back correction — 2026-11-15
 
 - Correct the editor’s reference-world Y direction in Field Kit 1.4. Earlier previews and presets could place front body holsters behind the player. Skeleton toes and recorded gameplay establish the forward direction.

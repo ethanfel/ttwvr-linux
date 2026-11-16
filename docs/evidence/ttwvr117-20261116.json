@@ -1,0 +1,571 @@
+{
+  "version": "1.1.7",
+  "date": "2026-11-16",
+  "archive": {
+    "name": "TTWVR1.1.7.zip",
+    "sha256": "1073d23aea2210ad60c0e18964c056db1043ef0a6a87af962eadc80ad13614e0",
+    "files": 777,
+    "changed_vs_116": [
+      {
+        "path": "meta.ini",
+        "bytes": 181,
+        "sha256": "0b75c5b7a04a9552461d925e0b5f3544f9a46d05efba45f2b759ee0a1243f98c"
+      },
+      {
+        "path": "NVSE/Plugins/TTWVR/ttwvr_dlss_host.exe",
+        "bytes": 356352,
+        "sha256": "e81ef1aa870cc15a4855265bca7928b14dda9c7b1d18577c5799498d32ad7f18"
+      },
+      {
+        "path": "NVSE/Plugins/TTWVR/ttwvr_voice_host.exe",
+        "bytes": 2186752,
+        "sha256": "cdff1e0726006ec96feed86c20e7db7db746e5ae4cef361b141ff7f12c7c4980"
+      },
+      {
+        "path": "NVSE/Plugins/TTWVR.dll",
+        "bytes": 18074112,
+        "sha256": "119a085a5b0101f0618b8e076a421b4b89e30d72d9b6eae874f4e5af7bd3fb27"
+      }
+    ]
+  },
+  "patches": [
+    {
+      "mode": "dlss",
+      "sha256": "ae2159a0ab9158c90c1016e2c0580c625f28f0c93927ff9a8b7609ec7904164c",
+      "changed_bytes": 22,
+      "patches": [
+        {
+          "name": "renderer",
+          "rva": "0x59ba8c",
+          "offset": "0x59ae8c",
+          "before": "0f8589010000",
+          "after": "909090909090"
+        },
+        {
+          "name": "Wine Vulkan lookup",
+          "rva": "0xad7800",
+          "offset": "0xad6a00",
+          "before": "760075006c006b0061006e002d0031002e0064006c006c000000000000000000",
+          "after": "770069006e006500760075006c006b0061006e002e0064006c006c0000000000"
+        },
+        {
+          "name": "shared output",
+          "rva": "0x5a79d2",
+          "offset": "0x5a6dd2",
+          "before": "ffd0",
+          "after": "31c0"
+        }
+      ],
+      "relocation_overlap": false
+    },
+    {
+      "mode": "fsr",
+      "sha256": "007ac7d466281a032e6b2ceb475dca361f0a7451539aba782a95540592a289bd",
+      "changed_bytes": 354,
+      "patches": [
+        {
+          "name": "renderer",
+          "rva": "0x59ba8c",
+          "offset": "0x59ae8c",
+          "before": "0f8589010000",
+          "after": "909090909090"
+        },
+        {
+          "name": "Wine Vulkan lookup",
+          "rva": "0xad7800",
+          "offset": "0xad6a00",
+          "before": "760075006c006b0061006e002d0031002e0064006c006c000000000000000000",
+          "after": "770069006e006500760075006c006b0061006e002e0064006c006c0000000000"
+        },
+        {
+          "name": "Initialize embedded Vulkan FSR",
+          "rva": "0x5a7d8b",
+          "offset": "0x5a718b",
+          "before": "e814b5a7ff",
+          "after": "e920420300"
+        },
+        {
+          "name": "FSR startup trampoline",
+          "rva": "0x5dbfb0",
+          "offset": "0x5db3b0",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "e80badffffe800000000598881ae955601e8de72a4ffe9c5bdfcff"
+        },
+        {
+          "name": "VkImage",
+          "rva": "0x5d9340",
+          "offset": "0x5d8740",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "8b8c24dc0000008988a4000000c780a0000000564b36345f5e81c4c8000000c3"
+        },
+        {
+          "name": "VkImage",
+          "rva": "0x5d932b",
+          "offset": "0x5d872b",
+          "before": "5f5e81c4c8000000",
+          "after": "e910000000909090"
+        },
+        {
+          "name": "VkImage",
+          "rva": "0x5d9510",
+          "offset": "0x5d8910",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "31c081baa0000000564b363475068b82a400000089443e04e95b3d1d00"
+        },
+        {
+          "name": "VkImage",
+          "rva": "0x7ad280",
+          "offset": "0x7ac680",
+          "before": "c7443e0400000000",
+          "after": "e98bc2e2ff909090"
+        },
+        {
+          "name": "VkPipeline",
+          "rva": "0x7aa940",
+          "offset": "0x7a9d40",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "83c40c8b8c240c010000898f548e0000c787508e0000564b503431c0e97bffffff"
+        },
+        {
+          "name": "VkPipeline",
+          "rva": "0x7aa8d7",
+          "offset": "0x7a9cd7",
+          "before": "83c40c33c0",
+          "after": "e964000000"
+        },
+        {
+          "name": "VkPipeline",
+          "rva": "0x7aa970",
+          "offset": "0x7a9d70",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "31c981bbd48e0000564b503475068b8bd88e000051ffb390000000e932410000"
+        },
+        {
+          "name": "VkPipeline",
+          "rva": "0x7aeaba",
+          "offset": "0x7adeba",
+          "before": "6a00ffb390000000",
+          "after": "e9b1beffff909090"
+        },
+        {
+          "name": "VkPipeline",
+          "rva": "0x7aa9a0",
+          "offset": "0x7a9da0",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "31d281bb508e0000564b503475068b93548e00006a005251e9fb120000"
+        },
+        {
+          "name": "VkPipeline",
+          "rva": "0x7abcb3",
+          "offset": "0x7ab0b3",
+          "before": "6a006a0051",
+          "after": "e9e8ecffff"
+        },
+        {
+          "name": "VkBuffer / GetResource",
+          "rva": "0x7ac900",
+          "offset": "0x7abd00",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "8b873c3900008981a4000000c781a0000000564b36348b8738390000e9e7fdffff"
+        },
+        {
+          "name": "VkBuffer / GetResource",
+          "rva": "0x7ac702",
+          "offset": "0x7abb02",
+          "before": "8b8738390000",
+          "after": "e9f901000090"
+        },
+        {
+          "name": "VkBuffer / GetResource",
+          "rva": "0x7ac930",
+          "offset": "0x7abd30",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "5031c081bc2410010000564b363475078b84241401000089460458e98a200000"
+        },
+        {
+          "name": "VkBuffer / GetResource",
+          "rva": "0x7ae9d3",
+          "offset": "0x7addd3",
+          "before": "c7460400000000",
+          "after": "e958dfffff9090"
+        },
+        {
+          "name": "VkBuffer / GetResource",
+          "rva": "0x7ac960",
+          "offset": "0x7abd60",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "8b8b103900008b4411048987a4000000c787a0000000564b3634e9cc070000"
+        },
+        {
+          "name": "VkBuffer / GetResource",
+          "rva": "0x7ad145",
+          "offset": "0x7ac545",
+          "before": "8b8b10390000",
+          "after": "e916f8ffff90"
+        }
+      ],
+      "relocation_overlap": false
+    },
+    {
+      "mode": "combined",
+      "sha256": "ae7dc0d7ba94651af0ccd729122f623d3dbdf0b85c6c787838c04bbc721135d6",
+      "changed_bytes": 356,
+      "patches": [
+        {
+          "name": "renderer",
+          "rva": "0x59ba8c",
+          "offset": "0x59ae8c",
+          "before": "0f8589010000",
+          "after": "909090909090"
+        },
+        {
+          "name": "Wine Vulkan lookup",
+          "rva": "0xad7800",
+          "offset": "0xad6a00",
+          "before": "760075006c006b0061006e002d0031002e0064006c006c000000000000000000",
+          "after": "770069006e006500760075006c006b0061006e002e0064006c006c0000000000"
+        },
+        {
+          "name": "shared output",
+          "rva": "0x5a79d2",
+          "offset": "0x5a6dd2",
+          "before": "ffd0",
+          "after": "31c0"
+        },
+        {
+          "name": "Initialize embedded Vulkan FSR",
+          "rva": "0x5a7d8b",
+          "offset": "0x5a718b",
+          "before": "e814b5a7ff",
+          "after": "e920420300"
+        },
+        {
+          "name": "FSR startup trampoline",
+          "rva": "0x5dbfb0",
+          "offset": "0x5db3b0",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "e80badffffe800000000598881ae955601e8de72a4ffe9c5bdfcff"
+        },
+        {
+          "name": "VkImage",
+          "rva": "0x5d9340",
+          "offset": "0x5d8740",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "8b8c24dc0000008988a4000000c780a0000000564b36345f5e81c4c8000000c3"
+        },
+        {
+          "name": "VkImage",
+          "rva": "0x5d932b",
+          "offset": "0x5d872b",
+          "before": "5f5e81c4c8000000",
+          "after": "e910000000909090"
+        },
+        {
+          "name": "VkImage",
+          "rva": "0x5d9510",
+          "offset": "0x5d8910",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "31c081baa0000000564b363475068b82a400000089443e04e95b3d1d00"
+        },
+        {
+          "name": "VkImage",
+          "rva": "0x7ad280",
+          "offset": "0x7ac680",
+          "before": "c7443e0400000000",
+          "after": "e98bc2e2ff909090"
+        },
+        {
+          "name": "VkPipeline",
+          "rva": "0x7aa940",
+          "offset": "0x7a9d40",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "83c40c8b8c240c010000898f548e0000c787508e0000564b503431c0e97bffffff"
+        },
+        {
+          "name": "VkPipeline",
+          "rva": "0x7aa8d7",
+          "offset": "0x7a9cd7",
+          "before": "83c40c33c0",
+          "after": "e964000000"
+        },
+        {
+          "name": "VkPipeline",
+          "rva": "0x7aa970",
+          "offset": "0x7a9d70",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "31c981bbd48e0000564b503475068b8bd88e000051ffb390000000e932410000"
+        },
+        {
+          "name": "VkPipeline",
+          "rva": "0x7aeaba",
+          "offset": "0x7adeba",
+          "before": "6a00ffb390000000",
+          "after": "e9b1beffff909090"
+        },
+        {
+          "name": "VkPipeline",
+          "rva": "0x7aa9a0",
+          "offset": "0x7a9da0",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "31d281bb508e0000564b503475068b93548e00006a005251e9fb120000"
+        },
+        {
+          "name": "VkPipeline",
+          "rva": "0x7abcb3",
+          "offset": "0x7ab0b3",
+          "before": "6a006a0051",
+          "after": "e9e8ecffff"
+        },
+        {
+          "name": "VkBuffer / GetResource",
+          "rva": "0x7ac900",
+          "offset": "0x7abd00",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "8b873c3900008981a4000000c781a0000000564b36348b8738390000e9e7fdffff"
+        },
+        {
+          "name": "VkBuffer / GetResource",
+          "rva": "0x7ac702",
+          "offset": "0x7abb02",
+          "before": "8b8738390000",
+          "after": "e9f901000090"
+        },
+        {
+          "name": "VkBuffer / GetResource",
+          "rva": "0x7ac930",
+          "offset": "0x7abd30",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "5031c081bc2410010000564b363475078b84241401000089460458e98a200000"
+        },
+        {
+          "name": "VkBuffer / GetResource",
+          "rva": "0x7ae9d3",
+          "offset": "0x7addd3",
+          "before": "c7460400000000",
+          "after": "e958dfffff9090"
+        },
+        {
+          "name": "VkBuffer / GetResource",
+          "rva": "0x7ac960",
+          "offset": "0x7abd60",
+          "before": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "after": "8b8b103900008b4411048987a4000000c787a0000000564b3634e9cc070000"
+        },
+        {
+          "name": "VkBuffer / GetResource",
+          "rva": "0x7ad145",
+          "offset": "0x7ac545",
+          "before": "8b8b10390000",
+          "after": "e916f8ffff90"
+        }
+      ],
+      "relocation_overlap": false
+    }
+  ],
+  "helpers": [
+    {
+      "name": "ttwvr_dlss_host.exe",
+      "machine": "0x8664",
+      "changed_sections": [
+        ".rdata"
+      ],
+      "text_identical": true
+    },
+    {
+      "name": "ttwvr_voice_host.exe",
+      "machine": "0x8664",
+      "changed_sections": [
+        ".rdata"
+      ],
+      "text_identical": true
+    }
+  ],
+  "capture_validation": [
+    {
+      "label": "117-dlss-200-bigtown",
+      "eye": 0,
+      "frames": [
+        3240,
+        3241
+      ],
+      "dimensions": [
+        5888,
+        4416
+      ],
+      "consecutive_changed_fraction": 0.6329660301472905,
+      "center_consecutive_changed_fraction": 0.8963834573881537,
+      "sha256": [
+        "5a90a4a9b5251cf666f3874f059aa863146f43a37b81289b6192c71c78931b31",
+        "4690b5788af51049e18382ee04ee435d76e98b36efb4d287245ffa21070a0ce9"
+      ]
+    },
+    {
+      "label": "117-dlss-200-bigtown",
+      "eye": 1,
+      "frames": [
+        3240,
+        3241
+      ],
+      "dimensions": [
+        5888,
+        4416
+      ],
+      "consecutive_changed_fraction": 0.6320250426438445,
+      "center_consecutive_changed_fraction": 0.8919098534971645,
+      "sha256": [
+        "f3b84f386c88e44e87a81aae6443ae6680918cee08fbc36b7c4b2a978a336923",
+        "bc83210333969cd1f2acdf0586ba8b5f694a2c7729a5d0ad13725a28c5b4ec35"
+      ]
+    },
+    {
+      "label": "117-dlss-200-school",
+      "eye": 0,
+      "frames": [
+        12300,
+        12301
+      ],
+      "dimensions": [
+        5888,
+        4416
+      ],
+      "consecutive_changed_fraction": 0.6352102932271976,
+      "center_consecutive_changed_fraction": 0.4513804790879017,
+      "sha256": [
+        "9808a801cf26b3fb63915d612fedcdbcdc0079ec9e74a96f365fbe1d5d497d7a",
+        "3e1e864732d8eaab184b8662a31b288f6400faab6c9e70a26a974577603c9f3e"
+      ],
+      "shifted_frames": [
+        14610,
+        14611
+      ],
+      "center_head_translation_changed_fraction": 0.9992271187775678,
+      "shifted_consecutive_changed_fraction": 0.5816122726892329
+    },
+    {
+      "label": "117-dlss-200-school",
+      "eye": 1,
+      "frames": [
+        12300,
+        12301
+      ],
+      "dimensions": [
+        5888,
+        4416
+      ],
+      "consecutive_changed_fraction": 0.6348328521286232,
+      "center_consecutive_changed_fraction": 0.4524314990942029,
+      "sha256": [
+        "505a44a500b7d89fb0ee4f81230d19d585178d6455babe3e273830823e233d85",
+        "1ab831a68948a401e940bae1e07b693ac308c02c7e7da6af674185905331ac3f"
+      ],
+      "shifted_frames": [
+        14610,
+        14611
+      ],
+      "center_head_translation_changed_fraction": 0.999211734995274,
+      "shifted_consecutive_changed_fraction": 0.5801659663968967
+    },
+    {
+      "label": "117-fsr-100-school",
+      "eye": 0,
+      "frames": [
+        2460,
+        2461
+      ],
+      "dimensions": [
+        2944,
+        2208
+      ],
+      "consecutive_changed_fraction": 0.6695542026031821,
+      "center_consecutive_changed_fraction": 0.40322739445494643,
+      "sha256": [
+        "da440021bdc68bb13288b5d271c11b190655d83250bfa35a6a19c4afbb7105ed",
+        "a157a0f7e62955f0e9de58d5e667e4a22b8f6108281f26aa55134a61b98b49c6"
+      ],
+      "shifted_frames": [
+        3090,
+        3091
+      ],
+      "center_head_translation_changed_fraction": 0.9993304977945809,
+      "shifted_consecutive_changed_fraction": 0.6664546781466604
+    },
+    {
+      "label": "117-fsr-100-school",
+      "eye": 1,
+      "frames": [
+        2460,
+        2461
+      ],
+      "dimensions": [
+        2944,
+        2208
+      ],
+      "consecutive_changed_fraction": 0.6687653222471645,
+      "center_consecutive_changed_fraction": 0.3987747125078765,
+      "sha256": [
+        "485bf840df121ed29666e4dd4cd81947f0ee60d259230ee499707c0c351e7118",
+        "4f477807e59c46dc15a8472f709c2f8f4ac78e55b1d8e41cb62e26c05f797d69"
+      ],
+      "shifted_frames": [
+        3090,
+        3091
+      ],
+      "center_head_translation_changed_fraction": 0.9992861925015754,
+      "shifted_consecutive_changed_fraction": 0.6650781373070258
+    }
+  ],
+  "ngx_evaluations": [
+    {
+      "api": "0x6ffff7fdb2f0",
+      "feature": 3,
+      "result": "0x1"
+    },
+    {
+      "api": "0x6ffff7fdb2f0",
+      "feature": 4,
+      "result": "0x1"
+    },
+    {
+      "api": "0x6ffff7fdb2f0",
+      "feature": 3,
+      "result": "0x1"
+    },
+    {
+      "api": "0x6ffff7fdb2f0",
+      "feature": 4,
+      "result": "0x1"
+    }
+  ],
+  "timing": {
+    "117-dlss-200-bigtown-timing": {
+      "fps": 44.79891373372572,
+      "duration_seconds": 30.8085337850207,
+      "logged_frame_samples": 23,
+      "note": "CPU OpenXR spans averaged over 60-frame batches; not GPU execution time or individual-frame percentiles. Simulated 90 Hz runtime, not WiVRn streaming.",
+      "gpu_utilization_percent_mean": 25.2,
+      "gpu_power_watts_mean": 135.79733333333334,
+      "gpu_memory_mib_mean": 10059.933333333332,
+      "wait_ms": 6.855869565217391,
+      "app_ms": 13.65795652173913,
+      "end_ms": 0.8432173913043478,
+      "display_period_ms": 11.111
+    },
+    "117-fsr-100-school": {
+      "fps": 51.18929807074026,
+      "duration_seconds": 30.80272165001952,
+      "logged_frame_samples": 26,
+      "note": "CPU OpenXR spans averaged over 60-frame batches; not GPU execution time or individual-frame percentiles. Simulated 90 Hz runtime, not WiVRn streaming.",
+      "gpu_utilization_percent_mean": 18.9,
+      "gpu_power_watts_mean": 95.53266666666667,
+      "gpu_memory_mib_mean": 8316.366666666667,
+      "wait_ms": 6.880615384615385,
+      "app_ms": 10.841576923076923,
+      "end_ms": 0.8449615384615384,
+      "display_period_ms": 11.111
+    }
+  },
+  "nmc_and_generated_lod_enabled": true,
+  "runtime": "private Fluorine / CachyOS WineOpenXR-fix / Monado simulated headset at 90 Hz",
+  "physical_headset_validation": "pending",
+  "timing_scope": "Short samples from different scenes/resolutions, not an A/B upscaler comparison or WiVRn/headset performance benchmark."
+}
