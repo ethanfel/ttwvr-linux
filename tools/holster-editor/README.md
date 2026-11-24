@@ -8,8 +8,8 @@ server, Python, Node, account or network connection is needed to use it.
 
 ## Open the tool
 
-Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.5/TTWVR-Holster-Editor.html)
-and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.5/TTWVR-Holster-Editor.zip)
+Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.5.1/TTWVR-Holster-Editor.html)
+and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.5.1/TTWVR-Holster-Editor.zip)
 also includes the offline instructions.
 
 1. **Load state file**: select your `TTWVR.state` file, or drop it onto the window.
@@ -28,10 +28,13 @@ also includes the offline instructions.
 **Try a sample** demonstrates the controls. Load your own file to enable export.
 The tool never overwrites game files directly.
 
-## Move the ammo pouch
+## Edit the ammo pouch
 
 Choose **Ammo pouch** below the eight slots. Drag **P** in Front for left/right and
 height, then in Side for depth. You can also enter centimetres directly.
+Under **Body anchor**, choose Body-relative, Pelvis, Lower spine, Middle spine or Upper spine.
+You can also click a torso joint on the map. Changing anchors keeps the pouch centre in place in the reference pose. Set **Grab radius**
+from 5 to 45 cm, drag the square radius handle, or choose **Use game radius** to inherit TTWVR’s setting.
 The editor moves the torso attachment and its fallback together. If your file has
 no saved pouch, use **Set initial position** to start at the front of the waist.
 
@@ -168,7 +171,7 @@ This utility does not assign inventory items to hotkeys or fix holster drift.
 ## File preservation
 
 Holster edits use `[SavedSlots]` and `[SavedSlotsOn]`. Ammo pouch edits use
-`[SavedPouch]` and preserve the saved orientation and grab radius. An unedited export is byte-identical to its input.
+`[SavedPouch]` and preserve settings you haven’t edited. An unedited export is byte-identical to its input.
 UTF-8 and BOM-marked UTF-16 LE/BE, original line endings, comments and unknown
 extension records are retained. Numbered list keys are made contiguous when
 adding/removing a bone record; these keys are separate from the holster numbers.

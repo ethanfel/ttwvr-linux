@@ -62,8 +62,12 @@ The optional `anchor` record contains a torso bone ID (0 pelvis, 1 spine,
 2 spine1, 3 spine2), three translations in skeleton units and nine orientation
 values. The reference preview uses 70 skeleton units per metre. Moving the pouch
 converts the displacement to bone-local translation and applies the same move to
-the fallback, subtracting upward movement from below-eye distance. The orientation
-tokens and optional radius keep their original spelling. Files with only the
+the fallback, subtracting upward movement from below-eye distance. Reanchoring between torso bones converts the saved orientation and translation into the
+new bone frame. Choosing body-relative writes the preview position into the fallback
+and removes the anchor. A newly created attachment starts upright in the reference pose.
+The 1.1.7 pouch reader accepts radius values from 0.05 to 0.45 metres inclusive.
+Removing the radius record restores TTWVR’s configured radius. Untouched numeric
+tokens keep their original spelling. Files with only the
 four-value position use above-feet height for the preview.
 
 ## Verified behavior

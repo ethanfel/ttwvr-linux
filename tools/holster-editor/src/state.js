@@ -52,7 +52,7 @@
         if (t.length !== 14 || !/^[0-3]$/.test(t[1])) throw new Error('Unrecognized ammo pouch anchor.');
         pouch.bone = Number(t[1]);
         pouch.offset = t.slice(2, 5).map(v => number(v, 'Pouch translation'));
-        t.slice(5).forEach(v => number(v, 'Pouch orientation'));
+        pouch.rotation = t.slice(5).map(v => number(v, 'Pouch orientation'));
       } else if (t[0] === 'radius') {
         field = 'radius';
         if (t.length !== 2) throw new Error('Unrecognized ammo pouch radius.');
@@ -161,12 +161,15 @@
   function validate(model) {
     if (!model || !Array.isArray(model.slots) || !(model.slots.length === 8 && typeof model.show === 'boolean' || model.slots.length === 0 && model.show === null && model.pouch)) throw new Error('A configuration must contain eight holsters and a visibility flag.');
     if (model.pouch) {
-      const {body, bone, offset} = model.pouch;
+      const {body, bone, offset, rotation, radius} = model.pouch;
+      if (radius !== null) number(radius, 'Pouch radius');
       if (!Array.isArray(body) || body.length !== 4) throw new Error('Invalid ammo pouch position.');
       body.forEach(v => number(v, 'Pouch position'));
       if (bone !== null) {
         if (!Number.isInteger(bone) || bone < 0 || bone > 3 || !Array.isArray(offset) || offset.length !== 3) throw new Error('Invalid ammo pouch attachment.');
         offset.forEach(v => number(v, 'Pouch translation'));
+        if (!Array.isArray(rotation) || rotation.length !== 9) throw new Error('Invalid ammo pouch orientation.');
+        rotation.forEach(v => number(v, 'Pouch orientation'));
       }
     }
     model.slots.forEach((s, i) => {
@@ -216,44 +219,62 @@
     }
     if (model.show !== doc.original.show) replacements.set(doc.refs.show.line, payload(doc.refs.show, `show ${+model.show}`));
     const pouch = model.pouch, oldPouch = doc.original.pouch;
-    if (oldPouch && pouch) {
-      // Patch individual tokens to preserve the saved angle, spacing and comments.
-      const patchNumbers = (r, previous, values, first) => {
-        if (same(previous, values)) return;
-        let token = -1;
-        const line = doc.lines[r.line].body.replace(/^(\s*\d+\s*=)(.*)$/, (_, prefix, rest) =>
-          prefix + rest.replace(/\S+/g, word => {
-            const i = ++token - first;
-            return i >= 0 && i < values.length && values[i] !== previous[i] ? format(values[i]) : word;
-          }));
-        replacements.set(r.line, line);
-      };
-      patchNumbers(doc.refs.pouch.body, oldPouch.body, pouch.body, 0);
-      if (pouch.bone !== null) patchNumbers(doc.refs.pouch.anchor, oldPouch.offset, pouch.offset, 2);
-    }
-    const newPouch = pouch && !oldPouch;
     const pouchSection = doc.sections.savedpouch;
-    if (newPouch && (doc.pouchIssue || pouch.bone !== null || pouch.radius !== null)) throw new Error('Cannot replace an unknown ammo pouch layout.');
+    const pouchAdditions = [];
+    let pouchRemoved = false;
+    if (pouch && !same(pouch, oldPouch)) {
+      if (doc.pouchIssue) throw new Error('Cannot replace an unknown ammo pouch layout.');
+      if (pouch.radius !== null && pouch.radius !== oldPouch?.radius && (pouch.radius < .05 || pouch.radius > .45))
+        throw new Error('Ammo pouch radius must be between 5 and 45 cm.');
+      const anchorValues = p => p && p.bone !== null ? [p.bone, ...p.offset, ...p.rotation] : null;
+      const editRecord = (field, prefix, previous, values) => {
+        const record = doc.refs.pouch[field];
+        if (same(previous, values)) return;
+        if (!values) {
+          replacements.set(record.line, record.suffix ? record.indent + record.suffix.trimStart() : null);
+          pouchRemoved = true;
+        } else if (!record) {
+          pouchAdditions.push(prefix + values.map(format).join(' '));
+        } else {
+          // Preserve whitespace, inline comments and each untouched number.
+          let index = prefix ? -2 : -1;
+          const line = doc.lines[record.line].body.replace(/^(\s*\d+\s*=)(.*)$/, (_, key, rest) =>
+            key + rest.replace(/\S+/g, word => {
+              ++index;
+              return index >= 0 && index < values.length && values[index] !== previous[index] ? format(values[index]) : word;
+            }));
+          replacements.set(record.line, line);
+        }
+      };
+      editRecord('body', '', oldPouch?.body ?? null, pouch.body);
+      editRecord('anchor', 'anchor ', anchorValues(oldPouch), anchorValues(pouch));
+      editRecord('radius', 'radius ', oldPouch?.radius != null ? [oldPouch.radius] : null, pouch.radius !== null ? [pouch.radius] : null);
+    }
     const section = doc.sections.savedslots;
-    const structural = additions.length > 0 || [...replacements.values()].includes(null);
-    let out = '', nextKey = 1;
+    const structural = additions.length > 0 || model.slots.some(s => doc.refs.bones[s.id] && s.anchor === 'auto');
+    const pouchStructural = pouchAdditions.length > 0 || pouchRemoved;
+    let out = '', nextKey = 1, pouchKey = 1;
     for (let i = 0; i <= doc.lines.length; i++) {
       if (additions.length && i === section.end) {
         if (out && !/[\r\n]$/.test(out)) out += doc.newline;
         for (const value of additions) out += `${nextKey++}=${value}${doc.newline}`;
       }
-      if (newPouch && i === (pouchSection?.end ?? doc.lines.length)) {
+      if (pouchAdditions.length && i === (pouchSection?.end ?? doc.lines.length)) {
         if (out && !/[\r\n]$/.test(out)) out += doc.newline;
         if (!pouchSection) out += '[SavedPouch]' + doc.newline;
-        out += '1=' + pouch.body.map(format).join(' ');
+        out += pouchAdditions.map(value => (pouchKey++) + '=' + value).join(doc.newline);
         if (i < doc.lines.length || doc.lines.at(-1)?.eol) out += doc.newline;
       }
       if (i === doc.lines.length) break;
       let body = replacements.has(i) ? replacements.get(i) : doc.lines[i].body;
       if (body === null) continue;
       if (section && structural && i > section.start && i < section.end && /^\s*\d+\s*=/.test(body)) body = body.replace(/^(\s*)\d+(\s*=)/, `$1${nextKey++}$2`);
+      if (pouchSection && pouchStructural && i > pouchSection.start && i < pouchSection.end && /^\s*\d+\s*=/.test(body))
+        body = body.replace(/^(\s*)\d+(\s*=)/, `$1${pouchKey++}$2`);
       out += body + doc.lines[i].eol;
     }
+    if (pouchRemoved && pouchSection.end === doc.lines.length && !doc.lines.at(-1).eol)
+      out = out.replace(/(?:\r\n|\n|\r)$/, '');
     const bytes = encode(out, doc.encoding, doc.bom);
     // Verify that exported bytes reload as the same editable state.
     const expected = clone(model); expected.slots.forEach(s => { if (s.anchor === 'auto') s.offset = [0, 0, 0]; });

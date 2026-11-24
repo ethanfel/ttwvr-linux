@@ -21,6 +21,7 @@
     return el;
   }
   for (const a of H.ANCHORS) $('anchor').append(element('option', {value: a.id}, a.label));
+  G.pouchLabels.forEach((label, bone) => $('pouch-anchor').append(element('option', {value: bone}, label)));
   const pouchId = 'pouch';
   const pouchInputs = ['pouch-right', 'pouch-forward', 'pouch-height'];
   const activeRow = (m, id) => id === pouchId ? m?.pouch : m?.slots[id - 1];
@@ -79,9 +80,8 @@
       const pouch = model.pouch;
       $('place-pouch').hidden = !!pouch || !!doc.pouchIssue;
       $('pouch-fields').hidden = !pouch;
-      $('pouch-anchor').textContent = doc.pouchIssue ? doc.pouchIssue + ' Pouch editing is unavailable for this file.' :
-        !pouch ? 'This file has no saved ammo pouch. Start at the front of the waist and adjust the placement.' :
-        pouch.bone === null ? 'Uses the saved body-relative position.' : 'Attached to ' + G.pouchLabels[pouch.bone].toLowerCase() + '.';
+      $('pouch-status').hidden = !!pouch;
+      $('pouch-status').textContent = doc.pouchIssue || 'This file has no saved ammo pouch. Set an initial position to edit it.';
       if (pouch) displayPouch(pouch);
     }
     $('map-empty').hidden = !!doc;
@@ -185,6 +185,11 @@
   });
   // Preview uses a reference skeleton only; it never changes calibration data.
   function displayPouch(pouch) {
+    $('pouch-anchor').value = pouch.bone === null ? 'body' : String(pouch.bone);
+    $('pouch-radius').value = pouch.radius === null ? '' : numberDisplay(pouch.radius);
+    $('pouch-radius-slider').value = pouch.radius === null ? '15' : numberDisplay(pouch.radius);
+    $('pouch-radius-slider').setAttribute('aria-valuetext', pouch.radius === null ? 'Game default' : numberDisplay(pouch.radius) + ' cm');
+    $('pouch-default-radius').disabled = pouch.radius === null;
     const [right, back, height] = G.pouchWorld(pouch);
     [right, -back, height].forEach((v, i) => { $(pouchInputs[i]).value = numberDisplay(v); });
   }
@@ -193,7 +198,9 @@
     if (selected === pouchId) {
       const point = G.pouchWorld(row);
       const delta = pouchInputs.map((id, i) => drafts.has(id) ? Number(drafts.get(id)) / 100 * (i === 1 ? -1 : 1) - point[i] : 0);
-      return G.shiftPouch(row, delta);
+      const updated = G.shiftPouch(row, delta);
+      if (drafts.has('pouch-radius')) updated.radius = Number(drafts.get('pouch-radius')) / 100;
+      return updated;
     }
     const copy = H.clone(row);
     for (const [id, value] of drafts) numericFields.get(id).mutate(copy, Number(value) / 100);
@@ -248,13 +255,24 @@
     $('direction-left').textContent = view === 'front' ? 'YOUR RIGHT' : 'BEHIND';
     $('direction-right').textContent = view === 'front' ? 'YOUR LEFT' : 'IN FRONT';
     $('anchor-points').replaceChildren();
-    const anchors = Object.entries(G.frames).sort(([a],[b]) => Number(a === current?.anchor) - Number(b === current?.anchor));
-    for (const [anchor, frame] of selected === pouchId ? [] : anchors) {
+    const editingPouch = selected === pouchId;
+    const activeAnchor = editingPouch ? current?.bone : current?.anchor;
+    const anchors = editingPouch
+      ? (current ? G.pouchFrames.map((frame, bone) => [bone, frame]) : [])
+      : Object.entries(G.frames);
+    anchors.sort(([a],[b]) => Number(a === activeAnchor) - Number(b === activeAnchor));
+    for (const [anchor, frame] of anchors) {
       const [x,y] = project(frame.origin);
-      const g = svg('g',{class:`anchor-point${anchor === current?.anchor ? ' selected' : ''}`, 'data-anchor':anchor, role:'button', tabindex:doc ? '0' : '-1', 'aria-label':`Assign ${labels[anchor]} anchor`, 'aria-disabled':String(!doc), 'aria-pressed':String(anchor === current?.anchor)});
-      const title=svg('title',{}); title.textContent=labels[anchor]; g.append(title);
+      const label = editingPouch ? G.pouchLabels[anchor] : labels[anchor];
+      const g = svg('g',{class:`anchor-point${anchor === activeAnchor ? ' selected' : ''}`, 'data-anchor':anchor, role:'button', tabindex:doc ? '0' : '-1', 'aria-label':`Assign ${label} anchor`, 'aria-disabled':String(!doc), 'aria-pressed':String(anchor === activeAnchor)});
+      const title=svg('title',{}); title.textContent=label; g.append(title);
       g.append(svg('circle',{cx:x,cy:y,r:7,class:'ring'}), svg('circle',{cx:x,cy:y,r:2,class:'core'}),svg('circle',{cx:x,cy:y,r:11,class:'hit-area'}));
-      const assign = () => { if (doc && !errors.size) commit(m => { m.slots[selected-1].anchor=anchor; }); };
+      const assign = () => {
+        if (doc && !errors.size) commit(m => {
+          if (editingPouch) m.pouch = G.reanchorPouch(m.pouch, anchor);
+          else m.slots[selected-1].anchor = anchor;
+        });
+      };
       g.addEventListener('click',assign);
       g.addEventListener('keydown',e => { if (['Enter',' '].includes(e.key)) { e.preventDefault();assign();document.querySelector(`[data-anchor="${anchor}"]`)?.focus({preventScroll:true}); } });
       $('anchor-points').append(g);
@@ -273,8 +291,9 @@
       // Non-finite SVG geometry is never emitted, even for extreme but valid float32 state values.
       if (![x,y,radius].every(Number.isFinite)) continue;
       const g=svg('g',{class:`holster-volume${chosen ? ' selected' : ''}${row.enabled === false ? ' off' : ''}`, 'data-preview-slot':id});
-      if (chosen && !isPouch && row.anchor !== 'auto') {
-        const [ax,ay]=project(G.frames[row.anchor].origin);
+      const attachment = isPouch ? G.pouchFrames[row.bone] : G.frames[row.anchor];
+      if (chosen && attachment) {
+        const [ax,ay]=project(attachment.origin);
         g.append(svg('path',{d:`M${ax} ${ay}L${x} ${y}`,class:'offset-line'}));
       }
       if (radius > 0) g.append(svg('circle',{cx:x,cy:y,r:radius,class:'grab-sphere'}));
@@ -284,7 +303,7 @@
       centre.addEventListener('pointerdown',e=>beginDrag(e,id,'move'));
       centre.addEventListener('keydown',e=>keyboardMove(e,id));
       g.append(centre); $('slot-markers').append(g);
-      if (chosen && !isPouch) {
+      if (chosen && row.radius !== null) {
         const h=svg('rect',{x:x+radius-6,y:y-6,width:12,height:12,class:'radius-handle',role:'button',tabindex:'0','data-handle':'radius','aria-label':'Grab radius. Drag to resize; arrow keys adjust 1 centimetre, Shift 5.'});
         h.addEventListener('pointerdown',e=>beginDrag(e,id,'radius'));
         h.addEventListener('keydown',e=>keyboardMove(e,id,'radius'));
@@ -294,7 +313,7 @@
     $('preview-measure').textContent = current?.radius != null ? `R ${numberDisplay(current.radius)} CM · Ø ${numberDisplay(current.radius*2)} CM` : 'RADIUS —';
     $('fit-preview').disabled = !current;
     $('preview-hint').textContent = current?.anchor === 'auto' ? 'Automatic · drag the saved position. TTWVR chooses the nearest bone in VR.' : 'Drag centre to move · square handle to resize. Use Side for depth. Arrow keys: 1 cm; Shift: 5 cm.';
-    if (selected === pouchId) $('preview-hint').textContent = current ? 'Drag P to move the ammo pouch. Use Side for depth. Arrow keys move 1 cm, or 5 cm with Shift.' : '';
+    if (selected === pouchId) $('preview-hint').textContent = current ? 'Drag P to move the pouch. Set the grab radius in cm or drag its square handle. Use Side for depth.' : '';
     const p=current && rowWorld(current, selected);
     if (p) {
       const [x,y]=project(p), box=$('body-map').viewBox.baseVal;
@@ -435,25 +454,39 @@
       if (!valid(n)) {
         errors.set(id, true); el.setAttribute('aria-invalid', 'true'); updateStatus();
       } else { errors.delete(id); el.removeAttribute('aria-invalid'); updateStatus(); }
-      if (id === 'radius' && !errors.has(id)) $('radius-slider').value = el.value;
+      if ((id === 'radius' || id === 'pouch-radius') && !errors.has(id)) $(id + '-slider').value = el.value;
       renderPreview();
     });
     el.addEventListener('change', () => {
       const n = el.valueAsNumber;
       if (!valid(n)) {
         errors.set(id, true); el.setAttribute('aria-invalid', 'true'); updateStatus();
-        notify(id === 'radius' ? 'Grab radius must be between 5 and 45 cm.' : 'Enter a finite number for the highlighted position.', 'error'); return;
+        notify(id.endsWith('radius') ? 'Grab radius must be between 5 and 45 cm.' : 'Enter a finite number for the highlighted position.', 'error'); return;
       }
       drafts.set(id, el.value);
       commit(() => {});
     });
   }
   pouchInputs.forEach(id => numeric(id, null));
+  $('pouch-anchor').addEventListener('change', e => {
+    const bone = e.target.value === 'body' ? null : Number(e.target.value);
+    commit(m => { m.pouch = G.reanchorPouch(m.pouch, bone); });
+  });
+  $('pouch-default-radius').addEventListener('click', () => {
+    drafts.delete('pouch-radius'); errors.delete('pouch-radius'); $('pouch-radius').removeAttribute('aria-invalid');
+    commit(m => { m.pouch.radius = null; });
+  });
+  numeric('pouch-radius', null, 5, 45);
   numeric('radius', (s, v) => { s.radius = v; }, 5, 45);
   ['offset-x', 'offset-y', 'offset-z'].forEach((id, i) => numeric(id, (s, v) => { s.offset[i] = v; }));
   ['position-f', 'position-r', 'position-u'].forEach((id, i) => numeric(id, (s, v) => { s.position[i] = v; }));
-  $('radius-slider').addEventListener('input', e => { $('radius').value = e.target.value; $('radius').dispatchEvent(new Event('input')); });
-  $('radius-slider').addEventListener('change', e => commit(m => { m.slots[selected - 1].radius = Number(e.target.value) / 100; }));
+  for (const id of ['radius', 'pouch-radius']) {
+    $(id + '-slider').addEventListener('input', e => {
+      $(id).value = e.target.value;
+      $(id).dispatchEvent(new Event('input'));
+    });
+    $(id + '-slider').addEventListener('change', e => commit(m => { activeRow(m, selected).radius = Number(e.target.value) / 100; }));
+  }
   $('reset-slot').addEventListener('click', () => commit(m => assignRow(m, selected, H.clone(activeRow(doc.original, selected))), true));
   function travel(delta) {
     const next = historyIndex + delta;

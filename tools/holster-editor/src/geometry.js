@@ -200,6 +200,27 @@
     const frame = pouchFrames[pouch.bone];
     return multiply(frame.rotation, pouch.offset).map((v, i) => frame.origin[i] + v / unitsPerMetre);
   }
+  // Native orientation records store a row-major matrix. Convert each column
+  // between torso frames, just as we convert a direction without translation.
+  function reanchorPouch(pouch, bone) {
+    if (bone === pouch.bone) return pouch;
+    const point = pouchWorld(pouch);
+    if (bone === null) {
+      const [right, back, up] = point;
+      const eyeHeight = pouch.body[2] + pouch.body[3];
+      const result = {...pouch, body: [-back, right, eyeHeight - up, up], bone: null, offset: null};
+      delete result.rotation;
+      return result;
+    }
+    const next = pouchFrames[bone], inverse = transpose(next.rotation);
+    const offset = multiply(inverse, point.map((v, i) => (v - next.origin[i]) * unitsPerMetre));
+    // A body-relative pouch has no saved rotation. Start it upright in the
+    // reference body's native right/forward/up basis.
+    const axes = pouch.bone === null ? [[1,0,0],[0,-1,0],[0,0,1]] :
+      [0,1,2].map(c => multiply(pouchFrames[pouch.bone].rotation, [0,1,2].map(r => pouch.rotation[r*3+c])));
+    const rotation = transpose(axes.flatMap(axis => multiply(inverse, axis)));
+    return {...pouch, bone, offset, rotation};
+  }
   function shiftPouch(pouch, delta) {
     // Both records describe the same move. Retain calibration differences
     // between the fallback and the skeleton, including eye vs. floor height.
@@ -241,5 +262,5 @@
   }
   const SCALE = 230;
   const project = (p, view = 'front') => [220 - p[view === 'side' ? 1 : 0] * SCALE, 490 - p[2] * SCALE];
-  return {frames, joints, pouchWorld, shiftPouch, pouchLabels, referenceEyeHeight, world, moveSlot, local, move, mirror, opposite, reflect, repairBodyPlacement, project, SCALE};
+  return {frames, joints, pouchWorld, shiftPouch, reanchorPouch, pouchFrames, pouchLabels, referenceEyeHeight, world, moveSlot, local, move, mirror, opposite, reflect, repairBodyPlacement, project, SCALE};
 });
