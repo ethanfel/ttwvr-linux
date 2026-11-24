@@ -8,8 +8,8 @@ server, Python, Node, account or network connection is needed to use it.
 
 ## Open the tool
 
-Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.5/TTWVR-Holster-Editor.html)
-and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.5/TTWVR-Holster-Editor.zip)
+Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.6/TTWVR-Holster-Editor.html)
+and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.6/TTWVR-Holster-Editor.zip)
 also includes the offline instructions.
 
 1. **Load state file**: select your `TTWVR.state` file, or drop it onto the window.
@@ -30,7 +30,7 @@ The tool never overwrites game files directly.
 
 With **Body outline** on, red hatching marks the portion of a holster or ammo pouch grab sphere inside the estimated body. Check it in Front, Side, or 3D as you move or resize the sphere. Pouches using the game’s default radius have no saved sphere to display.
 
-To clear the red hatching, choose **Selected placement** or **Enabled layout**, then click **Auto adapt**. It fits the grab spheres to the current pose and weight. Layout fitting includes the ammo pouch when it has a saved radius. Anchors and radii stay the same. One **Undo** restores the previous positions.
+Choose **Selected placement** or **Enabled layout**, then click **Auto adapt** to fit the grab spheres to the skin. Lower the estimated weight and click again to bring loose placements inward. A larger outline pushes embedded placements outward. Layout fitting includes the ammo pouch when it has a saved radius. Anchors and radii stay the same. One **Undo** restores the previous positions.
 
 ## Check seated reach
 

@@ -128,9 +128,37 @@ test('auto adapt clears the current skin, preserves the anchor and radius, and i
   const inherited={...doc.model.pouch,radius:null};
   assert.equal(O.adaptPlacement(inherited,true,75,'standing'),inherited);
   const nearHip={...doc.model.slots[0],anchor:'pelvis',offset:G.local('pelvis',[.21,-.015,1.12]),radius:.055};
-  assert.equal(O.adaptPlacement(nearHip,false,45,'standing'),nearHip);
+  assert.ok(G.world(O.adaptPlacement(nearHip,false,45,'standing'))[0]<G.world(nearHip)[0]);
   const fitted=O.adaptPlacement(nearHip,false,180,'standing'), point=G.world(fitted);
   assert.ok(point[0]>.21 && point[0]<.38);near([point[2]],[1.12]);
   const mirror=G.mirror(nearHip,2), fittedMirror=O.adaptPlacement(mirror,false,180,'standing');
   near(G.world(fittedMirror),G.reflect(point));
+});
+
+test('lower-weight fitting brings a saved hip holster and pouch back to the skin on the same side',()=>{
+  const doc=H.parse(H.demo()), eye=1.82;
+  const world=(row,pouch,pose)=>O.equipmentWorld(row,pouch,pose,eye);
+  const source=[-.21,-.015,1.12];
+  for(const pose of ['standing','seated']) for(const anchor of ['pelvis','auto','body-pouch','bone-pouch']){
+    const pouch=anchor.endsWith('pouch');
+    let row;
+    if(pouch){
+      row={...doc.model.pouch,body:[-source[1],source[0],eye-source[2],source[2]],bone:null,offset:null,radius:.055};
+      if(anchor==='bone-pouch') row=G.reanchorPouch(row,0);
+    } else {
+      row={...doc.model.slots[0],anchor,radius:.055,offset:G.local('pelvis',source),position:[-source[1],source[0],source[2]-eye]};
+    }
+    const heavy=O.adaptPlacement(row,pouch,180,pose,eye);
+    const light=O.adaptPlacement(heavy,pouch,45,pose,eye);
+    const start=world(heavy,pouch,pose), end=world(light,pouch,pose);
+    assert.ok(end[0]<0 && Math.abs(end[0])<Math.abs(start[0])-.04,anchor+' '+pose);
+    near([end[2]],[start[2]]);
+    assert.equal(O.overlapPath(end,row.radius,O.camera(),45,pose),'');
+    assert.equal(O.adaptPlacement(light,pouch,45,pose,eye),light);
+    assert.equal(light.radius,row.radius);
+    assert.equal(light.anchor,row.anchor);assert.equal(light.bone,row.bone);
+  }
+  // At this height the inward path never meets the model.
+  const above={...doc.model.slots[0],anchor:'pelvis',offset:G.local('pelvis',[.4,-.1,3])};
+  assert.equal(O.adaptPlacement(above,false,45,'standing'),above);
 });

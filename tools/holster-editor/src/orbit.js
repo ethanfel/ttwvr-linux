@@ -420,36 +420,80 @@
       const lateral=[side==='left'?-1:1,0,0];
       fallback=sub(lateral,times(axis,dot(lateral,axis)));
     }
-    return {axis,outward:unit(Math.hypot(...radial)<.003 ? fallback : radial)};
+    const reach=Math.hypot(...radial);
+    return {axis,outward:unit(reach<.003 ? fallback : radial),reach};
+  }
+  function skinExtent(skin,dir) {
+    let min=Infinity, max=-Infinity;
+    for(const part of skin) for(const ring of part.rings) for(const vertex of ring) {
+      const t=dot(vertex,dir); min=Math.min(min,t); max=Math.max(max,t);
+    }
+    return {min,max};
+  }
+  function clearBoundary(blocked,clear,inside) {
+    for(let i=0;i<10;i++) {
+      const mid=(clear+inside)/2;
+      if(blocked(mid)) inside=mid; else clear=mid;
+    }
+    return clear;
+  }
+  function inwardFit(centre,outward,reach,skin,padded,step,hits) {
+    // March toward the anchor and stop at the first surface. World-space ray
+    // coordinates bound the search to the skin even for distant imported slots.
+    const along=dot(centre,outward), base=sub(centre,times(outward,along));
+    const point=t=>add(base,times(outward,t));
+    const blocked=t=>hits(point(t),padded);
+    const bounds=skinExtent(skin,outward);
+    let end=Math.max(along-reach,bounds.min-padded);
+    if(centre[0]*outward[0]>0) end=Math.max(end,along-centre[0]/outward[0]);
+    let clear=Math.min(along,bounds.max+padded+step);
+    while(clear>end) {
+      const probe=Math.max(end,clear-step);
+      if(blocked(probe)) return point(clearBoundary(blocked,clear,probe));
+      clear=probe;
+    }
+    return null;
   }
   function adaptPlacement(row,isPouch,weightKg,pose,eyeHeight) {
     if(!row || !(row.radius>0)) return row;
     const centre=equipmentWorld(row,isPouch,pose,eyeHeight), radius=row.radius;
     const hits=(p,r)=>skinIntersection(p,r,null,weightKg,pose);
-    if(!hits(centre,radius)) return row;
-    const {axis,outward}=fitAxis(centre,isPouch?'pelvis':row.anchor,pose);
+    const step=Math.max(.012,radius/6), padded=radius*1.006+.002;
+    const skin=skinFor(weightKg,pose);
+    const anchor=isPouch?'pelvis':row.anchor;
+    if(!hits(centre,radius)) {
+      // A half-millimetre contact band avoids creeping on repeated clicks and
+      // absorbs rounding when a fitted placement is exported and loaded again.
+      if(hits(centre,padded+.0005)) return row;
+      // Automatic slots store an eye-relative height. Keep it when closing
+      // a gap, then try the nearest limb if that horizontal ray misses the skin.
+      for(const candidate of anchor==='auto' ? ['pelvis','auto'] : [anchor]) {
+        const {outward,reach}=fitAxis(centre,candidate,pose);
+        const target=inwardFit(centre,outward,reach,skin,padded,step,hits);
+        if(!target) continue;
+        const fitted=move(row,isPouch,sub(target,centre),pose);
+        const actual=equipmentWorld(fitted,isPouch,pose,eyeHeight);
+        if(Math.hypot(...sub(actual,target))<.0005 && !hits(actual,radius)) return fitted;
+      }
+      return row;
+    }
+    const {axis,outward}=fitAxis(centre,anchor,pose);
     // Search across the bone, retaining the position along it (belt height for
     // the torso). Try nearby directions if there is another limb in the way.
     const tangent=times(cross(axis,outward),centre[0]<0?-1:1);
-    const step=Math.max(.012,radius/6), padded=radius*1.006+.002;
     let best=null, bestScore=Infinity;
     for(const degrees of [0,30,-30,60,-60,90,-90]) {
       const angle=degrees*Math.PI/180;
       const dir=add(times(outward,Math.cos(angle)),times(tangent,Math.sin(angle)));
       const point=d=>add(centre,times(dir,d));
       // The extremal skin vertex bounds the search even for imported radii.
-      let far=0;
-      for(const part of skinFor(weightKg,pose)) for(const ring of part.rings)
-        for(const vertex of ring) far=Math.max(far,dot(vertex,dir));
-      const limit=Math.max(0,far-dot(centre,dir))+padded+step;
+      const limit=Math.max(0,skinExtent(skin,dir).max-dot(centre,dir))+padded+step;
+      const blocked=d=>hits(point(d),padded);
       const penalty=1+.25*(1-Math.cos(angle));
       let low=0, high=step;
       while(low<limit && low*penalty<bestScore) {
-        if(!hits(point(high),padded)) {
-          for(let i=0;i<8;i++){
-            const mid=(low+high)/2;
-            if(hits(point(mid),padded)) low=mid; else high=mid;
-          }
+        if(!blocked(high)) {
+          high=clearBoundary(blocked,high,low);
           // Keep a side-mounted placement on its own side of the body.
           if(centre[0]*point(high)[0]>=0 && high*penalty<bestScore) {
             bestScore=high*penalty; best=times(dir,high);

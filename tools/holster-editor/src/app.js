@@ -606,7 +606,7 @@
     });
     if(!applied) return;
     const result=moved ? `Auto adapt moved ${moved} placement${moved===1?'':'s'}. Undo restores the previous position${moved===1?'':'s'}.` :
-      stillInside ? 'Auto adapt could not clear this placement.' : checked ? 'The checked placements already clear the body outline.' : '';
+      stillInside ? 'Auto adapt could not clear this placement.' : checked ? 'No adjustment needed at this pose and weight.' : '';
     const skipped=unknownRadius ? 'Set a grab radius to include placements that use the game default.' : '';
     const pending=moved && stillInside ? `${stillInside} still intersect the outline.` : '';
     notify([result,pending,skipped].filter(Boolean).join(' ') || 'There are no placements to adapt.',stillInside?'error':'');

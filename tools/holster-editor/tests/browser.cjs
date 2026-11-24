@@ -508,6 +508,29 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     assert.equal(O.overlapPath(O.equipmentWorld(layout.pouch,true,'seated'),layout.pouch.radius,O.camera(),180,'seated'),'');
     await click('#undo');assert.deepEqual((await downloadState()).bytes,bytes);
     await click('#redo');assert.deepEqual((await downloadState()).model,layout);
+    // A 1.6.5 fit can arrive from disk with no weight history. The slider
+    // previews, and the next click must close the gap using the saved geometry.
+    const heavyFile=path.join(temp,'heavy-layout.state'), heavyBytes=H.serialize(probe,layout);
+    await fs.writeFile(heavyFile,heavyBytes);await upload(heavyFile);
+    await waitFor("document.querySelector('#filename').textContent==='heavy-layout.state'","reloaded heavy layout");
+    await change('#body-weight','45');
+    assert.deepEqual((await downloadState()).bytes,heavyBytes);
+    await click('#auto-adapt');
+    const light=(await downloadState()).model, lightHip=O.equipmentWorld(light.slots[0],false,'seated');
+    const heavyHip=O.equipmentWorld(layout.slots[0],false,'seated');
+    assert.ok(lightHip[0]<heavyHip[0]-.02 && lightHip[0]>0);
+    near([lightHip[2]],[heavyHip[2]]);
+    assert.equal(O.overlapPath(lightHip,light.slots[0].radius,O.camera(),45,'seated'),'');
+    assert.notDeepEqual(light.pouch.body,layout.pouch.body);
+    assert.equal(light.slots[0].anchor,layout.slots[0].anchor);assert.equal(light.slots[0].radius,layout.slots[0].radius);
+    for(const row of light.slots.filter(s=>!s.enabled)) assert.deepEqual(row,layout.slots[row.id-1]);
+    await click('#auto-adapt');await click('#undo');assert.deepEqual((await downloadState()).bytes,heavyBytes);
+    await click('#redo');assert.deepEqual((await downloadState()).model,light);
+    await click('#undo');await change('#adapt-scope','selected');await click('#auto-adapt');
+    const justOne=(await downloadState()).model;
+    assert.deepEqual(justOne.slots[0],light.slots[0]);assert.deepEqual(justOne.slots.slice(1),layout.slots.slice(1));
+    assert.deepEqual(justOne.pouch,layout.pouch);
+    await click('#undo');assert.deepEqual((await downloadState()).bytes,heavyBytes);
     await click('#select-pouch');await click('#pouch-default-radius');await change('#adapt-scope','selected');
     await click('#auto-adapt');
     assert.ok(await evaluate("document.querySelector('#notice').textContent.includes('game default')"));
@@ -515,7 +538,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await click('#undo');assert.deepEqual((await downloadState()).model,layout);
 
     assert.equal(errors.length,0,JSON.stringify(errors));assert.equal(requests.some(u=>/^https?:/.test(u)),false,JSON.stringify(requests));
-    console.log('PASS browser: partial body overlap, depth-separated placements, seated desk-chair geometry, seated view and drag/export/undo, estimated-weight outlines, fixed anchors, mobile slider, translucent silhouette, toggle, state preservation, 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
+    console.log('PASS browser: lower-weight fitting after reload in both scopes, partial body overlap, depth-separated placements, seated desk-chair geometry, seated view and drag/export/undo, estimated-weight outlines, fixed anchors, mobile slider, translucent silhouette, toggle, state preservation, 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
     console.log('PASS no network requests; source file unchanged; no browser exceptions.');
   } finally {
     try { await send('Browser.close'); } catch {}
