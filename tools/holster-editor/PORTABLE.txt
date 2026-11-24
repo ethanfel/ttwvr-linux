@@ -1,9 +1,11 @@
-TTWVR HOLSTER EDITOR — FIELD KIT 1.5.1
+TTWVR HOLSTER EDITOR — FIELD KIT 1.6.0
 
 1. Extract this ZIP to a folder.
 2. Open TTWVR-Holster-Editor.html in a current browser (Edge, Chrome or Firefox).
 3. Load your TTWVR.state file. Select a numbered holster, then choose a body
    anchor from the diagram or list. Drag its numbered centre to position it.
+   In 3D, drag the background to orbit and scroll to zoom. Drag R (right),
+   F (forward) or U (up) to move the selected holster or pouch along one axis.
    Switch Front/Side to adjust all three dimensions. Drag the square handle on
    the circle to resize the grab sphere. Values and the grid are in centimetres.
    Arrow keys move 1 cm; Shift + arrows moves 5 cm. Escape cancels a drag.
@@ -65,6 +67,8 @@ The default has four belt positions and four chest/abdomen pockets. The belt
 wraps around the waist, with front pouches and side hip holsters. There are no
 double targets on the arms. Utility rig adds one forearm target opposite the
 selected Pip-Boy arm: right reserved, left forearm available by default.
+Each profile includes one ammo pouch marked P in both previews. Select its
+left or right side before applying. Export saves its position, anchor and radius.
 Choose paired slot order and optional 5 or 10 cm extra forward reach, preview,
 then Apply. Pip-Boy arm reserves that arm; it does not move the in-game Pip-Boy.
 One Undo restores the previous layout. Unused slots are disabled while their

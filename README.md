@@ -42,7 +42,7 @@ The author renderer has user-confirmed WiVRn/Quest 3 playback with NMC and gener
 ## Help and reference
 
 - [TTWVR Discord community](https://discord.com/invite/ttwvr)
-- [Holster Editor for Windows and Linux](tools/holster-editor/README.md) — move the ammo pouch and all eight holsters, including Automatic slots, in an offline HTML editor.
+- [Holster Editor for Windows and Linux](tools/holster-editor/README.md) — preview seven loadouts with an ammo pouch, then position your equipment on an orbitable 3D skeleton. Runs offline.
 - [Troubleshooting](docs/troubleshooting.md)
 - [Optional setup.json fields](docs/configuration.md)
 - [What the Linux patches change](docs/linux-fixes.md)

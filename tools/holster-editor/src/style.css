@@ -30,3 +30,23 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
 .pouch-button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 #pouch-panel{padding:0 18px 18px}
 #pouch-fields{border:0;margin:0;padding:0;min-width:0}
+
+/* Orthographic 3D reference and translation gizmo. */
+#body-map.orbit-view{cursor:grab}
+#body-map.orbit-view:active{cursor:grabbing}
+.orbit-view>.map-grid,.orbit-view>.guide-line{display:none}
+.orbit-floor{fill:none;stroke:var(--muted);stroke-width:.6;opacity:.36}
+.orbit-bone{fill:color-mix(in srgb,var(--muted) var(--light),var(--panel));stroke:color-mix(in srgb,var(--muted) var(--light),var(--panel));stroke-width:.4;stroke-linejoin:round}
+.axis{cursor:move;touch-action:none}
+.axis-right{color:#ef9c83}.axis-forward{color:#76d2b3}.axis-up{color:#8fc7ff}
+.axis-line{fill:none;stroke:currentColor;stroke-width:2.4}
+.axis-tip{fill:currentColor;stroke:var(--bg);stroke-width:.6}
+.axis text{fill:currentColor;stroke:var(--bg);stroke-width:3;paint-order:stroke;font-weight:bold;font-size:11px;text-anchor:middle;dominant-baseline:central}
+.axis-hit{fill:none;stroke:transparent;stroke-width:13;pointer-events:stroke}
+.axis:hover .axis-line,.axis:focus .axis-line{stroke-width:4}
+.pouch-side-choice{display:flex;align-items:center;gap:.8em;margin:0 0 12px;font-size:11px}
+.pouch-side-choice select{width:auto;margin:0;padding:5px 10px}
+[data-preset-pouch] .holster-centre circle{stroke-dasharray:2 1}
+
+.pouch-leader{fill:none;stroke:var(--accent);stroke-width:1}
+.pouch-pin{fill:var(--accent)}

@@ -4,12 +4,12 @@ An offline editor for TTWVR holsters and the ammo pouch.
 Open one HTML file in a current browser on **Windows or Linux**. No install,
 server, Python, Node, account or network connection is needed to use it.
 
-![Field Kit, amber theme](images/field-kit-amber.png)
+![Ammo pouch selected on the 3D reference skeleton](images/field-kit-3d.png)
 
 ## Open the tool
 
-Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.5.1/TTWVR-Holster-Editor.html)
-and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.5.1/TTWVR-Holster-Editor.zip)
+Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.0/TTWVR-Holster-Editor.html)
+and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.0/TTWVR-Holster-Editor.zip)
 also includes the offline instructions.
 
 1. **Load state file**: select your `TTWVR.state` file, or drop it onto the window.
@@ -30,7 +30,7 @@ The tool never overwrites game files directly.
 
 ## Edit the ammo pouch
 
-Choose **Ammo pouch** below the eight slots. Drag **P** in Front for left/right and
+Choose **Ammo pouch** below the eight slots. In **3D**, drag the background to orbit the skeleton. Drag the **R**, **F** or **U** arrow to move the pouch right, forward or up. In **Front**, drag **P** for left/right and
 height, then in Side for depth. You can also enter centimetres directly.
 Under **Body anchor**, choose Body-relative, Pelvis, Lower spine, Middle spine or Upper spine.
 You can also click a torso joint on the map. Changing anchors keeps the pouch centre in place in the reference pose. Set **Grab radius**
@@ -54,7 +54,9 @@ Intentionally rear-mounted body holsters would also move; inspect **Side** and u
 repair cannot flip a repaired sphere back. Export, back up and replace the state
 with the game closed, then check the fit in VR. Alternatively, apply a fresh preset.
 
-## Preset layouts — Field Kit 1.4
+## Preset layouts
+
+Each preset includes one ammo pouch, marked **P** in both previews. Choose its side before applying. Applying a preset updates the pouch position, torso anchor and grab radius together with the holsters. One Undo restores the previous layout.
 
 Open **Preset layouts** above the slot list. The presets now follow wearable
 gear positions: a belt around the waist, hip holsters, chest and vest pockets,
@@ -87,7 +89,7 @@ coincide.
 
 Browsing or closing the preview leaves your layout unchanged. **Apply** updates
 anchors, offsets, radii and enabled flags in one undoable edit. Other slots are
-disabled without erasing their placements. Saved fallback positions, global
+disabled without erasing their placements. Numbered holster fallback positions, global
 visibility, calibration and unrelated state sections are preserved. Presets do
 not assign inventory items to hotkeys.
 
@@ -138,6 +140,7 @@ sections are missing, place/toggle a holster in VR and quit once to create them.
 - Ten explicit anchors: pelvis, chest, left/right upper arm, forearm, thigh and shin.
 - **Automatic** removes an explicit bone binding. TTWVR chooses a nearby bone
   using the saved body-relative position when the avatar is ready.
+- **3D** shows an orbitable reference skeleton. Drag the background to look around or scroll to zoom. Select **P** or a numbered holster and drag **R** (right), **F** (forward) or **U** (up). Focus an arrow and use the arrow keys for 1 cm steps or Shift for 5 cm. **Reset view** restores the starting angle.
 - Front and side orthographic previews, a **10 cm grid**, live grab spheres and
   radius/diameter readout. Numeric edits update the preview while typing.
 - Drag the centre to move in the displayed plane; drag its square handle to resize.

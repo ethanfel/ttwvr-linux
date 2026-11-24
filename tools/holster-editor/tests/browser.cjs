@@ -159,6 +159,11 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await screenshot('holster-editor-presets-library.png');
     await click('[data-preset="gun_belt"]');await screenshot('holster-editor-gun-belt.png');
     await click('[data-preset="utility_rig"]');
+    assert.equal(await evaluate('document.querySelectorAll("[data-preset-pouch]").length'),2);
+    await change('#preset-pouch-side','right');
+    const presetPouchX = await evaluate('Number(document.querySelector("#preset-front [data-preset-pouch] .grab-sphere").getAttribute("cx"))');
+    assert.ok(presetPouchX < 220);
+
     assert.equal(await evaluate('document.querySelector("#preset-pipboy").value'),'right');
     assert.match(await evaluate('document.querySelector("#preset-pairs").textContent'),/8 · Left forearm utility/);
     await change('#preset-pipboy','left');
@@ -179,7 +184,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await clickExport();
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     const presetExport=H.parse(await fs.readFile(path.join(downloads,'TTWVR.state'))).model;
-    assert.deepEqual(presetExport,P.apply(H.parse(H.demo()).model,'utility_rig','left',5,'right'));
+    assert.deepEqual(presetExport,P.apply(H.parse(H.demo()).model,'utility_rig','left',5,'right',{pouchSide:'right',eyeHeight:H.parse(H.demo()).eyeHeight}));
     assert.equal(presetExport.slots[7].anchor,'left_forearm');
     assert.equal(presetExport.slots.some(s=>s.anchor==='right_forearm'),false);
     await fs.unlink(path.join(downloads,'TTWVR.state'));
@@ -214,6 +219,31 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     const original = H.parse(H.demo());
     await click('#select-pouch');
     const pouchStart = G.pouchWorld(original.model.pouch);
+    await click('#view-orbit');
+    const skeletonPath=()=>evaluate('document.querySelector("#reference-body .orbit-bone").getAttribute("d")');
+    const beforeOrbit=await skeletonPath();
+    // Orbit over clear background, then drag each constrained axis with real browser input.
+    const corner=await evaluate(`(()=>{const r=document.querySelector('#body-map').getBoundingClientRect();return {x:r.left+20,y:r.top+45};})()`);
+    await cdp('Input.dispatchMouseEvent',{type:'mousePressed',...corner,button:'left',clickCount:1});
+    await cdp('Input.dispatchMouseEvent',{type:'mouseMoved',x:corner.x+24,y:corner.y+10,button:'left',buttons:1});
+    await cdp('Input.dispatchMouseEvent',{type:'mouseReleased',x:corner.x+24,y:corner.y+10,button:'left',clickCount:1});
+    assert.notEqual(await skeletonPath(),beforeOrbit);
+    assert.equal(await evaluate('document.querySelector("#undo").disabled'),true);
+    await click('#orbit-reset');assert.equal(await skeletonPath(),beforeOrbit);
+    await screenshot('holster-editor-3d.png');
+    for(const [axis,index,dx,dy] of [['right',0,-20,2],['forward',1,14,4],['up',2,0,-18]]) {
+      await dragHandle('[data-axis="'+axis+'"] .axis-hit',dx,dy);
+      const changed=G.pouchWorld((await downloadState()).model.pouch);
+      assert.ok(Math.abs(changed[index]-pouchStart[index])>.025,axis+' gizmo did not move');
+      near(changed.filter((_,i)=>i!==index),pouchStart.filter((_,i)=>i!==index));
+      await click('#undo');
+    }
+    await click('[data-slot="1"]');
+    const oldSlot=G.world(original.model.slots[0]);
+    await dragHandle('[data-axis="up"] .axis-hit',0,-20);
+    const newSlot=G.world((await downloadState()).model.slots[0]);
+    near(newSlot.slice(0,2),oldSlot.slice(0,2));assert.ok(newSlot[2]>oldSlot[2]+.03);
+    await click('#undo'); await click('#view-front'); await click('#select-pouch');
     const dragScale = await dragHandle(marker('pouch'), 19, -12);
     const right = pouchStart[0] - 19 / (230 * dragScale), height = pouchStart[2] + 12 / (230 * dragScale);
     near(await readCm(['pouch-right','pouch-height']), [right, height]);
@@ -342,7 +372,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await cdp('Emulation.setDeviceMetricsOverride', {width:1024,height:768,deviceScaleFactor:1,mobile:false});
     assert.equal(await evaluate('document.documentElement.scrollWidth <= window.innerWidth'),true);
     assert.equal(errors.length,0,JSON.stringify(errors));assert.equal(requests.some(u=>/^https?:/.test(u)),false,JSON.stringify(requests));
-    console.log('PASS browser: ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
+    console.log('PASS browser: 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
     console.log('PASS no network requests; source file unchanged; no browser exceptions.');
   } finally {
     try { await send('Browser.close'); } catch {}

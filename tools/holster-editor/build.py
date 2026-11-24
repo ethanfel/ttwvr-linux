@@ -12,7 +12,7 @@ args = parser.parse_args()
 if args.check and args.package:
     parser.error('--check and --package cannot be used together')
 html = (root/'src/shell.html').read_text(encoding='utf-8')
-for tag, name in [('STYLE', 'style.css'), ('STATE', 'state.js'), ('GEOMETRY', 'geometry.js'), ('PRESETS', 'presets.js'), ('APP', 'app.js')]:
+for tag, name in [('STYLE', 'style.css'), ('STATE', 'state.js'), ('GEOMETRY', 'geometry.js'), ('PRESETS', 'presets.js'), ('ORBIT', 'orbit.js'), ('APP', 'app.js')]:
     source = (root/'src'/name).read_text(encoding='utf-8')
     if tag != 'STYLE' and '</script' in source.lower():
         raise SystemExit('Unsafe inline script closing tag')

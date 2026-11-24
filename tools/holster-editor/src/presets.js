@@ -16,13 +16,13 @@
   const centre = {anchor:'chest', target:[0,-21,117], radius:6, label:'Centre vest pouch', single:true};
   const forearm = {anchor:'free_forearm', target:[50,-18,129], radius:6, label:'Forearm utility', single:true};
   const definitions = [
-    {id:'wasteland_rig', name:'Wasteland rig', tag:'BELT + VEST', description:'Four belt positions and four vest pockets fill the waist and torso. A gear-style starting layout with no arm-mounted holsters.', note:'Belt pouches sit across the front; hip holsters wrap toward the sides. Vest pockets fill two rows on the torso.', parts:[frontBelt,hip,chest,lowerChest]},
-    {id:'gun_belt', name:'Gun belt', tag:'WAIST ONLY', description:'Two front pouches and a holster on each hip, arranged at one belt height.', note:'A compact belt layout. Use the side view to see the front pouches and hip holsters wrapping around the waist.', parts:[frontBelt,hip]},
-    {id:'chest_rig', name:'Chest rig', tag:'CHEST + BELT', description:'A pair of chest pockets above a four-position belt. All six slots follow the torso and waist.', note:'Leaves the arms free and uses distinct chest, front-belt and hip locations.', parts:[frontBelt,hip,chest]},
-    {id:'travel_vest', name:'Travel vest', tag:'TORSO POCKETS', description:'Four vest pockets across the chest and abdomen, with two front-belt pouches below.', note:'A pocket-style layout without side hip holsters. Check lower vest and belt reach in VR.', parts:[frontBelt,chest,lowerChest]},
-    {id:'shoulder_rig', name:'Shoulder rig', tag:'UNDERARM + BELT', description:'Two underarm holsters carried by the chest frame, plus the four-position belt.', note:'Reach across to the underarm targets. They follow the torso rather than moving with the upper arms.', parts:[frontBelt,hip,shoulder]},
-    {id:'field_rig', name:'Field rig', tag:'BELT + CHEST + THIGHS', description:'Four belt positions, two chest pockets and one upper-thigh holster on each leg.', note:'The thigh holsters sit below the belt. There is only one target on each leg.', parts:[frontBelt,hip,chest,thigh]},
-    {id:'utility_rig', name:'Utility rig', tag:'BELT + VEST + UTILITY', description:'Four belt positions, two chest pockets, a centre vest pouch and one forearm utility target.', note:'The forearm target always goes opposite your selected Pip-Boy arm. Right is reserved by default, leaving the left forearm available.', parts:[frontBelt,hip,chest,centre,forearm]}
+    {id:'wasteland_rig', pouch:{label:'Side vest pocket', bone:2, cm:[28, -21, 117], radius:7.5}, name:'Wasteland rig', tag:'BELT + VEST', description:'Four belt positions and four vest pockets fill the waist and torso. A gear-style starting layout with no arm-mounted holsters.', note:'Belt pouches sit across the front; hip holsters wrap toward the sides. Vest pockets fill two rows on the torso.', parts:[frontBelt,hip,chest,lowerChest]},
+    {id:'gun_belt', pouch:{label:'Forward hip pouch', bone:0, cm:[27, -26, 99], radius:7.5}, name:'Gun belt', tag:'WAIST ONLY', description:'Two front pouches and a holster on each hip, arranged at one belt height.', note:'A compact belt layout. Use the side view to see the front pouches and hip holsters wrapping around the waist.', parts:[frontBelt,hip]},
+    {id:'chest_rig', pouch:{label:'Lower chest pocket', bone:2, cm:[11, -24, 117], radius:7.5}, name:'Chest rig', tag:'CHEST + BELT', description:'A pair of chest pockets above a four-position belt. All six slots follow the torso and waist.', note:'Leaves the arms free and uses distinct chest, front-belt and hip locations.', parts:[frontBelt,hip,chest]},
+    {id:'travel_vest', pouch:{label:'Side belt pouch', bone:0, cm:[26, -14, 100], radius:7.5}, name:'Travel vest', tag:'TORSO POCKETS', description:'Four vest pockets across the chest and abdomen, with two front-belt pouches below.', note:'A pocket-style layout without side hip holsters. Check lower vest and belt reach in VR.', parts:[frontBelt,chest,lowerChest]},
+    {id:'shoulder_rig', pouch:{label:'Front vest pouch', bone:2, cm:[10, -22, 116], radius:7.5}, name:'Shoulder rig', tag:'UNDERARM + BELT', description:'Two underarm holsters carried by the chest frame, plus the four-position belt.', note:'Reach across to the underarm targets. They follow the torso rather than moving with the upper arms.', parts:[frontBelt,hip,shoulder]},
+    {id:'field_rig', pouch:{label:'Lower vest pouch', bone:1, cm:[12, -22, 117], radius:7.5}, name:'Field rig', tag:'BELT + CHEST + THIGHS', description:'Four belt positions, two chest pockets and one upper-thigh holster on each leg.', note:'The thigh holsters sit below the belt. There is only one target on each leg.', parts:[frontBelt,hip,chest,thigh]},
+    {id:'utility_rig', pouch:{label:'Side vest pocket', bone:2, cm:[27, -21, 116], radius:7.5}, name:'Utility rig', tag:'BELT + VEST + UTILITY', description:'Four belt positions, two chest pockets, a centre vest pouch and one forearm utility target.', note:'The forearm target always goes opposite your selected Pip-Boy arm. Right is reserved by default, leaving the left forearm available.', parts:[frontBelt,hip,chest,centre,forearm]}
   ];
   function get(id) {
     const preset=definitions.find(p=>p.id===id);
@@ -41,7 +41,7 @@
         const label=part.anchor==='free_forearm'?`${pipBoySide==='right'?'Left':'Right'} forearm utility`:part.label;
         return {ids,label,radius:part.radius};
       });
-      return {id:p.id,name:p.name,tag:p.tag,description:p.description,note:p.note,count:nextId-1,rows,usesForearm:p.parts.some(part=>part.anchor==='free_forearm')};
+      return {id:p.id,name:p.name,tag:p.tag,description:p.description,note:p.note,count:nextId-1,rows,pouchLabel:p.pouch.label,usesForearm:p.parts.some(part=>part.anchor==='free_forearm')};
     });
   }
   function slots(id,side='right',forwardCm=0,pipBoySide='right') {
@@ -63,23 +63,36 @@
       return [first,second];
     }).sort((a,b)=>a.id-b.id);
   }
-  function apply(model,id,side='right',forwardCm=0,pipBoySide='right') {
+  function ammoPouch(id, forwardCm=0, side='left', previous=null, eyeHeight=null) {
+    if (!['left','right'].includes(side) || ![0,5,10].includes(forwardCm)) throw new Error('Invalid ammo pouch preset options.');
+    const {cm, bone, radius} = get(id).pouch;
+    const [right, back, height] = [cm[0]*(side==='left'?-1:1), cm[1]-forwardCm, cm[2]].map(v=>v/100);
+    const eyes = eyeHeight ?? (previous ? previous.body[2] + previous.body[3] : G.referenceEyeHeight);
+    const body = [-back, right, eyes-height, height];
+    const base = previous ?? {body, bone:null, offset:null, radius:null};
+    const anchored = G.reanchorPouch(base, bone);
+    return {...anchored, body, offset:G.pouchLocal(bone,[right,back,height]), radius:radius/100};
+  }
+  function apply(model,id,side='right',forwardCm=0,pipBoySide='right',options={}) {
     const placements=slots(id,side,forwardCm,pipBoySide),next=JSON.parse(JSON.stringify(model));
     // Slots outside the chosen layout are disabled without erasing their placement.
     next.slots.forEach(s=>{s.enabled=false;});
-    for(const placement of placements) {
+    for(const placement of next.slots.length ? placements : []) {
       const target=next.slots[placement.id-1],position=target.position;
       Object.assign(target,placement,{position});
     }
+    if (options.includePouch !== false) next.pouch = ammoPouch(id,forwardCm,options.pouchSide,model.pouch,options.eyeHeight);
     return next;
   }
-  function metrics(placements) {
+  function metrics(placements, pouch=null) {
+    const volumes = placements.map(s => ({point:G.world(s), radius:s.radius}));
+    if (pouch) volumes.push({point:G.pouchWorld(pouch), radius:pouch.radius});
     let gap=Infinity;
-    for(let i=0;i<placements.length;i++)for(let j=0;j<i;j++) {
-      const a=G.world(placements[i]),b=G.world(placements[j]);
-      gap=Math.min(gap,Math.hypot(...a.map((v,k)=>v-b[k]))-placements[i].radius-placements[j].radius);
+    for(let i=0;i<volumes.length;i++)for(let j=0;j<i;j++) {
+      const a=volumes[i].point,b=volumes[j].point;
+      gap=Math.min(gap,Math.hypot(...a.map((v,k)=>v-b[k]))-volumes[i].radius-volumes[j].radius);
     }
-    return {gap,minRadius:Math.min(...placements.map(s=>s.radius)),maxRadius:Math.max(...placements.map(s=>s.radius))};
+    return {gap,minRadius:Math.min(...volumes.map(s=>s.radius)),maxRadius:Math.max(...volumes.map(s=>s.radius))};
   }
-  return {list,slots,apply,metrics};
+  return {list,slots,ammoPouch,apply,metrics};
 });

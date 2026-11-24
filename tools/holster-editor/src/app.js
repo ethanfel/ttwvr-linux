@@ -2,6 +2,8 @@
 (() => {
   'use strict';
   const H = globalThis.HolsterState, G = globalThis.HolsterGeometry, P = globalThis.HolsterPresets, $ = id => document.getElementById(id);
+  const O = globalThis.HolsterOrbit;
+  let camera = O.camera(), lastBodyCamera = null, orbitDrag = null;
   const svgNS = 'http://www.w3.org/2000/svg';
   const labels = Object.fromEntries(H.ANCHORS.map(a => [a.id, a.label]));
   let doc = null, model = null, selected = 1, filename = '', history = [], historyIndex = 0, exported = null, loading = 0, demoMode = false;
@@ -75,7 +77,6 @@
     $('holster-heading').hidden = $('editor-form').hidden = pouchSelected;
     $('editor-title').textContent = pouchSelected ? 'AMMO POUCH' : 'SLOT DETAILS';
     $('reset-slot').textContent = pouchSelected ? 'Reset pouch' : 'Reset slot';
-    $('open-presets').disabled = !!model && !model.slots.length;
     if (pouchSelected) {
       const pouch = model.pouch;
       $('place-pouch').hidden = !!pouch || !!doc.pouchIssue;
@@ -209,8 +210,48 @@
   function previewSlot() {
     return drag ? drag.slot : rowWithDrafts(activeRow(model, selected));
   }
-  function project(point) { return G.project(point, view); }
+  function project(point) { return view === 'orbit' ? O.project(point,camera) : G.project(point,view); }
+  function drawSkeleton(body) {
+    if (lastBodyCamera === camera) return;
+    lastBodyCamera = camera;
+    const layer=document.createDocumentFragment();
+    const line=(a,b)=>'M'+project(a).join(' ')+'L'+project(b).join(' ');
+    let grid='';
+    for (let i=-7;i<=7;i++) {
+      grid+=line([i/10,-.7,0],[i/10,.7,0])+line([-.7,i/10,0],[.7,i/10,0]);
+    }
+    layer.append(svg('path',{d:grid,class:'orbit-floor'}));
+    // Keep the far-to-near order while batching adjacent equally lit faces.
+    let path='', shade=null;
+    const flush=()=>{ if(path) layer.append(svg('path',{d:path,class:'orbit-bone',style:'--light:'+shade+'%'})); };
+    for(const face of O.shadedFaces(camera)) {
+      if (face.shade!==shade) { flush(); path=''; shade=face.shade; }
+      path+=face.path;
+    }
+    flush();
+    body.replaceChildren(layer);
+  }
+  function drawGizmo(point,id) {
+    const [x,y]=project(point);
+    O.axes.forEach(({label,name,vector},i)=>{
+      const end=project(O.add(point,O.times(vector,.32)));
+      const dx=end[0]-x, dy=end[1]-y, size=Math.hypot(dx,dy);
+      if(size<14) return; // Orbit to expose an axis pointing into the screen.
+      const u=dx/size, v=dy/size, [ex,ey]=end;
+      const g=svg('g',{'data-axis':name,class:'axis axis-'+name,role:'button',tabindex:'0','aria-label':'Move '+name+'. Drag or use arrow keys.'});
+      const title=svg('title',{});title.textContent='Move '+name;
+      const shaft='M'+(x+u*15)+' '+(y+v*15)+'L'+ex+' '+ey;
+      const arrow=svg('path',{d:`M${ex} ${ey}l${-10*u-4*v} ${-10*v+4*u}l${8*v} ${-8*u}Z`,class:'axis-tip'});
+      const text=svg('text',{x:ex+u*9,y:ey+v*9});text.textContent=label;
+      g.append(title,svg('path',{d:shaft,class:'axis-line'}),arrow,text,svg('path',{d:shaft,class:'axis-hit'}));
+      g.addEventListener('pointerdown',e=>beginDrag(e,id,'axis',i));
+      g.addEventListener('keydown',e=>keyboardMove(e,id,'axis',i));
+      $('preview-handles').append(g);
+    });
+  }
   function drawBody(body = $('reference-body'), projection = view) {
+    if (projection==='orbit') { drawSkeleton(body); return; }
+    if (body===$('reference-body')) lastBodyCamera=null;
     body.replaceChildren();
     const projected = p => G.project(p, projection);
     const shape = points => points.map((p,i) => `${i ? 'L' : 'M'}${projected(p).join(' ')}`).join(' ');
@@ -252,8 +293,13 @@
   function renderPreview() {
     drawBody();
     const current = previewSlot();
-    $('direction-left').textContent = view === 'front' ? 'YOUR RIGHT' : 'BEHIND';
-    $('direction-right').textContent = view === 'front' ? 'YOUR LEFT' : 'IN FRONT';
+    const orbit=view==='orbit';
+    $('body-map').classList.toggle('orbit-view',orbit);
+    $('body-map').setAttribute('tabindex',orbit?'0':'-1');
+    $('body-map').setAttribute('aria-label',orbit?'3D skeleton. Drag the background or use the arrow keys to orbit. Drag a gizmo to move equipment.':'Holster placement preview. Drag the centre to move and the square to resize.');
+    $('orbit-reset').hidden=!orbit;
+    $('direction-left').textContent = orbit ? '' : view === 'front' ? 'YOUR RIGHT' : 'BEHIND';
+    $('direction-right').textContent = orbit ? '' : view === 'front' ? 'YOUR LEFT' : 'IN FRONT';
     $('anchor-points').replaceChildren();
     const editingPouch = selected === pouchId;
     const activeAnchor = editingPouch ? current?.bone : current?.anchor;
@@ -280,7 +326,11 @@
     $('slot-markers').replaceChildren(); $('preview-handles').replaceChildren();
     const ids = model?.slots.map(s => s.id) || [];
     if (model?.pouch) ids.push(pouchId);
-    ids.sort((a, b) => Number(a === selected) - Number(b === selected));
+    ids.sort((a,b)=>{
+      const selectionOrder=Number(a===selected)-Number(b===selected);
+      if (selectionOrder || !orbit) return selectionOrder;
+      return O.dot(rowWorld(activeRow(model,a),a),camera.depth)-O.dot(rowWorld(activeRow(model,b),b),camera.depth);
+    });
     for (const id of ids) {
       const chosen = id === selected, isPouch = id === pouchId;
       const row = chosen ? current : activeRow(model, id);
@@ -303,7 +353,8 @@
       centre.addEventListener('pointerdown',e=>beginDrag(e,id,'move'));
       centre.addEventListener('keydown',e=>keyboardMove(e,id));
       g.append(centre); $('slot-markers').append(g);
-      if (chosen && row.radius !== null) {
+      if (chosen && orbit) drawGizmo(world,id);
+      if (chosen && row.radius !== null && !orbit) {
         const h=svg('rect',{x:x+radius-6,y:y-6,width:12,height:12,class:'radius-handle',role:'button',tabindex:'0','data-handle':'radius','aria-label':'Grab radius. Drag to resize; arrow keys adjust 1 centimetre, Shift 5.'});
         h.addEventListener('pointerdown',e=>beginDrag(e,id,'radius'));
         h.addEventListener('keydown',e=>keyboardMove(e,id,'radius'));
@@ -314,6 +365,7 @@
     $('fit-preview').disabled = !current;
     $('preview-hint').textContent = current?.anchor === 'auto' ? 'Automatic · drag the saved position. TTWVR chooses the nearest bone in VR.' : 'Drag centre to move · square handle to resize. Use Side for depth. Arrow keys: 1 cm; Shift: 5 cm.';
     if (selected === pouchId) $('preview-hint').textContent = current ? 'Drag P to move the pouch. Set the grab radius in cm or drag its square handle. Use Side for depth.' : '';
+    if (orbit) $('preview-hint').textContent = 'Drag the background to orbit. Drag R (right), F (forward) or U (up) to move. Scroll to zoom.';
     const p=current && rowWorld(current, selected);
     if (p) {
       const [x,y]=project(p), box=$('body-map').viewBox.baseVal;
@@ -325,12 +377,15 @@
     const profile=P.list(pipBoySide).find(p=>p.id===presetId);
     $('preset-pipboy').disabled=!profile.usesForearm;
     const side=$('preset-side').value, forward=Number($('preset-forward').value);
-    const placements=P.slots(presetId,side,forward,pipBoySide), metrics=P.metrics(placements);
+    const pouchSide=$('preset-pouch-side').value;
+    const pouch=P.ammoPouch(presetId,forward,pouchSide,model?.pouch,doc?.eyeHeight);
+    const placements=P.slots(presetId,side,forward,pipBoySide), metrics=P.metrics(placements,pouch);
     $('preset-name').textContent=`${profile.name} · ${profile.count} holsters`;
     $('preset-description').textContent=profile.description;
     $('preset-note').textContent=profile.note;
     $('preset-pairs').replaceChildren();
     profile.rows.forEach(row=>$('preset-pairs').append(element('li',{},`${row.ids.join(' / ')} · ${row.label} · ${row.radius} cm radius`)));
+    $('preset-pairs').append(element('li',{},`P · ${profile.pouchLabel} · ${pouchSide} · ${numberDisplay(pouch.radius)} cm radius`));
     for(const button of document.querySelectorAll('[data-preset]'))button.setAttribute('aria-pressed',String(button.dataset.preset===presetId));
     for(const direction of ['front','side']) {
       const drawing=$(direction==='front'?'preset-front':'preset-side-view');drawing.replaceChildren();
@@ -342,18 +397,27 @@
         if(groups.has(key))groups.get(key).ids.push(row.id);
         else groups.set(key,{x,y,radius:row.radius,ids:[row.id]});
       }
-      for(const {x,y,radius,ids} of groups.values()) {
-        const group=svg('g',{class:'holster-volume selected preset-volume','data-preset-slot':ids.join(',')});
+      const [px,py]=G.project(G.pouchWorld(pouch),direction);
+      const overlaps=[...groups.values()].some(g=>Math.hypot(g.x-px,g.y-py)<29);
+      const labelX=overlaps?Math.max(px,...[...groups.values()].map(g=>g.x))+35:px;
+      groups.set('pouch',{x:px,y:py,radius:pouch.radius,ids:['P'],labelX});
+      for(const {x,y,radius,ids,labelX=x} of groups.values()) {
+        const group=svg('g',{class:'holster-volume selected preset-volume',[ids[0]==='P'?'data-preset-pouch':'data-preset-slot']:ids.join(',')});
         group.append(svg('circle',{cx:x,cy:y,r:radius*G.SCALE,class:'grab-sphere'}));
-        const label=svg('g',{class:'holster-centre'});label.append(svg('circle',{cx:x,cy:y,r:ids.length>1?15:12}));
-        const text=svg('text',{x,y});text.textContent=ids.length>1?ids.join('/'):String(ids[0]).padStart(2,'0');label.append(text);group.append(label);drawing.append(group);
+        if(labelX!==x) {
+          group.append(svg('path',{d:`M${x} ${y}L${labelX} ${y}`,class:'pouch-leader'}),svg('circle',{cx:x,cy:y,r:2.5,class:'pouch-pin'}));
+        }
+        const label=svg('g',{class:'holster-centre'});label.append(svg('circle',{cx:labelX,cy:y,r:ids.length>1?15:12}));
+        const text=svg('text',{x:labelX,y});text.textContent=ids.length>1?ids.join('/'):ids[0]==='P'?'P':String(ids[0]).padStart(2,'0');label.append(text);group.append(label);drawing.append(group);
       }
     }
     const radius=metrics.minRadius===metrics.maxRadius ? `${numberDisplay(metrics.minRadius)} cm` : `${numberDisplay(metrics.minRadius)}–${numberDisplay(metrics.maxRadius)} cm`;
     $('preset-metrics').textContent=`Radii ${radius} · nearest sphere gap ${(metrics.gap*100).toFixed(1)} cm in this pose`;
     $('apply-preset').disabled=!doc || !!errors.size;
     $('apply-preset').textContent=`Apply ${profile.name}`;
-    $('preset-impact').textContent=!doc ? 'Load your TTWVR.state file before applying a layout.' : errors.size ? 'Close this preview and correct the highlighted value before applying.' : `Updates slots 1–${profile.count}.${profile.count<8 ? ` Disables ${profile.count+1}–8, retaining their positions.` : ''} One Undo restores your layout. Calibration and visibility stay unchanged.`;
+    const impact=!model?.slots.length ? 'Places the ammo pouch in this pouch-only file.' :
+      `Updates slots 1–${profile.count}${doc?.pouchIssue?' and preserves the unreadable pouch section':' and places the ammo pouch'}.${profile.count<8 ? ` Disables ${profile.count+1}–8, retaining their positions.` : ''}`;
+    $('preset-impact').textContent=!doc ? 'Load your TTWVR.state file before applying a layout.' : errors.size ? 'Close this preview and correct the highlighted value before applying.' : impact+' One Undo restores your previous layout.';
   }
   for(const profile of P.list()) {
     const button=element('button',{type:'button','data-preset':profile.id,'aria-pressed':String(profile.id===presetId)});
@@ -365,41 +429,62 @@
   $('preset-side').addEventListener('change',renderPreset);
   $('preset-forward').addEventListener('change',renderPreset);
   $('preset-pipboy').addEventListener('change',renderPreset);
+  $('preset-pouch-side').addEventListener('change',renderPreset);
   $('apply-preset').addEventListener('click',()=>{
     if(!doc || errors.size)return;
     const profile=P.list().find(p=>p.id===presetId);
-    commit(m=>Object.assign(m,P.apply(m,presetId,$('preset-side').value,Number($('preset-forward').value),$('preset-pipboy').value)));
+    commit(m=>Object.assign(m,P.apply(m,presetId,$('preset-side').value,Number($('preset-forward').value),$('preset-pipboy').value,
+      {pouchSide:$('preset-pouch-side').value,eyeHeight:doc.eyeHeight,includePouch:!doc.pouchIssue})));
     $('presets').close();$('body-map').setAttribute('viewBox','0 0 440 540');
-    selected=1;$('show-other').checked=true;render();
-    notify(`${profile.name} applied: ${profile.count} enabled holsters. Undo restores your previous layout. Check the fit in VR before relying on it.`, 'success');
+    selected=model.slots.length?1:pouchId;$('show-other').checked=true;render();
+    notify(`${profile.name} applied. ${doc.pouchIssue?'Original pouch section preserved. ':''}Undo restores your previous layout.`, 'success');
   });
   function mousePoint(e) {
     const p=new DOMPoint(e.clientX,e.clientY).matrixTransform($('body-map').getScreenCTM().inverse());
     return [p.x,p.y];
   }
-  function beginDrag(e,id,kind) {
-    if (e.button !== 0 || !doc || errors.size) return;
+  function beginDrag(e,id,kind,axis) {
+    if (e.button !== 0 || drag || orbitDrag || !doc || errors.size) return;
     e.preventDefault();
     if (id !== selected) { if (drafts.size) commit(()=>{}); selected=id; render(); }
     const row=previewSlot(); if (!row || !rowWorld(row, id)) return;
-    drag={kind,point:mousePoint(e),start:H.clone(row),slot:H.clone(row),pointer:e.pointerId};
+    drag={kind,axis,point:mousePoint(e),start:H.clone(row),slot:H.clone(row),pointer:e.pointerId};
     $('body-map').setPointerCapture(e.pointerId);
   }
-  function keyboardMove(e,id,kind='move') {
+  function keyboardMove(e,id,kind='move',axis) {
     const delta={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,1],ArrowDown:[0,-1]}[e.key];
     if (['Enter',' '].includes(e.key)) { e.preventDefault(); if (!errors.size) { if(drafts.size)commit(()=>{});selected=id;render(); } return; }
     if (!delta || errors.size || !doc) return;
     e.preventDefault();e.stopPropagation();
     if (selected!==id) { if(drafts.size)commit(()=>{});selected=id; }
     const step=e.shiftKey ? .05 : .01;
-    commit(m=>{const row=activeRow(m, id); if(kind==='radius')row.radius=Math.max(.05,Math.min(.45,row.radius+(delta[0]+delta[1])*step)); else assignRow(m, id, moveRow(row, id, delta[0]*step, delta[1]*step));});
-    const selector=kind==='radius' ? '.radius-handle' : `[data-preview-slot="${id}"] .holster-centre`;
+    commit(m=>{const row=activeRow(m, id); if(kind==='radius')row.radius=Math.max(.05,Math.min(.45,row.radius+(delta[0]+delta[1])*step));
+      else if (view==='orbit') {
+        const shift=kind==='axis' ? O.times(O.axes[axis].vector,(delta[0]+delta[1])*step) : O.planeDelta(delta[0]*step*G.SCALE,-delta[1]*step*G.SCALE,camera);
+        assignRow(m,id,O.move(row,id===pouchId,shift));
+      } else assignRow(m, id, moveRow(row, id, delta[0]*step, delta[1]*step));});
+    const selector=kind==='axis' ? `[data-axis="${O.axes[axis].name}"]` : kind==='radius' ? '.radius-handle' : `[data-preview-slot="${id}"] .holster-centre`;
     document.querySelector(selector)?.focus({preventScroll:true});
   }
-  $('body-map').addEventListener('pointermove',e=>{
+  const map=$('body-map');
+  map.addEventListener('pointerdown',e=>{
+    if(view!=='orbit' || drag || orbitDrag || e.button!==0 || e.target.closest('[role="button"]')) return;
+    e.preventDefault(); map.focus({preventScroll:true});
+    orbitDrag={pointer:e.pointerId,x:e.clientX,y:e.clientY,camera};
+    map.setPointerCapture(e.pointerId);
+  });
+  map.addEventListener('pointermove',e=>{
+    if (orbitDrag?.pointer===e.pointerId) {
+      camera=O.camera(orbitDrag.camera.yaw+(e.clientX-orbitDrag.x)*.009,orbitDrag.camera.pitch+(e.clientY-orbitDrag.y)*.008);
+      renderPreview(); return;
+    }
     if (!drag || e.pointerId!==drag.pointer) return;
     const p=mousePoint(e);
-    if (drag.kind==='move') drag.slot=moveRow(drag.start,selected,(p[0]-drag.point[0])/G.SCALE,(drag.point[1]-p[1])/G.SCALE);
+    if (view==='orbit') {
+      const dx=p[0]-drag.point[0],dy=p[1]-drag.point[1];
+      const shift=drag.kind==='axis' ? O.axisDelta(O.axes[drag.axis].vector,dx,dy,camera) : O.planeDelta(dx,dy,camera);
+      drag.slot=O.move(drag.start,selected===pouchId,shift);
+    } else if (drag.kind==='move') drag.slot=moveRow(drag.start,selected,(p[0]-drag.point[0])/G.SCALE,(drag.point[1]-p[1])/G.SCALE);
     else { const centre=project(rowWorld(drag.slot, selected)); drag.slot.radius=Math.max(.05,Math.min(.45,Math.hypot(p[0]-centre[0],p[1]-centre[1])/G.SCALE)); }
     const row = drag.slot;
     if (selected === pouchId) displayPouch(row);
@@ -416,13 +501,41 @@
     if($('body-map').hasPointerCapture(pointer))$('body-map').releasePointerCapture(pointer);
     if(cancel)render();else commit(m => assignRow(m, selected, slot));
   }
-  $('body-map').addEventListener('pointerup',()=>endDrag());
-  $('body-map').addEventListener('pointercancel',()=>endDrag(true));
-  $('body-map').addEventListener('lostpointercapture',()=>{if(drag)endDrag(true);});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape' && drag){e.preventDefault();endDrag(true);}});
-  for(const v of ['front','side'])$(`view-${v}`).addEventListener('click',()=>{
-    endDrag(true);view=v;$('body-map').setAttribute('viewBox','0 0 440 540');
-    for(const choice of ['front','side'])$(`view-${choice}`).setAttribute('aria-pressed',String(v===choice));
+  function finishPointer(e,cancel) {
+    if (orbitDrag?.pointer===e.pointerId) {
+      const old=orbitDrag; orbitDrag=null;
+      if (cancel) {camera=old.camera;renderPreview();}
+      if (map.hasPointerCapture(e.pointerId)) map.releasePointerCapture(e.pointerId);
+    } else if(drag?.pointer===e.pointerId) endDrag(cancel);
+  }
+  map.addEventListener('pointerup',e=>finishPointer(e,false));
+  map.addEventListener('pointercancel',e=>finishPointer(e,true));
+  map.addEventListener('lostpointercapture',e=>finishPointer(e,true));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && (drag || orbitDrag)) {e.preventDefault();finishPointer({pointerId:(drag || orbitDrag).pointer},true);}
+  });
+  map.addEventListener('keydown',e=>{
+    if(view!=='orbit' || e.target!==map || drag || orbitDrag) return;
+    const delta={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,1],ArrowDown:[0,-1]}[e.key];
+    if(delta) {e.preventDefault();camera=O.camera(camera.yaw+delta[0]*.15,camera.pitch+delta[1]*.12);renderPreview();}
+  });
+  map.addEventListener('wheel',e=>{
+    if(view!=='orbit' || drag || orbitDrag) return;
+    e.preventDefault();
+    const box=map.viewBox.baseVal, [x,y]=mousePoint(e);
+    const width=Math.max(140,Math.min(700,box.width*(e.deltaY>0?1.12:1/1.12)));
+    const ratio=width/box.width;
+    map.setAttribute('viewBox',`${x+(box.x-x)*ratio} ${y+(box.y-y)*ratio} ${width} ${box.height*ratio}`);
+    renderPreview();
+  },{passive:false});
+  $('orbit-reset').addEventListener('click',()=>{
+    camera=O.camera();map.setAttribute('viewBox','0 0 440 540');renderPreview();
+  });
+  const views=['front','side','orbit'];
+  for(const v of views) $(`view-${v}`).addEventListener('click',()=>{
+    if (drag || orbitDrag) finishPointer({pointerId:(drag || orbitDrag).pointer},true);
+    view=v;map.setAttribute('viewBox','0 0 440 540');
+    for(const choice of views) $(`view-${choice}`).setAttribute('aria-pressed',String(v===choice));
     renderPreview();
   });
   $('show-other').addEventListener('change',renderPreview);

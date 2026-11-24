@@ -39,6 +39,26 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
 .pouch-button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 #pouch-panel{padding:0 18px 18px}
 #pouch-fields{border:0;margin:0;padding:0;min-width:0}
+
+/* Orthographic 3D reference and translation gizmo. */
+#body-map.orbit-view{cursor:grab}
+#body-map.orbit-view:active{cursor:grabbing}
+.orbit-view>.map-grid,.orbit-view>.guide-line{display:none}
+.orbit-floor{fill:none;stroke:var(--muted);stroke-width:.6;opacity:.36}
+.orbit-bone{fill:color-mix(in srgb,var(--muted) var(--light),var(--panel));stroke:color-mix(in srgb,var(--muted) var(--light),var(--panel));stroke-width:.4;stroke-linejoin:round}
+.axis{cursor:move;touch-action:none}
+.axis-right{color:#ef9c83}.axis-forward{color:#76d2b3}.axis-up{color:#8fc7ff}
+.axis-line{fill:none;stroke:currentColor;stroke-width:2.4}
+.axis-tip{fill:currentColor;stroke:var(--bg);stroke-width:.6}
+.axis text{fill:currentColor;stroke:var(--bg);stroke-width:3;paint-order:stroke;font-weight:bold;font-size:11px;text-anchor:middle;dominant-baseline:central}
+.axis-hit{fill:none;stroke:transparent;stroke-width:13;pointer-events:stroke}
+.axis:hover .axis-line,.axis:focus .axis-line{stroke-width:4}
+.pouch-side-choice{display:flex;align-items:center;gap:.8em;margin:0 0 12px;font-size:11px}
+.pouch-side-choice select{width:auto;margin:0;padding:5px 10px}
+[data-preset-pouch] .holster-centre circle{stroke-dasharray:2 1}
+
+.pouch-leader{fill:none;stroke:var(--accent);stroke-width:1}
+.pouch-pin{fill:var(--accent)}
 </style>
 </head>
 <body>
@@ -63,8 +83,8 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     </section>
 
     <section class="map-panel" aria-labelledby="map-title">
-      <div class="panel-title"><h2 id="map-title">PLACEMENT PREVIEW</h2><div class="view-tabs" role="group" aria-label="Preview direction"><button type="button" id="view-front" aria-pressed="true">FRONT</button><button type="button" id="view-side" aria-pressed="false">SIDE</button></div></div>
-      <div class="preview-toolbar"><span>10 CM GRID · REFERENCE POSE</span><label><input type="checkbox" id="show-other" checked> Other placements</label></div>
+      <div class="panel-title"><h2 id="map-title">PLACEMENT PREVIEW</h2><div class="view-tabs" role="group" aria-label="Preview direction"><button type="button" id="view-front" aria-pressed="true">FRONT</button><button type="button" id="view-side" aria-pressed="false">SIDE</button><button type="button" id="view-orbit" aria-pressed="false">3D</button></div></div>
+      <div class="preview-toolbar"><span>10 CM GRID · REFERENCE POSE</span><button type="button" id="orbit-reset" class="text-button" hidden>Reset view</button><label><input type="checkbox" id="show-other" checked> Other placements</label></div>
       <div class="body-view">
         <svg id="body-map" viewBox="0 0 440 540" role="group" aria-label="Holster placement preview. Drag the numbered centre to move; drag the square handle to resize.">
           <defs><pattern id="grid" x="220" y="490" width="23" height="23" patternUnits="userSpaceOnUse"><path d="M23 0H0V23" fill="none" stroke="currentColor" stroke-width=".4"/></pattern></defs>
@@ -122,7 +142,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       <div class="apply-note"><span class="eyebrow">AFTER EXPORT</span><p>Close the game, back up your current file, and replace it with the exported <b>TTWVR.state</b>. Check the placement in VR.</p></div>
     </section>
   </main>
-  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">FIELD KIT 1.5.1</span></footer>
+  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">FIELD KIT 1.6.0</span></footer>
   <p class="bottom-note">Independent community utility · Fallout-inspired interface · no game assets bundled</p>
 </div>
 <dialog id="presets" aria-labelledby="presets-title">
@@ -133,6 +153,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     <div class="preset-detail">
       <h3 id="preset-name"></h3><p id="preset-description"></p>
       <div class="preset-options"><label>PAIRED SLOT ORDER<select id="preset-side"><option value="right">Odd slots on your right</option><option value="left">Odd slots on your left</option></select></label><label>EXTRA FORWARD REACH<select id="preset-forward"><option value="0">Standard spacing</option><option value="5">5 cm farther forward</option><option value="10">10 cm farther forward</option></select></label><label>PIP-BOY ARM<select id="preset-pipboy" title="Choose the arm already carrying your Pip-Boy. This does not move it."><option value="right">Right — keep clear</option><option value="left">Left — keep clear</option></select></label></div>
+      <label class="pouch-side-choice">Ammo pouch <select id="preset-pouch-side"><option value="left">Left side</option><option value="right">Right side</option></select></label>
       <div class="preset-projections"><figure><figcaption>FRONT · YOUR RIGHT | YOUR LEFT</figcaption><svg id="preset-front" viewBox="0 0 440 540" role="img" aria-label="Preset front preview"></svg></figure><figure><figcaption>SIDE · BEHIND | IN FRONT</figcaption><svg id="preset-side-view" viewBox="0 0 440 540" role="img" aria-label="Preset side preview"></svg></figure></div>
       <p class="preset-metrics" id="preset-metrics"></p><ul id="preset-pairs" class="preset-pairs"></ul>
       <p id="preset-note"></p>
@@ -141,7 +162,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   <p class="preset-caveat">Reference pose only: spacing changes as you move. These are starting layouts, not headset-tested fits. Fine-tune with your equipment and wrist Pip-Boy in VR.</p>
   <div class="preset-apply-row"><p id="preset-impact" aria-live="polite"></p><button type="button" id="apply-preset" class="primary" disabled>Apply layout</button></div>
 </dialog>
-<dialog id="instructions"><div class="dialog-heading"><p class="eyebrow">FIELD MANUAL</p><button type="button" id="close-help" class="icon-button" aria-label="Close instructions">×</button></div><h2>Configure. Export. Equip.</h2><ol><li><b>Quit Fallout and your mod manager.</b> This tool edits a copy; the game writes its state when it closes.</li><li><b>Load TTWVR.state.</b> It contains the numbered holsters and their anchors. A savegame or TTWVR.ini is a different file.</li><li><b>Choose a slot and an anchor.</b> Numbers match the game’s 1–8 hotkeys. Drag its numbered centre to position it; drag the square handle to resize its grab sphere. Use Front for left/right and Side for depth. Both views adjust height. Arrow keys move 1 cm (Shift: 5 cm). Numeric controls remain available.</li><li><b>Export the file.</b> Keep a backup of the original and replace it with the downloaded copy. Its filename must be <code>TTWVR.state</code>, without a browser-added “(1)”.</li><li><b>Launch the game and check the fit.</b> The preview uses an approximate reference body and pose. Fine placement depends on your avatar and calibration.</li></ol><h3>Ammo pouch</h3><p>Select <b>Ammo pouch</b> below the eight slots. Drag <b>P</b> in Front and Side, or enter its right, forward and floor height in centimetres. If your file has no saved pouch, choose <b>Set initial position</b> to place one. Undo or Reset pouch restores the loaded placement.</p><h3>Start from a preset</h3><p><b>Preset layouts</b> offers seven belt, vest and holster layouts, from four to eight enabled holsters. Preview both views, choose right/left pair order and optional extra forward reach, then apply. Utility rig puts one forearm target opposite the selected Pip-Boy arm; this remains independent of pair order. One Undo restores your previous layout. Slots outside the chosen layout are disabled while their positions are retained. Visibility, calibration and other state sections stay as loaded. Export and check your reach in VR.</p><h3>Body holsters behind you?</h3><p>Field Kit 1.1–1.3 reversed front and back in the preview. If you exported body placements with those versions, this moves centres behind the reference body to the front. It affects pelvis, chest and leg anchors, including disabled slots; arms and Automatic slots stay unchanged. Intentionally rear-mounted body holsters would also move. Review the Side view, then export. One Undo restores the layout. Loading a file never repairs it automatically.</p><button type="button" id="repair-body" disabled>Repair old body placement</button><h3>Mirror a holster</h3><p>Choose a different destination slot under <b>Mirror to another slot</b>, then press the mirror button. Right upper arm becomes left upper arm, for example, with the matching local offset and grab radius. The destination is replaced in one undoable action. Subsequent edits are independent; this does not link the slots. Automatic slots show and mirror their saved position relative to the eyes. TTWVR chooses the nearest bone when the avatar loads.</p><h3>Where is the file?</h3><p><b>Windows</b> — your Documents folder, which may be redirected to OneDrive:</p><code class="path">My Games\FalloutNV\TTWVR.state</code><p><b>Linux / Proton</b> — inside the prefix used by your VR profile:</p><code class="path">drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state</code><p>TTWVR stores this configuration in New Vegas’s <code>FalloutNV</code> folder. Place a holster in VR and quit once if the holster sections have not been created yet.</p><h3>What gets edited?</h3><p>Holsters use <code>[SavedSlots]</code> and <code>[SavedSlotsOn]</code>. The ammo pouch uses <code>[SavedPouch]</code>. Select <b>Ammo pouch</b> to change its body anchor or grab radius. Other sections, encoding and line endings are preserved. This does not assign weapons to hotkeys or change a savegame.</p><p><b>Automatic</b> removes an explicit bone binding. TTWVR then chooses a nearby bone from the saved body-relative position. New explicit bindings start at a zero local offset; adjust the offset or finish placement in VR.</p><p class="field-help">Runs entirely offline. No installation, uploads, runtime libraries or network connection required. Original tool code: GPL-3.0-only.</p></dialog>
+<dialog id="instructions"><div class="dialog-heading"><p class="eyebrow">FIELD MANUAL</p><button type="button" id="close-help" class="icon-button" aria-label="Close instructions">×</button></div><h2>Configure. Export. Equip.</h2><ol><li><b>Quit Fallout and your mod manager.</b> This tool edits a copy; the game writes its state when it closes.</li><li><b>Load TTWVR.state.</b> It contains the numbered holsters and their anchors. A savegame or TTWVR.ini is a different file.</li><li><b>Choose a slot and an anchor.</b> Numbers match the game’s 1–8 hotkeys. Drag its numbered centre to position it; drag the square handle to resize its grab sphere. Use Front for left/right and Side for depth. Both views adjust height. Arrow keys move 1 cm (Shift: 5 cm). Numeric controls remain available.</li><li><b>Export the file.</b> Keep a backup of the original and replace it with the downloaded copy. Its filename must be <code>TTWVR.state</code>, without a browser-added “(1)”.</li><li><b>Launch the game and check the fit.</b> The preview uses an approximate reference body and pose. Fine placement depends on your avatar and calibration.</li></ol><h3>Ammo pouch</h3><p>Select <b>Ammo pouch</b> below the eight slots. In <b>3D</b>, drag the background to orbit and drag the R, F or U arrow to move right, forward or up. You can also drag <b>P</b> in Front and Side or enter its right, forward and floor height in centimetres. If your file has no saved pouch, choose <b>Set initial position</b> to place one. Undo or Reset pouch restores the loaded placement.</p><h3>Start from a preset</h3><p><b>Preset layouts</b> offers seven belt, vest and holster layouts, from four to eight enabled holsters. The P marks the ammo pouch. Choose its side and preview its reach before applying. One export saves the pouch and holsters together. Utility rig puts one forearm target opposite the selected Pip-Boy arm; this remains independent of pair order. One Undo restores your previous layout. Slots outside the chosen layout are disabled while their positions are retained. Visibility, calibration and other state sections stay as loaded. Export and check your reach in VR.</p><h3>Body holsters behind you?</h3><p>Field Kit 1.1–1.3 reversed front and back in the preview. If you exported body placements with those versions, this moves centres behind the reference body to the front. It affects pelvis, chest and leg anchors, including disabled slots; arms and Automatic slots stay unchanged. Intentionally rear-mounted body holsters would also move. Review the Side view, then export. One Undo restores the layout. Loading a file never repairs it automatically.</p><button type="button" id="repair-body" disabled>Repair old body placement</button><h3>Mirror a holster</h3><p>Choose a different destination slot under <b>Mirror to another slot</b>, then press the mirror button. Right upper arm becomes left upper arm, for example, with the matching local offset and grab radius. The destination is replaced in one undoable action. Subsequent edits are independent; this does not link the slots. Automatic slots show and mirror their saved position relative to the eyes. TTWVR chooses the nearest bone when the avatar loads.</p><h3>Where is the file?</h3><p><b>Windows</b> — your Documents folder, which may be redirected to OneDrive:</p><code class="path">My Games\FalloutNV\TTWVR.state</code><p><b>Linux / Proton</b> — inside the prefix used by your VR profile:</p><code class="path">drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state</code><p>TTWVR stores this configuration in New Vegas’s <code>FalloutNV</code> folder. Place a holster in VR and quit once if the holster sections have not been created yet.</p><h3>What gets edited?</h3><p>Holsters use <code>[SavedSlots]</code> and <code>[SavedSlotsOn]</code>. The ammo pouch uses <code>[SavedPouch]</code>. Select <b>Ammo pouch</b> to change its body anchor or grab radius. Other sections, encoding and line endings are preserved. This does not assign weapons to hotkeys or change a savegame.</p><p><b>Automatic</b> removes an explicit bone binding. TTWVR then chooses a nearby bone from the saved body-relative position. New explicit bindings start at a zero local offset; adjust the offset or finish placement in VR.</p><p class="field-help">Runs entirely offline. No installation, uploads, runtime libraries or network connection required. Original tool code: GPL-3.0-only.</p></dialog>
 <script>/* SPDX-License-Identifier: GPL-3.0-only */
 /* Lossless TTWVR state editor. No filesystem or network access. */
 (function (root) {
@@ -646,6 +667,10 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     const frame = pouchFrames[pouch.bone];
     return multiply(frame.rotation, pouch.offset).map((v, i) => frame.origin[i] + v / unitsPerMetre);
   }
+  function pouchLocal(bone, point) {
+    const frame = pouchFrames[bone];
+    return multiply(transpose(frame.rotation), point.map((v,i)=>(v-frame.origin[i])*unitsPerMetre));
+  }
   // Native orientation records store a row-major matrix. Convert each column
   // between torso frames, just as we convert a direction without translation.
   function reanchorPouch(pouch, bone) {
@@ -659,7 +684,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       return result;
     }
     const next = pouchFrames[bone], inverse = transpose(next.rotation);
-    const offset = multiply(inverse, point.map((v, i) => (v - next.origin[i]) * unitsPerMetre));
+    const offset = pouchLocal(bone, point);
     // A body-relative pouch has no saved rotation. Start it upright in the
     // reference body's native right/forward/up basis.
     const axes = pouch.bone === null ? [[1,0,0],[0,-1,0],[0,0,1]] :
@@ -708,7 +733,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   }
   const SCALE = 230;
   const project = (p, view = 'front') => [220 - p[view === 'side' ? 1 : 0] * SCALE, 490 - p[2] * SCALE];
-  return {frames, joints, pouchWorld, shiftPouch, reanchorPouch, pouchFrames, pouchLabels, referenceEyeHeight, world, moveSlot, local, move, mirror, opposite, reflect, repairBodyPlacement, project, SCALE};
+  return {frames, joints, pouchWorld, pouchLocal, shiftPouch, reanchorPouch, pouchFrames, pouchLabels, referenceEyeHeight, world, moveSlot, local, move, mirror, opposite, reflect, repairBodyPlacement, project, SCALE};
 });
 </script>
 <script>/* SPDX-License-Identifier: GPL-3.0-only */
@@ -729,13 +754,13 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   const centre = {anchor:'chest', target:[0,-21,117], radius:6, label:'Centre vest pouch', single:true};
   const forearm = {anchor:'free_forearm', target:[50,-18,129], radius:6, label:'Forearm utility', single:true};
   const definitions = [
-    {id:'wasteland_rig', name:'Wasteland rig', tag:'BELT + VEST', description:'Four belt positions and four vest pockets fill the waist and torso. A gear-style starting layout with no arm-mounted holsters.', note:'Belt pouches sit across the front; hip holsters wrap toward the sides. Vest pockets fill two rows on the torso.', parts:[frontBelt,hip,chest,lowerChest]},
-    {id:'gun_belt', name:'Gun belt', tag:'WAIST ONLY', description:'Two front pouches and a holster on each hip, arranged at one belt height.', note:'A compact belt layout. Use the side view to see the front pouches and hip holsters wrapping around the waist.', parts:[frontBelt,hip]},
-    {id:'chest_rig', name:'Chest rig', tag:'CHEST + BELT', description:'A pair of chest pockets above a four-position belt. All six slots follow the torso and waist.', note:'Leaves the arms free and uses distinct chest, front-belt and hip locations.', parts:[frontBelt,hip,chest]},
-    {id:'travel_vest', name:'Travel vest', tag:'TORSO POCKETS', description:'Four vest pockets across the chest and abdomen, with two front-belt pouches below.', note:'A pocket-style layout without side hip holsters. Check lower vest and belt reach in VR.', parts:[frontBelt,chest,lowerChest]},
-    {id:'shoulder_rig', name:'Shoulder rig', tag:'UNDERARM + BELT', description:'Two underarm holsters carried by the chest frame, plus the four-position belt.', note:'Reach across to the underarm targets. They follow the torso rather than moving with the upper arms.', parts:[frontBelt,hip,shoulder]},
-    {id:'field_rig', name:'Field rig', tag:'BELT + CHEST + THIGHS', description:'Four belt positions, two chest pockets and one upper-thigh holster on each leg.', note:'The thigh holsters sit below the belt. There is only one target on each leg.', parts:[frontBelt,hip,chest,thigh]},
-    {id:'utility_rig', name:'Utility rig', tag:'BELT + VEST + UTILITY', description:'Four belt positions, two chest pockets, a centre vest pouch and one forearm utility target.', note:'The forearm target always goes opposite your selected Pip-Boy arm. Right is reserved by default, leaving the left forearm available.', parts:[frontBelt,hip,chest,centre,forearm]}
+    {id:'wasteland_rig', pouch:{label:'Side vest pocket', bone:2, cm:[28, -21, 117], radius:7.5}, name:'Wasteland rig', tag:'BELT + VEST', description:'Four belt positions and four vest pockets fill the waist and torso. A gear-style starting layout with no arm-mounted holsters.', note:'Belt pouches sit across the front; hip holsters wrap toward the sides. Vest pockets fill two rows on the torso.', parts:[frontBelt,hip,chest,lowerChest]},
+    {id:'gun_belt', pouch:{label:'Forward hip pouch', bone:0, cm:[27, -26, 99], radius:7.5}, name:'Gun belt', tag:'WAIST ONLY', description:'Two front pouches and a holster on each hip, arranged at one belt height.', note:'A compact belt layout. Use the side view to see the front pouches and hip holsters wrapping around the waist.', parts:[frontBelt,hip]},
+    {id:'chest_rig', pouch:{label:'Lower chest pocket', bone:2, cm:[11, -24, 117], radius:7.5}, name:'Chest rig', tag:'CHEST + BELT', description:'A pair of chest pockets above a four-position belt. All six slots follow the torso and waist.', note:'Leaves the arms free and uses distinct chest, front-belt and hip locations.', parts:[frontBelt,hip,chest]},
+    {id:'travel_vest', pouch:{label:'Side belt pouch', bone:0, cm:[26, -14, 100], radius:7.5}, name:'Travel vest', tag:'TORSO POCKETS', description:'Four vest pockets across the chest and abdomen, with two front-belt pouches below.', note:'A pocket-style layout without side hip holsters. Check lower vest and belt reach in VR.', parts:[frontBelt,chest,lowerChest]},
+    {id:'shoulder_rig', pouch:{label:'Front vest pouch', bone:2, cm:[10, -22, 116], radius:7.5}, name:'Shoulder rig', tag:'UNDERARM + BELT', description:'Two underarm holsters carried by the chest frame, plus the four-position belt.', note:'Reach across to the underarm targets. They follow the torso rather than moving with the upper arms.', parts:[frontBelt,hip,shoulder]},
+    {id:'field_rig', pouch:{label:'Lower vest pouch', bone:1, cm:[12, -22, 117], radius:7.5}, name:'Field rig', tag:'BELT + CHEST + THIGHS', description:'Four belt positions, two chest pockets and one upper-thigh holster on each leg.', note:'The thigh holsters sit below the belt. There is only one target on each leg.', parts:[frontBelt,hip,chest,thigh]},
+    {id:'utility_rig', pouch:{label:'Side vest pocket', bone:2, cm:[27, -21, 116], radius:7.5}, name:'Utility rig', tag:'BELT + VEST + UTILITY', description:'Four belt positions, two chest pockets, a centre vest pouch and one forearm utility target.', note:'The forearm target always goes opposite your selected Pip-Boy arm. Right is reserved by default, leaving the left forearm available.', parts:[frontBelt,hip,chest,centre,forearm]}
   ];
   function get(id) {
     const preset=definitions.find(p=>p.id===id);
@@ -754,7 +779,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
         const label=part.anchor==='free_forearm'?`${pipBoySide==='right'?'Left':'Right'} forearm utility`:part.label;
         return {ids,label,radius:part.radius};
       });
-      return {id:p.id,name:p.name,tag:p.tag,description:p.description,note:p.note,count:nextId-1,rows,usesForearm:p.parts.some(part=>part.anchor==='free_forearm')};
+      return {id:p.id,name:p.name,tag:p.tag,description:p.description,note:p.note,count:nextId-1,rows,pouchLabel:p.pouch.label,usesForearm:p.parts.some(part=>part.anchor==='free_forearm')};
     });
   }
   function slots(id,side='right',forwardCm=0,pipBoySide='right') {
@@ -776,31 +801,171 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       return [first,second];
     }).sort((a,b)=>a.id-b.id);
   }
-  function apply(model,id,side='right',forwardCm=0,pipBoySide='right') {
+  function ammoPouch(id, forwardCm=0, side='left', previous=null, eyeHeight=null) {
+    if (!['left','right'].includes(side) || ![0,5,10].includes(forwardCm)) throw new Error('Invalid ammo pouch preset options.');
+    const {cm, bone, radius} = get(id).pouch;
+    const [right, back, height] = [cm[0]*(side==='left'?-1:1), cm[1]-forwardCm, cm[2]].map(v=>v/100);
+    const eyes = eyeHeight ?? (previous ? previous.body[2] + previous.body[3] : G.referenceEyeHeight);
+    const body = [-back, right, eyes-height, height];
+    const base = previous ?? {body, bone:null, offset:null, radius:null};
+    const anchored = G.reanchorPouch(base, bone);
+    return {...anchored, body, offset:G.pouchLocal(bone,[right,back,height]), radius:radius/100};
+  }
+  function apply(model,id,side='right',forwardCm=0,pipBoySide='right',options={}) {
     const placements=slots(id,side,forwardCm,pipBoySide),next=JSON.parse(JSON.stringify(model));
     // Slots outside the chosen layout are disabled without erasing their placement.
     next.slots.forEach(s=>{s.enabled=false;});
-    for(const placement of placements) {
+    for(const placement of next.slots.length ? placements : []) {
       const target=next.slots[placement.id-1],position=target.position;
       Object.assign(target,placement,{position});
     }
+    if (options.includePouch !== false) next.pouch = ammoPouch(id,forwardCm,options.pouchSide,model.pouch,options.eyeHeight);
     return next;
   }
-  function metrics(placements) {
+  function metrics(placements, pouch=null) {
+    const volumes = placements.map(s => ({point:G.world(s), radius:s.radius}));
+    if (pouch) volumes.push({point:G.pouchWorld(pouch), radius:pouch.radius});
     let gap=Infinity;
-    for(let i=0;i<placements.length;i++)for(let j=0;j<i;j++) {
-      const a=G.world(placements[i]),b=G.world(placements[j]);
-      gap=Math.min(gap,Math.hypot(...a.map((v,k)=>v-b[k]))-placements[i].radius-placements[j].radius);
+    for(let i=0;i<volumes.length;i++)for(let j=0;j<i;j++) {
+      const a=volumes[i].point,b=volumes[j].point;
+      gap=Math.min(gap,Math.hypot(...a.map((v,k)=>v-b[k]))-volumes[i].radius-volumes[j].radius);
     }
-    return {gap,minRadius:Math.min(...placements.map(s=>s.radius)),maxRadius:Math.max(...placements.map(s=>s.radius))};
+    return {gap,minRadius:Math.min(...volumes.map(s=>s.radius)),maxRadius:Math.max(...volumes.map(s=>s.radius))};
   }
-  return {list,slots,apply,metrics};
+  return {list,slots,ammoPouch,apply,metrics};
+});
+</script>
+<script>/* SPDX-License-Identifier: GPL-3.0-only */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./geometry.js'));
+  else root.HolsterOrbit = factory(root.HolsterGeometry);
+})(globalThis, G => {
+  'use strict';
+  const axes = [
+    {label:'R', name:'right', vector:[1,0,0]},
+    {label:'F', name:'forward', vector:[0,-1,0]},
+    {label:'U', name:'up', vector:[0,0,1]}
+  ];
+  const add = (a,b) => a.map((v,i)=>v+b[i]);
+  const sub = (a,b) => a.map((v,i)=>v-b[i]);
+  const times = (v,f) => v.map(x=>x*f);
+  const dot = (a,b) => a.reduce((sum,v,i)=>sum+v*b[i],0);
+  const unit = v => times(v,1/(Math.hypot(...v)||1));
+  const cross = (a,b) => [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+  function camera(yaw=.62,pitch=.22) {
+    pitch = Math.max(-1.25,Math.min(1.25,pitch));
+    const c=Math.cos(yaw), s=Math.sin(yaw), h=Math.cos(pitch), v=Math.sin(pitch);
+    return {yaw,pitch,right:[-c,-s,0],up:[-s*v,c*v,h],depth:[s*h,-c*h,v]};
+  }
+  function project(p,cam) {
+    const centered=[p[0],p[1],p[2]-.95];
+    return [220+G.SCALE*dot(centered,cam.right),490-G.SCALE*(.95+dot(centered,cam.up))];
+  }
+  // Project a pointer movement onto one world axis, independently of viewing angle.
+  function axisDelta(axis,dx,dy,cam) {
+    const x=dot(axis,cam.right), y=-dot(axis,cam.up), len2=x*x+y*y;
+    if (len2 < .035) return [0,0,0];
+    return times(axis,(dx*x+dy*y)/(G.SCALE*len2));
+  }
+  function planeDelta(dx,dy,cam) {
+    return times(add(times(cam.right,dx),times(cam.up,-dy)),1/G.SCALE);
+  }
+  function move(row,isPouch,delta) {
+    if (isPouch) return G.shiftPouch(row,delta);
+    if (row.anchor==='auto') {
+      const [forward,right,up]=row.position;
+      return {...row, position:[forward-delta[1],right+delta[0],up+delta[2]]};
+    }
+    return {...row, offset:G.local(row.anchor,add(G.world(row),delta))};
+  }
+
+  // Build the reference skeleton once. All geometry is in the same metre-space
+  // as the holsters. Closed rings give the bones volume from every camera angle.
+  function skeleton() {
+    const faces=[], j=G.joints;
+    function shell(rings, tone=1) {
+      const count=rings[0].length;
+      for (let r=1;r<rings.length;r++) for(let i=0;i<count;i++) {
+        const k=(i+1)%count;
+        const points=[rings[r-1][i],rings[r-1][k],rings[r][k],rings[r][i]];
+        const centre=times(points.reduce(add),.25);
+        const normal=unit(cross(sub(points[1],points[0]),sub(points[3],points[0])));
+        if (Math.hypot(...normal)>.5) faces.push({points,centre,normal,tone});
+      }
+    }
+    function bone(a,b,radius) {
+      const length=sub(b,a), axis=unit(length);
+      const u=unit(cross(Math.abs(axis[2])>.9?[0,1,0]:[0,0,1],axis)), v=cross(axis,u);
+      const rings=[[0,.22],[.09,1],[.45,.60],[.86,.76],[.97,1],[1,.18]].map(([h,r]) =>
+        Array.from({length:6},(_,i)=>{
+          const t=2*Math.PI*i/6;
+          return add(add(a,times(length,h)),times(add(times(u,Math.cos(t)),times(v,Math.sin(t))),r*radius));
+        }));
+      shell(rings);
+    }
+    function oval(centre,dimensions,tone=1) {
+      shell([-.99,-.72,-.28,.28,.72,.99].map(h=>Array.from({length:12},(_,i)=>{
+        const t=2*Math.PI*i/12, r=Math.sqrt(1-h*h);
+        return add(centre,[dimensions[0]*r*Math.cos(t),dimensions[1]*r*Math.sin(t),dimensions[2]*h]);
+      })),tone);
+    }
+    const skull=add(j.head,[0,0,.055]);
+    oval(skull,[.082,.097,.105]);
+    oval(add(skull,[0,-.04,-.073]),[.064,.064,.045]);
+    bone(add(skull,[0,-.075,.012]),add(skull,[0,-.108,-.038]),.017);
+    bone(j.pelvis,j.neck,.031);
+    for (let i=0;i<11;i++) {
+      const vertebra=add(j.pelvis,times(sub(j.neck,j.pelvis),i/11));
+      oval(vertebra,[.035,.033,.016]);
+    }
+    bone(j.neck,j.head,.034);
+    for(const [side,sign] of [['right',1],['left',-1]]) {
+      const at=k=>j[side+'_'+k];
+      oval(add(skull,[sign*.037,-.080,.001]),[.024,.014,.020],.24);
+      bone(add(skull,[sign*.014,-.094,.024]),add(skull,[sign*.061,-.063,.022]),.012);
+      oval(add(j.pelvis,[sign*.071,0,0]),[.096,.091,.070]);
+      bone(j.neck,at('upper_arm'),.025);
+      bone(at('upper_arm'),at('forearm'),.036);
+      bone(at('forearm'),at('hand'),.024);
+      bone(add(at('forearm'),[0,.015,-.008]),add(at('hand'),[0,.022,0]),.015);
+      oval(at('hand'),[.045,.027,.031]);
+      for(let i=0;i<4;i++) {
+        const knuckle=add(at('hand'),[sign*.027,(i-1.5)*.014,-.008]);
+        const tip=add(knuckle,[sign*(.039-.006*Math.abs(i-1)),(i-1.5)*.004,-.020]);
+        bone(knuckle,tip,.007);
+      }
+      bone(at('thigh'),at('shin'),.049);
+      bone(at('shin'),at('foot'),.034);
+      bone(at('foot'),at('toe'),.037);
+      for(const [name,r] of [['upper_arm',.041],['forearm',.029],['thigh',.049],['shin',.043]])
+        oval(at(name),[r,r,r]);
+      // Ribs wrap from the spine to the sternum. Each arc is visible when orbited.
+      for(let i=0;i<6;i++) {
+        const z=j.chest[2]-.075+i*.036, width=.138+.033*Math.sin(i*Math.PI/6);
+        const arc=[[0,.038,z],[sign*.62*width,.062,z+.015],[sign*width,0,z],
+          [sign*.78*width,-.081,z-.023],[sign*.10,-.106,z-.028],[0,-.099,z-.008]];
+        for(let k=1;k<arc.length;k++) bone(arc[k-1],arc[k],.011);
+      }
+    }
+    return faces;
+  }
+  const faces=skeleton();
+  function shadedFaces(cam) {
+    const light=unit(add(cam.depth,add(times(cam.right,-.55),times(cam.up,.75))));
+    return faces.filter(f=>dot(f.normal,cam.depth)>0).sort((a,b)=>dot(a.centre,cam.depth)-dot(b.centre,cam.depth)).map(f=>{
+      const shade=Math.round((23+Math.max(0,dot(f.normal,light))*54)*f.tone);
+      return {shade, path:'M'+f.points.map(p=>project(p,cam).map(v=>v.toFixed(2)).join(' ')).join('L')+'Z'};
+    });
+  }
+  return {axes,camera,project,axisDelta,planeDelta,move,shadedFaces,dot,add,times};
 });
 </script>
 <script>/* SPDX-License-Identifier: GPL-3.0-only */
 (() => {
   'use strict';
   const H = globalThis.HolsterState, G = globalThis.HolsterGeometry, P = globalThis.HolsterPresets, $ = id => document.getElementById(id);
+  const O = globalThis.HolsterOrbit;
+  let camera = O.camera(), lastBodyCamera = null, orbitDrag = null;
   const svgNS = 'http://www.w3.org/2000/svg';
   const labels = Object.fromEntries(H.ANCHORS.map(a => [a.id, a.label]));
   let doc = null, model = null, selected = 1, filename = '', history = [], historyIndex = 0, exported = null, loading = 0, demoMode = false;
@@ -874,7 +1039,6 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     $('holster-heading').hidden = $('editor-form').hidden = pouchSelected;
     $('editor-title').textContent = pouchSelected ? 'AMMO POUCH' : 'SLOT DETAILS';
     $('reset-slot').textContent = pouchSelected ? 'Reset pouch' : 'Reset slot';
-    $('open-presets').disabled = !!model && !model.slots.length;
     if (pouchSelected) {
       const pouch = model.pouch;
       $('place-pouch').hidden = !!pouch || !!doc.pouchIssue;
@@ -1008,8 +1172,48 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   function previewSlot() {
     return drag ? drag.slot : rowWithDrafts(activeRow(model, selected));
   }
-  function project(point) { return G.project(point, view); }
+  function project(point) { return view === 'orbit' ? O.project(point,camera) : G.project(point,view); }
+  function drawSkeleton(body) {
+    if (lastBodyCamera === camera) return;
+    lastBodyCamera = camera;
+    const layer=document.createDocumentFragment();
+    const line=(a,b)=>'M'+project(a).join(' ')+'L'+project(b).join(' ');
+    let grid='';
+    for (let i=-7;i<=7;i++) {
+      grid+=line([i/10,-.7,0],[i/10,.7,0])+line([-.7,i/10,0],[.7,i/10,0]);
+    }
+    layer.append(svg('path',{d:grid,class:'orbit-floor'}));
+    // Keep the far-to-near order while batching adjacent equally lit faces.
+    let path='', shade=null;
+    const flush=()=>{ if(path) layer.append(svg('path',{d:path,class:'orbit-bone',style:'--light:'+shade+'%'})); };
+    for(const face of O.shadedFaces(camera)) {
+      if (face.shade!==shade) { flush(); path=''; shade=face.shade; }
+      path+=face.path;
+    }
+    flush();
+    body.replaceChildren(layer);
+  }
+  function drawGizmo(point,id) {
+    const [x,y]=project(point);
+    O.axes.forEach(({label,name,vector},i)=>{
+      const end=project(O.add(point,O.times(vector,.32)));
+      const dx=end[0]-x, dy=end[1]-y, size=Math.hypot(dx,dy);
+      if(size<14) return; // Orbit to expose an axis pointing into the screen.
+      const u=dx/size, v=dy/size, [ex,ey]=end;
+      const g=svg('g',{'data-axis':name,class:'axis axis-'+name,role:'button',tabindex:'0','aria-label':'Move '+name+'. Drag or use arrow keys.'});
+      const title=svg('title',{});title.textContent='Move '+name;
+      const shaft='M'+(x+u*15)+' '+(y+v*15)+'L'+ex+' '+ey;
+      const arrow=svg('path',{d:`M${ex} ${ey}l${-10*u-4*v} ${-10*v+4*u}l${8*v} ${-8*u}Z`,class:'axis-tip'});
+      const text=svg('text',{x:ex+u*9,y:ey+v*9});text.textContent=label;
+      g.append(title,svg('path',{d:shaft,class:'axis-line'}),arrow,text,svg('path',{d:shaft,class:'axis-hit'}));
+      g.addEventListener('pointerdown',e=>beginDrag(e,id,'axis',i));
+      g.addEventListener('keydown',e=>keyboardMove(e,id,'axis',i));
+      $('preview-handles').append(g);
+    });
+  }
   function drawBody(body = $('reference-body'), projection = view) {
+    if (projection==='orbit') { drawSkeleton(body); return; }
+    if (body===$('reference-body')) lastBodyCamera=null;
     body.replaceChildren();
     const projected = p => G.project(p, projection);
     const shape = points => points.map((p,i) => `${i ? 'L' : 'M'}${projected(p).join(' ')}`).join(' ');
@@ -1051,8 +1255,13 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   function renderPreview() {
     drawBody();
     const current = previewSlot();
-    $('direction-left').textContent = view === 'front' ? 'YOUR RIGHT' : 'BEHIND';
-    $('direction-right').textContent = view === 'front' ? 'YOUR LEFT' : 'IN FRONT';
+    const orbit=view==='orbit';
+    $('body-map').classList.toggle('orbit-view',orbit);
+    $('body-map').setAttribute('tabindex',orbit?'0':'-1');
+    $('body-map').setAttribute('aria-label',orbit?'3D skeleton. Drag the background or use the arrow keys to orbit. Drag a gizmo to move equipment.':'Holster placement preview. Drag the centre to move and the square to resize.');
+    $('orbit-reset').hidden=!orbit;
+    $('direction-left').textContent = orbit ? '' : view === 'front' ? 'YOUR RIGHT' : 'BEHIND';
+    $('direction-right').textContent = orbit ? '' : view === 'front' ? 'YOUR LEFT' : 'IN FRONT';
     $('anchor-points').replaceChildren();
     const editingPouch = selected === pouchId;
     const activeAnchor = editingPouch ? current?.bone : current?.anchor;
@@ -1079,7 +1288,11 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     $('slot-markers').replaceChildren(); $('preview-handles').replaceChildren();
     const ids = model?.slots.map(s => s.id) || [];
     if (model?.pouch) ids.push(pouchId);
-    ids.sort((a, b) => Number(a === selected) - Number(b === selected));
+    ids.sort((a,b)=>{
+      const selectionOrder=Number(a===selected)-Number(b===selected);
+      if (selectionOrder || !orbit) return selectionOrder;
+      return O.dot(rowWorld(activeRow(model,a),a),camera.depth)-O.dot(rowWorld(activeRow(model,b),b),camera.depth);
+    });
     for (const id of ids) {
       const chosen = id === selected, isPouch = id === pouchId;
       const row = chosen ? current : activeRow(model, id);
@@ -1102,7 +1315,8 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       centre.addEventListener('pointerdown',e=>beginDrag(e,id,'move'));
       centre.addEventListener('keydown',e=>keyboardMove(e,id));
       g.append(centre); $('slot-markers').append(g);
-      if (chosen && row.radius !== null) {
+      if (chosen && orbit) drawGizmo(world,id);
+      if (chosen && row.radius !== null && !orbit) {
         const h=svg('rect',{x:x+radius-6,y:y-6,width:12,height:12,class:'radius-handle',role:'button',tabindex:'0','data-handle':'radius','aria-label':'Grab radius. Drag to resize; arrow keys adjust 1 centimetre, Shift 5.'});
         h.addEventListener('pointerdown',e=>beginDrag(e,id,'radius'));
         h.addEventListener('keydown',e=>keyboardMove(e,id,'radius'));
@@ -1113,6 +1327,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     $('fit-preview').disabled = !current;
     $('preview-hint').textContent = current?.anchor === 'auto' ? 'Automatic · drag the saved position. TTWVR chooses the nearest bone in VR.' : 'Drag centre to move · square handle to resize. Use Side for depth. Arrow keys: 1 cm; Shift: 5 cm.';
     if (selected === pouchId) $('preview-hint').textContent = current ? 'Drag P to move the pouch. Set the grab radius in cm or drag its square handle. Use Side for depth.' : '';
+    if (orbit) $('preview-hint').textContent = 'Drag the background to orbit. Drag R (right), F (forward) or U (up) to move. Scroll to zoom.';
     const p=current && rowWorld(current, selected);
     if (p) {
       const [x,y]=project(p), box=$('body-map').viewBox.baseVal;
@@ -1124,12 +1339,15 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     const profile=P.list(pipBoySide).find(p=>p.id===presetId);
     $('preset-pipboy').disabled=!profile.usesForearm;
     const side=$('preset-side').value, forward=Number($('preset-forward').value);
-    const placements=P.slots(presetId,side,forward,pipBoySide), metrics=P.metrics(placements);
+    const pouchSide=$('preset-pouch-side').value;
+    const pouch=P.ammoPouch(presetId,forward,pouchSide,model?.pouch,doc?.eyeHeight);
+    const placements=P.slots(presetId,side,forward,pipBoySide), metrics=P.metrics(placements,pouch);
     $('preset-name').textContent=`${profile.name} · ${profile.count} holsters`;
     $('preset-description').textContent=profile.description;
     $('preset-note').textContent=profile.note;
     $('preset-pairs').replaceChildren();
     profile.rows.forEach(row=>$('preset-pairs').append(element('li',{},`${row.ids.join(' / ')} · ${row.label} · ${row.radius} cm radius`)));
+    $('preset-pairs').append(element('li',{},`P · ${profile.pouchLabel} · ${pouchSide} · ${numberDisplay(pouch.radius)} cm radius`));
     for(const button of document.querySelectorAll('[data-preset]'))button.setAttribute('aria-pressed',String(button.dataset.preset===presetId));
     for(const direction of ['front','side']) {
       const drawing=$(direction==='front'?'preset-front':'preset-side-view');drawing.replaceChildren();
@@ -1141,18 +1359,27 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
         if(groups.has(key))groups.get(key).ids.push(row.id);
         else groups.set(key,{x,y,radius:row.radius,ids:[row.id]});
       }
-      for(const {x,y,radius,ids} of groups.values()) {
-        const group=svg('g',{class:'holster-volume selected preset-volume','data-preset-slot':ids.join(',')});
+      const [px,py]=G.project(G.pouchWorld(pouch),direction);
+      const overlaps=[...groups.values()].some(g=>Math.hypot(g.x-px,g.y-py)<29);
+      const labelX=overlaps?Math.max(px,...[...groups.values()].map(g=>g.x))+35:px;
+      groups.set('pouch',{x:px,y:py,radius:pouch.radius,ids:['P'],labelX});
+      for(const {x,y,radius,ids,labelX=x} of groups.values()) {
+        const group=svg('g',{class:'holster-volume selected preset-volume',[ids[0]==='P'?'data-preset-pouch':'data-preset-slot']:ids.join(',')});
         group.append(svg('circle',{cx:x,cy:y,r:radius*G.SCALE,class:'grab-sphere'}));
-        const label=svg('g',{class:'holster-centre'});label.append(svg('circle',{cx:x,cy:y,r:ids.length>1?15:12}));
-        const text=svg('text',{x,y});text.textContent=ids.length>1?ids.join('/'):String(ids[0]).padStart(2,'0');label.append(text);group.append(label);drawing.append(group);
+        if(labelX!==x) {
+          group.append(svg('path',{d:`M${x} ${y}L${labelX} ${y}`,class:'pouch-leader'}),svg('circle',{cx:x,cy:y,r:2.5,class:'pouch-pin'}));
+        }
+        const label=svg('g',{class:'holster-centre'});label.append(svg('circle',{cx:labelX,cy:y,r:ids.length>1?15:12}));
+        const text=svg('text',{x:labelX,y});text.textContent=ids.length>1?ids.join('/'):ids[0]==='P'?'P':String(ids[0]).padStart(2,'0');label.append(text);group.append(label);drawing.append(group);
       }
     }
     const radius=metrics.minRadius===metrics.maxRadius ? `${numberDisplay(metrics.minRadius)} cm` : `${numberDisplay(metrics.minRadius)}–${numberDisplay(metrics.maxRadius)} cm`;
     $('preset-metrics').textContent=`Radii ${radius} · nearest sphere gap ${(metrics.gap*100).toFixed(1)} cm in this pose`;
     $('apply-preset').disabled=!doc || !!errors.size;
     $('apply-preset').textContent=`Apply ${profile.name}`;
-    $('preset-impact').textContent=!doc ? 'Load your TTWVR.state file before applying a layout.' : errors.size ? 'Close this preview and correct the highlighted value before applying.' : `Updates slots 1–${profile.count}.${profile.count<8 ? ` Disables ${profile.count+1}–8, retaining their positions.` : ''} One Undo restores your layout. Calibration and visibility stay unchanged.`;
+    const impact=!model?.slots.length ? 'Places the ammo pouch in this pouch-only file.' :
+      `Updates slots 1–${profile.count}${doc?.pouchIssue?' and preserves the unreadable pouch section':' and places the ammo pouch'}.${profile.count<8 ? ` Disables ${profile.count+1}–8, retaining their positions.` : ''}`;
+    $('preset-impact').textContent=!doc ? 'Load your TTWVR.state file before applying a layout.' : errors.size ? 'Close this preview and correct the highlighted value before applying.' : impact+' One Undo restores your previous layout.';
   }
   for(const profile of P.list()) {
     const button=element('button',{type:'button','data-preset':profile.id,'aria-pressed':String(profile.id===presetId)});
@@ -1164,41 +1391,62 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   $('preset-side').addEventListener('change',renderPreset);
   $('preset-forward').addEventListener('change',renderPreset);
   $('preset-pipboy').addEventListener('change',renderPreset);
+  $('preset-pouch-side').addEventListener('change',renderPreset);
   $('apply-preset').addEventListener('click',()=>{
     if(!doc || errors.size)return;
     const profile=P.list().find(p=>p.id===presetId);
-    commit(m=>Object.assign(m,P.apply(m,presetId,$('preset-side').value,Number($('preset-forward').value),$('preset-pipboy').value)));
+    commit(m=>Object.assign(m,P.apply(m,presetId,$('preset-side').value,Number($('preset-forward').value),$('preset-pipboy').value,
+      {pouchSide:$('preset-pouch-side').value,eyeHeight:doc.eyeHeight,includePouch:!doc.pouchIssue})));
     $('presets').close();$('body-map').setAttribute('viewBox','0 0 440 540');
-    selected=1;$('show-other').checked=true;render();
-    notify(`${profile.name} applied: ${profile.count} enabled holsters. Undo restores your previous layout. Check the fit in VR before relying on it.`, 'success');
+    selected=model.slots.length?1:pouchId;$('show-other').checked=true;render();
+    notify(`${profile.name} applied. ${doc.pouchIssue?'Original pouch section preserved. ':''}Undo restores your previous layout.`, 'success');
   });
   function mousePoint(e) {
     const p=new DOMPoint(e.clientX,e.clientY).matrixTransform($('body-map').getScreenCTM().inverse());
     return [p.x,p.y];
   }
-  function beginDrag(e,id,kind) {
-    if (e.button !== 0 || !doc || errors.size) return;
+  function beginDrag(e,id,kind,axis) {
+    if (e.button !== 0 || drag || orbitDrag || !doc || errors.size) return;
     e.preventDefault();
     if (id !== selected) { if (drafts.size) commit(()=>{}); selected=id; render(); }
     const row=previewSlot(); if (!row || !rowWorld(row, id)) return;
-    drag={kind,point:mousePoint(e),start:H.clone(row),slot:H.clone(row),pointer:e.pointerId};
+    drag={kind,axis,point:mousePoint(e),start:H.clone(row),slot:H.clone(row),pointer:e.pointerId};
     $('body-map').setPointerCapture(e.pointerId);
   }
-  function keyboardMove(e,id,kind='move') {
+  function keyboardMove(e,id,kind='move',axis) {
     const delta={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,1],ArrowDown:[0,-1]}[e.key];
     if (['Enter',' '].includes(e.key)) { e.preventDefault(); if (!errors.size) { if(drafts.size)commit(()=>{});selected=id;render(); } return; }
     if (!delta || errors.size || !doc) return;
     e.preventDefault();e.stopPropagation();
     if (selected!==id) { if(drafts.size)commit(()=>{});selected=id; }
     const step=e.shiftKey ? .05 : .01;
-    commit(m=>{const row=activeRow(m, id); if(kind==='radius')row.radius=Math.max(.05,Math.min(.45,row.radius+(delta[0]+delta[1])*step)); else assignRow(m, id, moveRow(row, id, delta[0]*step, delta[1]*step));});
-    const selector=kind==='radius' ? '.radius-handle' : `[data-preview-slot="${id}"] .holster-centre`;
+    commit(m=>{const row=activeRow(m, id); if(kind==='radius')row.radius=Math.max(.05,Math.min(.45,row.radius+(delta[0]+delta[1])*step));
+      else if (view==='orbit') {
+        const shift=kind==='axis' ? O.times(O.axes[axis].vector,(delta[0]+delta[1])*step) : O.planeDelta(delta[0]*step*G.SCALE,-delta[1]*step*G.SCALE,camera);
+        assignRow(m,id,O.move(row,id===pouchId,shift));
+      } else assignRow(m, id, moveRow(row, id, delta[0]*step, delta[1]*step));});
+    const selector=kind==='axis' ? `[data-axis="${O.axes[axis].name}"]` : kind==='radius' ? '.radius-handle' : `[data-preview-slot="${id}"] .holster-centre`;
     document.querySelector(selector)?.focus({preventScroll:true});
   }
-  $('body-map').addEventListener('pointermove',e=>{
+  const map=$('body-map');
+  map.addEventListener('pointerdown',e=>{
+    if(view!=='orbit' || drag || orbitDrag || e.button!==0 || e.target.closest('[role="button"]')) return;
+    e.preventDefault(); map.focus({preventScroll:true});
+    orbitDrag={pointer:e.pointerId,x:e.clientX,y:e.clientY,camera};
+    map.setPointerCapture(e.pointerId);
+  });
+  map.addEventListener('pointermove',e=>{
+    if (orbitDrag?.pointer===e.pointerId) {
+      camera=O.camera(orbitDrag.camera.yaw+(e.clientX-orbitDrag.x)*.009,orbitDrag.camera.pitch+(e.clientY-orbitDrag.y)*.008);
+      renderPreview(); return;
+    }
     if (!drag || e.pointerId!==drag.pointer) return;
     const p=mousePoint(e);
-    if (drag.kind==='move') drag.slot=moveRow(drag.start,selected,(p[0]-drag.point[0])/G.SCALE,(drag.point[1]-p[1])/G.SCALE);
+    if (view==='orbit') {
+      const dx=p[0]-drag.point[0],dy=p[1]-drag.point[1];
+      const shift=drag.kind==='axis' ? O.axisDelta(O.axes[drag.axis].vector,dx,dy,camera) : O.planeDelta(dx,dy,camera);
+      drag.slot=O.move(drag.start,selected===pouchId,shift);
+    } else if (drag.kind==='move') drag.slot=moveRow(drag.start,selected,(p[0]-drag.point[0])/G.SCALE,(drag.point[1]-p[1])/G.SCALE);
     else { const centre=project(rowWorld(drag.slot, selected)); drag.slot.radius=Math.max(.05,Math.min(.45,Math.hypot(p[0]-centre[0],p[1]-centre[1])/G.SCALE)); }
     const row = drag.slot;
     if (selected === pouchId) displayPouch(row);
@@ -1215,13 +1463,41 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     if($('body-map').hasPointerCapture(pointer))$('body-map').releasePointerCapture(pointer);
     if(cancel)render();else commit(m => assignRow(m, selected, slot));
   }
-  $('body-map').addEventListener('pointerup',()=>endDrag());
-  $('body-map').addEventListener('pointercancel',()=>endDrag(true));
-  $('body-map').addEventListener('lostpointercapture',()=>{if(drag)endDrag(true);});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape' && drag){e.preventDefault();endDrag(true);}});
-  for(const v of ['front','side'])$(`view-${v}`).addEventListener('click',()=>{
-    endDrag(true);view=v;$('body-map').setAttribute('viewBox','0 0 440 540');
-    for(const choice of ['front','side'])$(`view-${choice}`).setAttribute('aria-pressed',String(v===choice));
+  function finishPointer(e,cancel) {
+    if (orbitDrag?.pointer===e.pointerId) {
+      const old=orbitDrag; orbitDrag=null;
+      if (cancel) {camera=old.camera;renderPreview();}
+      if (map.hasPointerCapture(e.pointerId)) map.releasePointerCapture(e.pointerId);
+    } else if(drag?.pointer===e.pointerId) endDrag(cancel);
+  }
+  map.addEventListener('pointerup',e=>finishPointer(e,false));
+  map.addEventListener('pointercancel',e=>finishPointer(e,true));
+  map.addEventListener('lostpointercapture',e=>finishPointer(e,true));
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && (drag || orbitDrag)) {e.preventDefault();finishPointer({pointerId:(drag || orbitDrag).pointer},true);}
+  });
+  map.addEventListener('keydown',e=>{
+    if(view!=='orbit' || e.target!==map || drag || orbitDrag) return;
+    const delta={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,1],ArrowDown:[0,-1]}[e.key];
+    if(delta) {e.preventDefault();camera=O.camera(camera.yaw+delta[0]*.15,camera.pitch+delta[1]*.12);renderPreview();}
+  });
+  map.addEventListener('wheel',e=>{
+    if(view!=='orbit' || drag || orbitDrag) return;
+    e.preventDefault();
+    const box=map.viewBox.baseVal, [x,y]=mousePoint(e);
+    const width=Math.max(140,Math.min(700,box.width*(e.deltaY>0?1.12:1/1.12)));
+    const ratio=width/box.width;
+    map.setAttribute('viewBox',`${x+(box.x-x)*ratio} ${y+(box.y-y)*ratio} ${width} ${box.height*ratio}`);
+    renderPreview();
+  },{passive:false});
+  $('orbit-reset').addEventListener('click',()=>{
+    camera=O.camera();map.setAttribute('viewBox','0 0 440 540');renderPreview();
+  });
+  const views=['front','side','orbit'];
+  for(const v of views) $(`view-${v}`).addEventListener('click',()=>{
+    if (drag || orbitDrag) finishPointer({pointerId:(drag || orbitDrag).pointer},true);
+    view=v;map.setAttribute('viewBox','0 0 440 540');
+    for(const choice of views) $(`view-${choice}`).setAttribute('aria-pressed',String(v===choice));
     renderPreview();
   });
   $('show-other').addEventListener('change',renderPreview);
