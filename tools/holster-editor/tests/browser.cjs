@@ -271,7 +271,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     assert.equal(await evaluate("document.getElementById('weight-control').hidden"),true);
 
     await click('#view-side');
-    assert.equal(await evaluate("document.getElementById('skin-control').hidden"),true);
+    assert.equal(await evaluate("document.getElementById('skin-control').hidden"),false);
     await click('#view-orbit');assert.equal(await outlineVisible(),false);
     await click('#show-skin');assert.ok(await outlineVisible());
     assert.equal(await outlinePath(),largeOutline);
@@ -434,9 +434,8 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await change('#offset-z','2.4');
     assert.equal(await evaluate('document.querySelector("#export").disabled'),true);
     await change('#radius','10'); assert.equal(await evaluate('document.querySelector("#export").disabled'),false);
-    await click('#show'); await clickExport();
-    for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
-    const exported = H.parse(await fs.readFile(path.join(downloads,'TTWVR.state')));
+    await click('#show');
+    const exported=await downloadState();
     assert.equal(exported.model.slots[2].anchor,'left_forearm'); assert.deepEqual(exported.model.slots[2].offset.map(Math.fround),[.123,-.045,.024].map(Math.fround));
     assert.equal(exported.model.slots[2].radius,.1);assert.equal(exported.model.slots[2].enabled,true);assert.equal(exported.model.show,false);
     assert.deepEqual(await fs.readFile(input), Buffer.from(H.demo()));
@@ -460,8 +459,38 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await click('#view-front');
     await cdp('Emulation.setDeviceMetricsOverride', {width:1024,height:768,deviceScaleFactor:1,mobile:false});
     assert.equal(await evaluate('document.documentElement.scrollWidth <= window.innerWidth'),true);
+    await cdp('Emulation.setDeviceMetricsOverride',{width:1440,height:1250,deviceScaleFactor:1,mobile:false});
+    const probe=H.parse(H.demo()), probeModel=H.clone(probe.model);
+    Object.assign(probeModel.slots[0],{anchor:'pelvis',offset:G.local('pelvis',[.158,-.006,1.12]),radius:.075});
+    Object.assign(probeModel.slots[1],{anchor:'pelvis',offset:G.local('pelvis',[0,-.60,1.12]),radius:.075});
+    const probeFile=path.join(temp,'body-clearance.state'), bytes=H.serialize(probe,probeModel);
+    await fs.writeFile(probeFile,bytes);await upload(probeFile);
+    await waitFor("document.querySelector('#filename').textContent==='body-clearance.state'","clearance fixture");
+    await change('#preview-pose','standing');await change('#body-weight','75');await click('#view-front');
+    if(await evaluate("document.getElementById('show-other').checked")) await click('#show-other');
+    const region=()=>evaluate(`(()=>{
+      const p=document.querySelector('[data-preview-slot="1"] .body-overlap');
+      return [.10,.21].map(x=>p.isPointInFill(new DOMPoint(...HolsterGeometry.project([x,0,1.12],'front'))));
+    })()`);
+    assert.deepEqual(await region(),[true,false]); // Both points are inside the sphere.
+    assert.equal(await evaluate("document.getElementById('overlap-key').hidden"),false);
+    await click('[data-slot="2"]');assert.equal(await evaluate("!!document.querySelector('.body-overlap')"),false);
+    assert.equal(await evaluate("document.getElementById('overlap-key').hidden"),true);
+    await click('[data-slot="1"]');await change('#body-weight','180');
+    assert.deepEqual(await region(),[true,true]);
+    await change('#body-weight','75');await click('#show-skin');
+    assert.equal(await evaluate("!!document.querySelector('.body-overlap')"),false);
+    await click('#show-skin');assert.deepEqual(await region(),[true,false]);
+    await change('#radius','5');assert.deepEqual(await region(),[false,false]);
+    await click('#undo');assert.deepEqual(await region(),[true,false]);
+    await change('#offset-y','60');assert.equal(await evaluate("!!document.querySelector('.body-overlap')"),false);
+    await click('#undo');assert.deepEqual(await region(),[true,false]);
+    await click('#view-orbit');await click('#green');
+    assert.ok(await evaluate("document.querySelector('.body-overlap').getAttribute('d').length>0"));
+    await screenshot('holster-editor-body-overlap.png');
+    assert.deepEqual((await downloadState()).bytes,bytes);
     assert.equal(errors.length,0,JSON.stringify(errors));assert.equal(requests.some(u=>/^https?:/.test(u)),false,JSON.stringify(requests));
-    console.log('PASS browser: seated desk-chair geometry, seated view and drag/export/undo, estimated-weight outlines, fixed anchors, mobile slider, translucent silhouette, toggle, state preservation, 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
+    console.log('PASS browser: partial body overlap, depth-separated placements, seated desk-chair geometry, seated view and drag/export/undo, estimated-weight outlines, fixed anchors, mobile slider, translucent silhouette, toggle, state preservation, 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
     console.log('PASS no network requests; source file unchanged; no browser exceptions.');
   } finally {
     try { await send('Browser.close'); } catch {}

@@ -9,6 +9,7 @@
   const previewCamera=()=>flatCameras[view] || camera;
   let pose='standing';
   const defaultBox=()=>pose==='seated' ? '20 95 400 491' : '0 0 440 540';
+  const overlapPaths=new Map();
   const weightControl = $('body-weight');
   Object.assign(weightControl,{min:O.buildRange.minKg,max:O.buildRange.maxKg,value:O.buildRange.referenceKg});
   const svgNS = 'http://www.w3.org/2000/svg';
@@ -299,6 +300,15 @@
     if(projection==='front')body.append(svg('path',{d:shape([[-.025,-.125,1.025],[.025,-.125,1.025],[.025,-.125,.975],[-.025,-.125,.975]])+'Z',class:'body-buckle'}));
     const floor = svg('text',{x:18,y:506,class:'map-direction'}); floor.textContent='REFERENCE / ~1.8 M'; body.append(floor);
   }
+  function grabOverlap(id,point,radius) {
+    const cam=previewCamera(), kg=weightControl.valueAsNumber;
+    const last=overlapPaths.get(id);
+    if(last && last.cam===cam && last.kg===kg && last.pose===pose &&
+       last.radius===radius && point.every((v,i)=>v===last.point[i])) return last.path;
+    const path=O.overlapPath(point,radius,cam,kg,pose);
+    overlapPaths.set(id,{cam,kg,pose,point,radius,path});
+    return path;
+  }
   function renderPreview() {
     drawBody();
     const current = previewSlot();
@@ -307,8 +317,8 @@
     $('body-map').setAttribute('tabindex',orbit?'0':'-1');
     $('body-map').setAttribute('aria-label',orbit?'3D skeleton. Drag the background or use the arrow keys to orbit. Drag a gizmo to move equipment.':'Holster placement preview. Drag the centre to move and the square to resize.');
     $('orbit-reset').hidden=!orbit;
-    $('skin-control').hidden=!orbit && pose!=='seated';
-    updateSkin();
+    const skinVisible=updateSkin();
+    let hasOverlap=false;
     $('direction-left').textContent = orbit ? '' : view === 'front' ? 'YOUR RIGHT' : 'BEHIND';
     $('direction-right').textContent = orbit ? '' : view === 'front' ? 'YOUR LEFT' : 'IN FRONT';
     $('anchor-points').replaceChildren();
@@ -358,9 +368,17 @@
         g.append(svg('path',{d:`M${ax} ${ay}L${x} ${y}`,class:'offset-line'}));
       }
       if (radius > 0) g.append(svg('circle',{cx:x,cy:y,r:radius,class:'grab-sphere'}));
-      const centre=svg('g',{class:'holster-centre',role:'button',tabindex:'0','data-handle':'move','aria-label':`${name}. Drag to position; arrow keys move 1 centimetre, Shift 5.`});
-      const title=svg('title',{});title.textContent=isPouch ? name : `${name} · ${labels[row.anchor]} · ${numberDisplay(row.radius)} cm radius`;centre.append(title);
-      centre.append(svg('circle',{cx:x,cy:y,r:12})); const text=svg('text',{x,y});text.textContent=isPouch ? 'P' : String(id).padStart(2,'0');centre.append(text);
+      const overlap=skinVisible && radius>0 ? grabOverlap(id,world,row.radius) : '';
+      const warning=overlap ? ' · Grab sphere intersects the body' : '';
+      const centre=svg('g',{class:'holster-centre',role:'button',tabindex:'0','data-handle':'move','aria-label':`${name}${warning}. Drag to position; arrow keys move 1 centimetre, Shift 5.`});
+      const title=svg('title',{});title.textContent=(isPouch ? name : `${name} · ${labels[row.anchor]} · ${numberDisplay(row.radius)} cm radius`)+warning;centre.append(title);
+      g.append(svg('circle',{cx:x,cy:y,r:12,class:'marker-disc','pointer-events':'none'}));
+      centre.append(svg('circle',{cx:x,cy:y,r:12,class:'marker-hit'}));
+      if(overlap) {
+        g.append(svg('path',{d:overlap,class:'body-overlap','pointer-events':'none','aria-hidden':'true'}));
+        hasOverlap=true;
+      }
+      const text=svg('text',{x,y});text.textContent=isPouch ? 'P' : String(id).padStart(2,'0');centre.append(text);
       centre.addEventListener('pointerdown',e=>beginDrag(e,id,'move'));
       centre.addEventListener('keydown',e=>keyboardMove(e,id));
       g.append(centre); $('slot-markers').append(g);
@@ -372,6 +390,7 @@
         $('preview-handles').append(h);
       }
     }
+    $('overlap-key').hidden=!hasOverlap;
     $('preview-measure').textContent = current?.radius != null ? `R ${numberDisplay(current.radius)} CM · Ø ${numberDisplay(current.radius*2)} CM` : 'RADIUS —';
     $('fit-preview').disabled = !current;
     $('preview-hint').textContent = current?.anchor === 'auto' ? 'Automatic · drag the saved position. TTWVR chooses the nearest bone in VR.' : 'Drag centre to move · square handle to resize. Use Side for depth. Arrow keys: 1 cm; Shift: 5 cm.';
@@ -541,10 +560,10 @@
   },{passive:false});
   function updateSkin() {
     const cam=previewCamera();
-    const skinVisible=(view==='orbit' || pose==='seated') && $('show-skin').checked;
+    const skinVisible=$('show-skin').checked;
     $('skin-surface').toggleAttribute('hidden',!skinVisible);
     $('weight-control').hidden=!skinVisible;
-    if (!skinVisible) return;
+    if (!skinVisible) return false;
     const kg=weightControl.valueAsNumber;
     if (lastSkinWeight!==kg) {
       const value=kg+' kg · '+Math.round(kg*2.20462262)+' lb';
@@ -556,6 +575,7 @@
       lastSkinCamera=cam;
       lastSkinWeight=kg;
     }
+    return true;
   }
   $('preview-pose').addEventListener('change',e=>{
     if (drag || orbitDrag) finishPointer({pointerId:(drag || orbitDrag).pointer},true);
@@ -564,8 +584,8 @@
     map.setAttribute('viewBox',defaultBox());
     renderPreview();
   });
-  weightControl.addEventListener('input',updateSkin);
-  $('show-skin').addEventListener('change',updateSkin);
+  weightControl.addEventListener('input',renderPreview);
+  $('show-skin').addEventListener('change',renderPreview);
   $('orbit-reset').addEventListener('click',()=>{
     camera=O.camera();map.setAttribute('viewBox',defaultBox());renderPreview();
   });

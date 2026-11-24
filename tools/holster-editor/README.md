@@ -8,8 +8,8 @@ server, Python, Node, account or network connection is needed to use it.
 
 ## Open the tool
 
-Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.3/TTWVR-Holster-Editor.html)
-and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.3/TTWVR-Holster-Editor.zip)
+Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.4/TTWVR-Holster-Editor.html)
+and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.4/TTWVR-Holster-Editor.zip)
 also includes the offline instructions.
 
 1. **Load state file**: select your `TTWVR.state` file, or drop it onto the window.
@@ -27,6 +27,8 @@ also includes the offline instructions.
 
 **Try a sample** demonstrates the controls. Load your own file to enable export.
 The tool never overwrites game files directly.
+
+With **Body outline** on, red hatching marks the portion of a holster or ammo pouch grab sphere inside the estimated body. Check it in Front, Side, or 3D as you move or resize the sphere. Pouches using the game’s default radius have no saved sphere to display.
 
 ## Check seated reach
 

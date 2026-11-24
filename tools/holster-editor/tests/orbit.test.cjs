@@ -88,3 +88,17 @@ test('seated moves round-trip through every bone, automatic and pouch fallback',
     near(O.equipmentWorld(O.move(pouch,true,shift,'seated'),true,'seated'),O.add(start,shift));
   }
 });
+
+test('body intersections depend on 3D depth, joint pose, weight and saved radius',()=>{
+  for(const cam of [O.camera(0,0),O.camera(Math.PI/2,0),O.camera(-1.8,.4)]) {
+    const hit=(p,r,kg=75,pose='standing')=>O.overlapPath(p,r,cam,kg,pose);
+    assert.ok(hit([0,0,1.12],.035));
+    for(const y of [-.60,.60]) assert.equal(hit([0,y,1.12],.07),'');
+    assert.equal(hit([.215,-.015,1.12],.04,45),'');
+    assert.ok(hit([.215,-.015,1.12],.04,180));
+    assert.equal(hit([.13,-.25,.53],.035),'');
+    assert.ok(hit([.13,-.25,.53],.035,75,'seated'));
+    assert.equal(hit([0,-.28,.033],.02,75,'seated'),''); // Chair caster
+    assert.equal(hit([0,0,1.12],null),'');
+  }
+});

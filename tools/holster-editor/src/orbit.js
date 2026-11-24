@@ -196,10 +196,13 @@
       return [Math.cos(a),Math.sin(a)];
     });
     function sections(rows,u,v) {
-      parts.push(rows.map(([centre,ru,rv])=>circle.map(([c,s])=>{
+      const rings=rows.map(([centre,ru,rv])=>circle.map(([c,s])=>{
         const point=add(centre,add(times(u,ru*c),times(v,rv*s)));
         return pose==='seated' ? seatPoint(point,anchor) : point;
-      })));
+      }));
+      const transform=pose==='seated' && (seated[anchor] || seated.torso);
+      if(transform) { u=transform.rotate(u); v=transform.rotate(v); }
+      parts.push({rings,u,v});
     }
     function upright(origin,rows) {
       sections(rows.map(([z,back,width,depth,fullness=0])=>{
@@ -280,7 +283,7 @@
     const lower=chain(sorted);
     return lower.concat(chain(sorted.reverse()));
   }
-  function skinPath(cam,weightKg=buildRange.referenceKg,pose='standing') {
+  function skinFor(weightKg,pose) {
     if(!Number.isFinite(weightKg) || weightKg<buildRange.minKg || weightKg>buildRange.maxKg)
       throw new RangeError('Body weight outside the reference range.');
     if(weightKg!==cachedWeight || pose!==cachedPose) {
@@ -288,10 +291,13 @@
       cachedPose=pose;
       cachedWeight=weightKg;
     }
+    return skin;
+  }
+  function skinPath(cam,weightKg=buildRange.referenceKg,pose='standing') {
     const polygons=[];
-    for(const part of skin) {
+    for(const {rings} of skinFor(weightKg,pose)) {
       let last=null;
-      for(const ring of part) {
+      for(const ring of rings) {
         const current=ring.map(p=>project(p,cam));
         if(last) {
           const hull=convexOutline(last.concat(current));
@@ -301,6 +307,86 @@
       }
     }
     return polygons.join('');
+  }
+  // The outline is a union of convex volumes between adjacent skin rings.
+  // Slice each volume in its own ring planes, where a sphere cuts a circle.
+  // A side of either end polygon supplies a supporting plane for the volume.
+  function sectionPlanes(a,b) {
+    const planes=[];
+    for(const ring of [a,b]) for(let i=0;i<ring.length;i++) {
+      const p=ring[i], q=ring[(i+1)%ring.length];
+      const nx=q[1]-p[1], ny=p[0]-q[0];
+      const support=r=>Math.max(...r.map(([x,y])=>nx*x+ny*y));
+      const start=support(a);
+      planes.push({nx,ny,start,change:support(b)-start});
+    }
+    return planes;
+  }
+  function collisionSections(part) {
+    const {u,v,rings}=part, normal=cross(u,v);
+    const flat=rings.map(ring=>ring.map(p=>[dot(u,p),dot(v,p)]));
+    const sections=[];
+    for(let i=1;i<rings.length;i++) {
+      const a=flat[i-1], b=flat[i], points=a.concat(b);
+      const xs=points.map(p=>p[0]), ys=points.map(p=>p[1]);
+      sections.push({a,b,z0:dot(normal,rings[i-1][0]),z1:dot(normal,rings[i][0]),
+        minX:Math.min(...xs),maxX:Math.max(...xs),minY:Math.min(...ys),maxY:Math.max(...ys)});
+    }
+    return {normal,sections};
+  }
+  function clipDisk(polygon,{nx,ny,start,change},fraction) {
+    const limit=start+fraction*change, clipped=[];
+    let a=polygon[polygon.length-1], da=nx*a[0]+ny*a[1]-limit;
+    for(const b of polygon) {
+      const db=nx*b[0]+ny*b[1]-limit;
+      if((da<=0)!==(db<=0)){
+        const t=da/(da-db);
+        clipped.push([a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])]);
+      }
+      if(db<=0) clipped.push(b);
+      a=b; da=db;
+    }
+    return clipped;
+  }
+  const diskEdge=Array.from({length:40},(_,i)=>[Math.cos(i*Math.PI/20),Math.sin(i*Math.PI/20)]);
+  function overlapPath(centre,radius,cam,weightKg=buildRange.referenceKg,pose='standing') {
+    if(!(radius>0) || !Number.isFinite(radius) || !centre.every(Number.isFinite)) return '';
+    const paths=[];
+    for(const part of skinFor(weightKg,pose)) {
+      const {normal,sections}=part.collision ??= collisionSections(part);
+      const cx=dot(part.u,centre), cy=dot(part.v,centre), cz=dot(normal,centre);
+      for(const segment of sections) {
+        const {minX,maxX,minY,maxY,z0,z1}=segment;
+        const dx=Math.max(minX-cx,0,cx-maxX), dy=Math.max(minY-cy,0,cy-maxY);
+        const dz=Math.max(z0-cz,0,cz-z1);
+        if(dx*dx+dy*dy+dz*dz>=radius*radius) continue;
+        const planes=segment.planes ??= sectionPlanes(segment.a,segment.b);
+        const low=Math.max(z0,cz-radius), high=Math.min(z1,cz+radius);
+        if(high<=low) continue;
+        const angle=z=>Math.asin(Math.max(-1,Math.min(1,(z-cz)/radius)));
+        const angle0=angle(low), angle1=angle(high);
+        const steps=Math.max(2,Math.ceil((angle1-angle0)*24/Math.PI));
+        const points=[];
+        for(let i=0;i<=steps;i++) {
+          const t=angle0+(angle1-angle0)*i/steps;
+          const z=i===0 ? low : i===steps ? high : cz+radius*Math.sin(t);
+          const r=radius*Math.cos(t);
+          let disk=diskEdge.map(([x,y])=>[cx+r*x,cy+r*y]);
+          for(const plane of planes) {
+            disk=clipDisk(disk,plane,(z-z0)/(z1-z0));
+            if(!disk.length) break;
+          }
+          for(const [x,y] of disk) {
+            const point=normal.map((n,k)=>part.u[k]*x+part.v[k]*y+n*z);
+            points.push(project(point,cam));
+          }
+        }
+        if(points.length<3) continue;
+        const hull=convexOutline(points);
+        if(hull.length>=3) paths.push('M'+hull.map(p=>p.map(v=>v.toFixed(2)).join(' ')).join('L')+'Z');
+      }
+    }
+    return paths.join('');
   }
   function chairPath(cam) {
     const lines=[];
@@ -334,5 +420,5 @@
     }
     return lines.map(line=>'M'+line.map(p=>project(p,cam).map(v=>v.toFixed(2)).join(' ')).join('L')).join('');
   }
-  return {axes,camera,project,axisDelta,planeDelta,move,seatPoint,equipmentWorld,chairPath,shadedFaces,skinPath,buildRange,dot,add,times};
+  return {axes,camera,project,axisDelta,planeDelta,move,seatPoint,equipmentWorld,chairPath,shadedFaces,skinPath,overlapPath,buildRange,dot,add,times};
 });

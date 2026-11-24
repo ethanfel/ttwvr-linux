@@ -32,7 +32,7 @@
 
     <section class="map-panel" aria-labelledby="map-title">
       <div class="panel-title"><h2 id="map-title">PLACEMENT PREVIEW</h2><div class="view-tabs" role="group" aria-label="Preview direction"><button type="button" id="view-front" aria-pressed="true">FRONT</button><button type="button" id="view-side" aria-pressed="false">SIDE</button><button type="button" id="view-orbit" aria-pressed="false">3D</button></div></div>
-      <div class="preview-toolbar"><span>10 CM GRID</span><label class="pose-control">Pose <select id="preview-pose"><option value="standing">Standing</option><option value="seated">Seated · desk chair</option></select></label><button type="button" id="orbit-reset" class="text-button" hidden>Reset view</button><label id="skin-control" hidden><input type="checkbox" id="show-skin" checked> Body outline</label><label><input type="checkbox" id="show-other" checked> Other placements</label></div>
+      <div class="preview-toolbar"><span>10 CM GRID</span><label class="pose-control">Pose <select id="preview-pose"><option value="standing">Standing</option><option value="seated">Seated · desk chair</option></select></label><button type="button" id="orbit-reset" class="text-button" hidden>Reset view</button><label id="skin-control"><input type="checkbox" id="show-skin" checked> Body outline</label><label><input type="checkbox" id="show-other" checked> Other placements</label></div>
       <div id="weight-control" class="weight-control" hidden>
         <label for="body-weight">Estimated body weight</label>
         <input id="body-weight" type="range" step="1" aria-describedby="weight-note"/>
@@ -41,6 +41,10 @@
       <div class="body-view">
         <svg id="body-map" viewBox="0 0 440 540" role="group" aria-label="Holster placement preview. Drag the numbered centre to move; drag the square handle to resize.">
           <defs><pattern id="grid" x="220" y="490" width="23" height="23" patternUnits="userSpaceOnUse"><path d="M23 0H0V23" fill="none" stroke="currentColor" stroke-width=".4"/></pattern>
+            <pattern id="body-overlap-hatch" patternUnits="userSpaceOnUse" width="6" height="6">
+              <rect width="6" height="6" fill="#c74340" fill-opacity=".65"/>
+              <path d="M-1 1L1 -1M0 6L6 0M5 7L7 5" fill="none" stroke="#ffd2cd" stroke-opacity=".78" stroke-width="1"/>
+            </pattern>
             <path id="skin-shape" fill-rule="nonzero"></path>
             <mask id="skin-exterior" maskUnits="userSpaceOnUse" x="0" y="0" width="440" height="540">
               <rect width="440" height="540" fill="white"/><use href="#skin-shape" fill="black"/>
@@ -59,7 +63,7 @@
         </svg>
         <div id="map-empty" class="map-empty"><span>AWAITING CONFIGURATION</span><p>Drop a state file here<br>or load one above.</p></div>
       </div>
-      <div class="preview-readout"><span id="preview-measure">RADIUS —</span><button type="button" id="fit-preview" class="text-button">Fit selected</button></div>
+      <div class="preview-readout"><span id="preview-measure">RADIUS —</span><span id="overlap-key" hidden>Inside body outline</span><button type="button" id="fit-preview" class="text-button">Fit selected</button></div>
       <p class="map-caption" id="map-caption">Choose a slot, then click its body anchor.</p>
       <p class="map-note" id="preview-hint">Drag centre to move · square handle to resize.<br>Use Side for depth. Arrow keys move 1 cm; Shift moves 5 cm.</p>
       <p id="weight-note" class="map-note reference-note">Approximate reference body, not your live avatar.<br>Circles show grab spheres. Check final placement in VR.</p>
@@ -104,7 +108,7 @@
       <div class="apply-note"><span class="eyebrow">AFTER EXPORT</span><p>Close the game, back up your current file, and replace it with the exported <b>TTWVR.state</b>. Check the placement in VR.</p></div>
     </section>
   </main>
-  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">FIELD KIT 1.6.3</span></footer>
+  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">FIELD KIT 1.6.4</span></footer>
   <p class="bottom-note">Independent community utility · Fallout-inspired interface · no game assets bundled</p>
 </div>
 <dialog id="presets" aria-labelledby="presets-title">
