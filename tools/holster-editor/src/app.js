@@ -162,6 +162,7 @@
       notify('Changes stay in this tab until you export a copy.');
     }
     clearErrors(); render();
+    return true;
   }
   function confirmReplace() { return demoMode || !(dirty() || errors.size) || confirm('Replace the current edits? Export a copy first if you want to keep them.'); }
   function install(bytes, name, isDemo = false) {
@@ -318,6 +319,8 @@
     $('body-map').setAttribute('aria-label',orbit?'3D skeleton. Drag the background or use the arrow keys to orbit. Drag a gizmo to move equipment.':'Holster placement preview. Drag the centre to move and the square to resize.');
     $('orbit-reset').hidden=!orbit;
     const skinVisible=updateSkin();
+    $('adapt-controls').hidden=!model || !skinVisible;
+    $('auto-adapt').disabled=!model || !!errors.size;
     let hasOverlap=false;
     $('direction-left').textContent = orbit ? '' : view === 'front' ? 'YOUR RIGHT' : 'BEHIND';
     $('direction-right').textContent = orbit ? '' : view === 'front' ? 'YOUR LEFT' : 'IN FRONT';
@@ -583,6 +586,30 @@
     lastBodyCamera=null; lastSkinCamera=null;
     map.setAttribute('viewBox',defaultBox());
     renderPreview();
+  });
+  $('auto-adapt').addEventListener('click',()=>{
+    if(!doc || errors.size || drag || orbitDrag) return;
+    const layout=$('adapt-scope').value==='layout';
+    const ids=layout ? model.slots.filter(s=>s.enabled).map(s=>s.id) : [selected];
+    if(layout && model.pouch) ids.push(pouchId);
+    let moved=0, checked=0, unknownRadius=false, stillInside=0;
+    const applied=commit(m=>{
+      for(const id of ids) {
+        const row=activeRow(m,id);
+        if(!row) continue;
+        if(!(row.radius>0)) { unknownRadius=true; continue; }
+        checked++;
+        const adapted=O.adaptPlacement(row,id===pouchId,weightControl.valueAsNumber,pose,doc.eyeHeight ?? G.referenceEyeHeight);
+        if(adapted!==row) { assignRow(m,id,adapted); moved++; }
+        else if(grabOverlap(id,rowWorld(row,id),row.radius)) stillInside++;
+      }
+    });
+    if(!applied) return;
+    const result=moved ? `Auto adapt moved ${moved} placement${moved===1?'':'s'}. Undo restores the previous position${moved===1?'':'s'}.` :
+      stillInside ? 'Auto adapt could not clear this placement.' : checked ? 'The checked placements already clear the body outline.' : '';
+    const skipped=unknownRadius ? 'Set a grab radius to include placements that use the game default.' : '';
+    const pending=moved && stillInside ? `${stillInside} still intersect the outline.` : '';
+    notify([result,pending,skipped].filter(Boolean).join(' ') || 'There are no placements to adapt.',stillInside?'error':'');
   });
   weightControl.addEventListener('input',renderPreview);
   $('show-skin').addEventListener('change',renderPreview);

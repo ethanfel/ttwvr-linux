@@ -349,7 +349,9 @@
     return clipped;
   }
   const diskEdge=Array.from({length:40},(_,i)=>[Math.cos(i*Math.PI/20),Math.sin(i*Math.PI/20)]);
-  function overlapPath(centre,radius,cam,weightKg=buildRange.referenceKg,pose='standing') {
+  // Without a camera, stop at the first clipped disk with nonzero area.
+  // Fitting and drawing therefore check the same body volume.
+  function skinIntersection(centre,radius,cam,weightKg,pose) {
     if(!(radius>0) || !Number.isFinite(radius) || !centre.every(Number.isFinite)) return '';
     const paths=[];
     for(const part of skinFor(weightKg,pose)) {
@@ -376,6 +378,13 @@
             disk=clipDisk(disk,plane,(z-z0)/(z1-z0));
             if(!disk.length) break;
           }
+          if(!cam) {
+            if(disk.length>=3 && Math.abs(disk.reduce((area,a,k)=>{
+              const b=disk[(k+1)%disk.length];
+              return area+a[0]*b[1]-a[1]*b[0];
+            },0))>1e-14) return true;
+            continue;
+          }
           for(const [x,y] of disk) {
             const point=normal.map((n,k)=>part.u[k]*x+part.v[k]*y+n*z);
             points.push(project(point,cam));
@@ -386,7 +395,71 @@
         if(hull.length>=3) paths.push('M'+hull.map(p=>p.map(v=>v.toFixed(2)).join(' ')).join('L')+'Z');
       }
     }
-    return paths.join('');
+    return cam ? paths.join('') : false;
+  }
+  function overlapPath(centre,radius,cam,weightKg=buildRange.referenceKg,pose='standing') {
+    return skinIntersection(centre,radius,cam,weightKg,pose);
+  }
+
+  const limbEnds={upper_arm:'forearm',forearm:'hand',thigh:'shin',shin:'foot'};
+  function fitAxis(centre,anchor,pose) {
+    const joint=(name,bone)=>pose==='seated' ? seatPoint(G.joints[name],bone) : G.joints[name];
+    const torso=joint(anchor==='chest'?'chest':'pelvis','pelvis');
+    let axis=[0,0,1], radial=[centre[0],centre[1]-torso[1],0], fallback=[0,-1,0];
+    let nearest=Math.hypot(...sub(centre,[0,torso[1],Math.max(torso[2],Math.min(centre[2],joint('neck','chest')[2]))]));
+    for(const side of ['left','right']) for(const [bone,end] of Object.entries(limbEnds)) {
+      const name=side+'_'+bone;
+      if(anchor!==name && anchor!=='auto') continue;
+      const start=joint(name,name), span=sub(joint(side+'_'+end,name),start);
+      const offset=sub(centre,start), fraction=dot(offset,span)/dot(span,span);
+      const distance=Math.hypot(...sub(offset,times(span,Math.max(0,Math.min(1,fraction)))));
+      if(anchor==='auto' && distance>=nearest) continue;
+      nearest=distance;
+      axis=unit(span);
+      radial=sub(offset,times(span,fraction));
+      const lateral=[side==='left'?-1:1,0,0];
+      fallback=sub(lateral,times(axis,dot(lateral,axis)));
+    }
+    return {axis,outward:unit(Math.hypot(...radial)<.003 ? fallback : radial)};
+  }
+  function adaptPlacement(row,isPouch,weightKg,pose,eyeHeight) {
+    if(!row || !(row.radius>0)) return row;
+    const centre=equipmentWorld(row,isPouch,pose,eyeHeight), radius=row.radius;
+    const hits=(p,r)=>skinIntersection(p,r,null,weightKg,pose);
+    if(!hits(centre,radius)) return row;
+    const {axis,outward}=fitAxis(centre,isPouch?'pelvis':row.anchor,pose);
+    // Search across the bone, retaining the position along it (belt height for
+    // the torso). Try nearby directions if there is another limb in the way.
+    const tangent=times(cross(axis,outward),centre[0]<0?-1:1);
+    const step=Math.max(.012,radius/6), padded=radius*1.006+.002;
+    let best=null, bestScore=Infinity;
+    for(const degrees of [0,30,-30,60,-60,90,-90]) {
+      const angle=degrees*Math.PI/180;
+      const dir=add(times(outward,Math.cos(angle)),times(tangent,Math.sin(angle)));
+      const point=d=>add(centre,times(dir,d));
+      // The extremal skin vertex bounds the search even for imported radii.
+      let far=0;
+      for(const part of skinFor(weightKg,pose)) for(const ring of part.rings)
+        for(const vertex of ring) far=Math.max(far,dot(vertex,dir));
+      const limit=Math.max(0,far-dot(centre,dir))+padded+step;
+      const penalty=1+.25*(1-Math.cos(angle));
+      let low=0, high=step;
+      while(low<limit && low*penalty<bestScore) {
+        if(!hits(point(high),padded)) {
+          for(let i=0;i<8;i++){
+            const mid=(low+high)/2;
+            if(hits(point(mid),padded)) low=mid; else high=mid;
+          }
+          // Keep a side-mounted placement on its own side of the body.
+          if(centre[0]*point(high)[0]>=0 && high*penalty<bestScore) {
+            bestScore=high*penalty; best=times(dir,high);
+          }
+          break;
+        }
+        low=high; high+=step;
+      }
+    }
+    return best ? move(row,isPouch,best,pose) : row;
   }
   function chairPath(cam) {
     const lines=[];
@@ -420,5 +493,5 @@
     }
     return lines.map(line=>'M'+line.map(p=>project(p,cam).map(v=>v.toFixed(2)).join(' ')).join('L')).join('');
   }
-  return {axes,camera,project,axisDelta,planeDelta,move,seatPoint,equipmentWorld,chairPath,shadedFaces,skinPath,overlapPath,buildRange,dot,add,times};
+  return {axes,camera,project,axisDelta,planeDelta,move,seatPoint,equipmentWorld,chairPath,shadedFaces,skinPath,overlapPath,adaptPlacement,buildRange,dot,add,times};
 });

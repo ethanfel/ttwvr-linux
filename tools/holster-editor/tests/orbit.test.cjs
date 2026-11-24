@@ -102,3 +102,35 @@ test('body intersections depend on 3D depth, joint pose, weight and saved radius
     assert.equal(hit([0,0,1.12],null),'');
   }
 });
+
+test('auto adapt clears the current skin, preserves the anchor and radius, and is idempotent',()=>{
+  const doc=H.parse(H.demo()), eyeHeight=1.88;
+  for(const kg of [45,180]) for(const pose of ['standing','seated']){
+    for(const anchor of [...Object.keys(G.frames),'auto']){
+      const slot={...doc.model.slots[0],anchor,offset:[0,0,0],position:[.01,.04,-.60]};
+      const start=O.equipmentWorld(slot,false,pose,eyeHeight);
+      assert.ok(O.overlapPath(start,slot.radius,O.camera(),kg,pose),anchor);
+      const fitted=O.adaptPlacement(slot,false,kg,pose,eyeHeight);
+      const end=O.equipmentWorld(fitted,false,pose,eyeHeight);
+      assert.notEqual(fitted,slot);assert.equal(fitted.anchor,anchor);assert.equal(fitted.radius,slot.radius);
+      if(anchor!=='auto') assert.deepEqual(fitted.position,slot.position);
+      for(const cam of [O.camera(),O.camera(0,0),O.camera(1.8,-.4)])
+        assert.equal(O.overlapPath(end,fitted.radius,cam,kg,pose),'',anchor);
+      assert.equal(O.adaptPlacement(fitted,false,kg,pose,eyeHeight),fitted);
+    }
+    for(const bone of [null,0,1,2,3]){
+      const p=G.reanchorPouch({...doc.model.pouch,body:[0,0,.57,1.1],bone:null,offset:null},bone);
+      const fitted=O.adaptPlacement(p,true,kg,pose,eyeHeight);
+      assert.notEqual(fitted,p);assert.equal(fitted.bone,p.bone);assert.deepEqual(fitted.rotation,p.rotation);
+      assert.equal(fitted.radius,p.radius);assert.equal(O.adaptPlacement(fitted,true,kg,pose,eyeHeight),fitted);
+    }
+  }
+  const inherited={...doc.model.pouch,radius:null};
+  assert.equal(O.adaptPlacement(inherited,true,75,'standing'),inherited);
+  const nearHip={...doc.model.slots[0],anchor:'pelvis',offset:G.local('pelvis',[.21,-.015,1.12]),radius:.055};
+  assert.equal(O.adaptPlacement(nearHip,false,45,'standing'),nearHip);
+  const fitted=O.adaptPlacement(nearHip,false,180,'standing'), point=G.world(fitted);
+  assert.ok(point[0]>.21 && point[0]<.38);near([point[2]],[1.12]);
+  const mirror=G.mirror(nearHip,2), fittedMirror=O.adaptPlacement(mirror,false,180,'standing');
+  near(G.world(fittedMirror),G.reflect(point));
+});

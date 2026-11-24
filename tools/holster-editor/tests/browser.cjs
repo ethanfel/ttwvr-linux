@@ -489,6 +489,31 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     assert.ok(await evaluate("document.querySelector('.body-overlap').getAttribute('d').length>0"));
     await screenshot('holster-editor-body-overlap.png');
     assert.deepEqual((await downloadState()).bytes,bytes);
+    await click('#auto-adapt');
+    assert.equal(await evaluate("!!document.querySelector('.body-overlap')"),false);
+    const adapted=(await downloadState()).model;
+    assert.notDeepEqual(adapted.slots[0].offset,probeModel.slots[0].offset);
+    assert.deepEqual(adapted.slots.slice(1),probeModel.slots.slice(1));
+    assert.deepEqual(adapted.pouch,probeModel.pouch);
+    await click('#auto-adapt');await click('#undo');
+    assert.deepEqual((await downloadState()).bytes,bytes); // A second fit added no history entry.
+    await change('#preview-pose','seated');await change('#body-weight','180');
+    await change('#adapt-scope','layout');await click('#auto-adapt');
+    const layout=(await downloadState()).model;
+    for(const [i,slot] of layout.slots.entries()){
+      if(!slot.enabled) {assert.deepEqual(slot,probeModel.slots[i]);continue;}
+      assert.equal(slot.anchor,probeModel.slots[i].anchor);assert.equal(slot.radius,probeModel.slots[i].radius);
+      assert.equal(O.overlapPath(O.equipmentWorld(slot,false,'seated'),slot.radius,O.camera(),180,'seated'),'');
+    }
+    assert.equal(O.overlapPath(O.equipmentWorld(layout.pouch,true,'seated'),layout.pouch.radius,O.camera(),180,'seated'),'');
+    await click('#undo');assert.deepEqual((await downloadState()).bytes,bytes);
+    await click('#redo');assert.deepEqual((await downloadState()).model,layout);
+    await click('#select-pouch');await click('#pouch-default-radius');await change('#adapt-scope','selected');
+    await click('#auto-adapt');
+    assert.ok(await evaluate("document.querySelector('#notice').textContent.includes('game default')"));
+    assert.equal((await downloadState()).model.pouch.radius,null);
+    await click('#undo');assert.deepEqual((await downloadState()).model,layout);
+
     assert.equal(errors.length,0,JSON.stringify(errors));assert.equal(requests.some(u=>/^https?:/.test(u)),false,JSON.stringify(requests));
     console.log('PASS browser: partial body overlap, depth-separated placements, seated desk-chair geometry, seated view and drag/export/undo, estimated-weight outlines, fixed anchors, mobile slider, translucent silhouette, toggle, state preservation, 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
     console.log('PASS no network requests; source file unchanged; no browser exceptions.');

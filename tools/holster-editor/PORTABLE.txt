@@ -1,4 +1,4 @@
-TTWVR HOLSTER EDITOR — FIELD KIT 1.6.4
+TTWVR HOLSTER EDITOR — FIELD KIT 1.6.5
 
 1. Extract this ZIP to a folder.
 2. Open TTWVR-Holster-Editor.html in a current browser (Edge, Chrome or Firefox).
@@ -9,6 +9,9 @@ TTWVR HOLSTER EDITOR — FIELD KIT 1.6.4
    Body outline shows the skin estimate in every view. Red hatching marks the
    part of a grab sphere inside that estimate. Adjust Estimated body
    weight (45–180 kg) to check pouch clearance. The original reference is 75 kg.
+   Choose Selected placement or Enabled layout, then click Auto adapt to move
+   overlapping grab spheres clear of the body. Layout includes the ammo pouch
+   when it has a saved radius. Undo restores the positions in one step.
    In 3D, drag the background to orbit and scroll to zoom. Drag R (right),
    F (forward) or U (up) to move the selected holster or pouch along one axis.
    Switch Front/Side to adjust all three dimensions. Drag the square handle on
