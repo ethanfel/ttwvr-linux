@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
-/* Lossless TTWVR 1.1.5/1.1.6 state editor. No filesystem or network access. */
+/* Lossless TTWVR state editor. No filesystem or network access. */
 (function (root) {
   'use strict';
   const ANCHORS = Object.freeze([
@@ -41,6 +41,33 @@
     }
     const out = new Uint8Array(bom.length + payload.length); out.set(bom); out.set(payload, bom.length); return out;
   }
+  function readPouch(section) {
+    const refs = {};
+    const pouch = {body: null, bone: null, offset: null, radius: null};
+    for (const r of section?.records || []) {
+      const t = r.value.split(/\s+/);
+      let field;
+      if (t[0] === 'anchor') {
+        field = 'anchor';
+        if (t.length !== 14 || !/^[0-3]$/.test(t[1])) throw new Error('Unrecognized ammo pouch anchor.');
+        pouch.bone = Number(t[1]);
+        pouch.offset = t.slice(2, 5).map(v => number(v, 'Pouch translation'));
+        t.slice(5).forEach(v => number(v, 'Pouch orientation'));
+      } else if (t[0] === 'radius') {
+        field = 'radius';
+        if (t.length !== 2) throw new Error('Unrecognized ammo pouch radius.');
+        pouch.radius = number(t[1], 'Pouch radius');
+      } else if (/^[+\-.\d]/.test(t[0])) {
+        field = 'body';
+        if (t.length !== 4) throw new Error('Unrecognized ammo pouch position.');
+        pouch.body = t.map(v => number(v, 'Pouch position'));
+      } else continue;
+      if (refs[field]) throw new Error('Duplicate ammo pouch record.');
+      refs[field] = r;
+    }
+    if (section?.records.length && !pouch.body) throw new Error('No saved ammo pouch position.');
+    return {pouch: pouch.body ? pouch : null, refs};
+  }
   function parse(input) {
     const bytes = typeof input === 'string' ? new TextEncoder().encode(input) : new Uint8Array(input);
     const {text, encoding, bom} = decode(bytes);
@@ -48,30 +75,47 @@
       const eol = raw.match(/(?:\r\n|\n|\r)$/)?.[0] || ''; return {body: raw.slice(0, raw.length - eol.length), eol};
     });
     const newline = lines.find(l => l.eol)?.eol || '\r\n';
-    const sections = {}; let section = null;
+    const sections = {}; let section = null, pouchIssue = '', eyeHeight = null;
     lines.forEach((line, i) => {
       const header = line.body.match(/^\s*\[([^\]]+)\]\s*(?:[;#].*)?$/);
       if (header) {
         if (section) section.end = i;
         const name = header[1].trim().toLowerCase();
-        section = {start: i, end: lines.length, records: []};
-        if (name === 'savedslots' || name === 'savedslotson') {
+        section = {name, start: i, end: lines.length, records: []};
+        if (name === 'savedslots' || name === 'savedslotson' || name === 'savedpouch') {
+          if (name === 'savedpouch' && sections[name]) { pouchIssue = 'Duplicate ammo pouch section.'; return; }
           if (sections[name]) throw new Error(`Duplicate [${header[1]}] section. Resolve the duplicate before editing.`);
           sections[name] = section;
         }
       } else if (section) {
+        if (section.name === 'savedheight') {
+          const head = line.body.match(/^\s*Head\s*=\s*([^;#\s]+)\s*(?:[;#].*)?$/i);
+          if (head && numberPattern.test(head[1])) {
+            const height = Number(head[1]);
+            if (height > 0 && Number.isFinite(Math.fround(height))) eyeHeight = height;
+          }
+        }
         const entry = line.body.match(/^(\s*)(\d+)(\s*=\s*)(.*)$/);
         if (entry) {
           const parts = entry[4].match(/^(.*?)(\s+[;#].*)?$/);
           section.records.push({line: i, key: Number(entry[2]), indent: entry[1], equals: entry[3], value: parts[1].trim(), suffix: parts[2] || ''});
         } else if (line.body.trim() && !/^\s*[;#]/.test(line.body) && Object.values(sections).includes(section)) {
+          if (section === sections.savedpouch) { pouchIssue = 'Unrecognized ammo pouch record.'; return; }
           throw new Error(`Unrecognized entry on line ${i + 1}. Holster records must use numbered INI keys.`);
         }
       }
     });
-    if (!sections.savedslots) throw new Error('No [SavedSlots] section found. Open TTWVR.state after placing a holster in VR and quitting the game.');
-    const slots = Array.from({length: 8}, (_, i) => ({id: i + 1, position: null, radius: null, anchor: 'auto', offset: [0, 0, 0], enabled: false}));
-    const refs = {positions: {}, bones: {}, on: null, show: null};
+    let pouch = null, pouchRefs = {};
+    if (!pouchIssue) {
+      try {
+        assertKeys(sections.savedpouch);
+        ({pouch, refs: pouchRefs} = readPouch(sections.savedpouch));
+      } catch (e) { pouchIssue = e.message; }
+    }
+    const pouchOnly = !!pouch && !sections.savedslots && !sections.savedslotson;
+    if (!pouchOnly && !sections.savedslots) throw new Error('No [SavedSlots] section found. Open TTWVR.state after placing a holster in VR and quitting the game.');
+    const slots = Array.from({length: pouchOnly ? 0 : 8}, (_, i) => ({id: i + 1, position: null, radius: null, anchor: 'auto', offset: [0, 0, 0], enabled: false}));
+    const refs = {positions: {}, bones: {}, on: null, show: null, pouch: pouchRefs};
     function assertKeys(s) {
       const keys = new Set();
       for (const r of s?.records || []) {
@@ -80,7 +124,7 @@
       }
     }
     assertKeys(sections.savedslots); assertKeys(sections.savedslotson);
-    for (const r of sections.savedslots.records) {
+    for (const r of sections.savedslots?.records || []) {
       const t = r.value.split(/\s+/);
       if (t[0] === 'bone') {
         if (t.length !== 6 || !/^[1-8]$/.test(t[1])) throw new Error(`Invalid bone record on line ${r.line + 1}.`);
@@ -110,12 +154,21 @@
         refs.show = r; show = Number(t[1]) !== 0;
       }
     }
-    if (!refs.on || !refs.show) throw new Error('Missing [SavedSlotsOn] enabled/visibility flags. Toggle a holster in VR and quit so TTWVR writes the complete configuration.');
-    const model = {slots, show};
-    return {bytes: bytes.slice(), text, lines, newline, encoding, bom, sections, refs, original: clone(model), model};
+    if (!pouchOnly && (!refs.on || !refs.show)) throw new Error('Missing [SavedSlotsOn] enabled/visibility flags. Toggle a holster in VR and quit so TTWVR writes the complete configuration.');
+    const model = {slots, show, pouch};
+    return {bytes: bytes.slice(), text, lines, newline, encoding, bom, sections, refs, pouchIssue, eyeHeight, original: clone(model), model};
   }
   function validate(model) {
-    if (!model || !Array.isArray(model.slots) || model.slots.length !== 8 || typeof model.show !== 'boolean') throw new Error('A configuration must contain eight holsters and a visibility flag.');
+    if (!model || !Array.isArray(model.slots) || !(model.slots.length === 8 && typeof model.show === 'boolean' || model.slots.length === 0 && model.show === null && model.pouch)) throw new Error('A configuration must contain eight holsters and a visibility flag.');
+    if (model.pouch) {
+      const {body, bone, offset} = model.pouch;
+      if (!Array.isArray(body) || body.length !== 4) throw new Error('Invalid ammo pouch position.');
+      body.forEach(v => number(v, 'Pouch position'));
+      if (bone !== null) {
+        if (!Number.isInteger(bone) || bone < 0 || bone > 3 || !Array.isArray(offset) || offset.length !== 3) throw new Error('Invalid ammo pouch attachment.');
+        offset.forEach(v => number(v, 'Pouch translation'));
+      }
+    }
     model.slots.forEach((s, i) => {
       if (s.id !== i + 1 || typeof s.enabled !== 'boolean' || !names.has(s.anchor)) throw new Error(`Invalid holster ${i + 1}.`);
       for (const field of ['position', 'offset']) {
@@ -162,18 +215,43 @@
       replacements.set(doc.refs.on.line, payload(doc.refs.on, `on ${model.slots.map(s => +s.enabled).join(' ')}`));
     }
     if (model.show !== doc.original.show) replacements.set(doc.refs.show.line, payload(doc.refs.show, `show ${+model.show}`));
+    const pouch = model.pouch, oldPouch = doc.original.pouch;
+    if (oldPouch && pouch) {
+      // Patch individual tokens to preserve the saved angle, spacing and comments.
+      const patchNumbers = (r, previous, values, first) => {
+        if (same(previous, values)) return;
+        let token = -1;
+        const line = doc.lines[r.line].body.replace(/^(\s*\d+\s*=)(.*)$/, (_, prefix, rest) =>
+          prefix + rest.replace(/\S+/g, word => {
+            const i = ++token - first;
+            return i >= 0 && i < values.length && values[i] !== previous[i] ? format(values[i]) : word;
+          }));
+        replacements.set(r.line, line);
+      };
+      patchNumbers(doc.refs.pouch.body, oldPouch.body, pouch.body, 0);
+      if (pouch.bone !== null) patchNumbers(doc.refs.pouch.anchor, oldPouch.offset, pouch.offset, 2);
+    }
+    const newPouch = pouch && !oldPouch;
+    const pouchSection = doc.sections.savedpouch;
+    if (newPouch && (doc.pouchIssue || pouch.bone !== null || pouch.radius !== null)) throw new Error('Cannot replace an unknown ammo pouch layout.');
     const section = doc.sections.savedslots;
     const structural = additions.length > 0 || [...replacements.values()].includes(null);
     let out = '', nextKey = 1;
     for (let i = 0; i <= doc.lines.length; i++) {
-      if (i === section.end && additions.length) {
+      if (additions.length && i === section.end) {
         if (out && !/[\r\n]$/.test(out)) out += doc.newline;
         for (const value of additions) out += `${nextKey++}=${value}${doc.newline}`;
+      }
+      if (newPouch && i === (pouchSection?.end ?? doc.lines.length)) {
+        if (out && !/[\r\n]$/.test(out)) out += doc.newline;
+        if (!pouchSection) out += '[SavedPouch]' + doc.newline;
+        out += '1=' + pouch.body.map(format).join(' ');
+        if (i < doc.lines.length || doc.lines.at(-1)?.eol) out += doc.newline;
       }
       if (i === doc.lines.length) break;
       let body = replacements.has(i) ? replacements.get(i) : doc.lines[i].body;
       if (body === null) continue;
-      if (structural && i > section.start && i < section.end && /^\s*\d+\s*=/.test(body)) body = body.replace(/^(\s*)\d+(\s*=)/, `$1${nextKey++}$2`);
+      if (section && structural && i > section.start && i < section.end && /^\s*\d+\s*=/.test(body)) body = body.replace(/^(\s*)\d+(\s*=)/, `$1${nextKey++}$2`);
       out += body + doc.lines[i].eol;
     }
     const bytes = encode(out, doc.encoding, doc.bom);
@@ -186,13 +264,14 @@
       });
       if (Math.fround(s.radius) !== Math.fround(expected.slots[i].radius) || s.anchor !== expected.slots[i].anchor || s.enabled !== expected.slots[i].enabled) throw new Error('Export verification failed for a holster.');
     });
+    if (!same(actual.pouch, expected.pouch)) throw new Error('Export verification failed for the ammo pouch.');
     if (actual.show !== expected.show) throw new Error('Export verification failed for visibility.');
     return bytes;
   }
   function demo() {
     const rows = ['; Demonstration layout. Not a copy of a player configuration.', '[SavedHeight]', 'Head=1.700', 'Hips=0.000', '[SavedSlots]'];
     for (let id = 1; id <= 8; id++) rows.push(`${id}=${id} 0.2500 ${[-0.225, -0.075, 0.075, 0.225][(id - 1) % 4].toFixed(4)} ${id <= 4 ? '-0.3500' : '-0.5000'} 0.0650`);
-    rows.push('9=bone 1 right_upper_arm 0.1000 0.0000 0.0000', '10=bone 2 left_upper_arm 0.1000 0.0000 0.0000', '11=bone 4 pelvis 0.1000 0.0000 0.1200', '12=bone 5 pelvis -0.1000 0.0000 0.1200', '[SavedSlotsOn]', '1=on 1 1 0 1 1 0 0 0', '2=show 1', '[SavedWristBoy]', '1=hud');
+    rows.push('9=bone 1 right_upper_arm 0.1000 0.0000 0.0000', '10=bone 2 left_upper_arm 0.1000 0.0000 0.0000', '11=bone 4 pelvis 0.1000 0.0000 0.1200', '12=bone 5 pelvis -0.1000 0.0000 0.1200', '[SavedSlotsOn]', '1=on 1 1 0 1 1 0 0 0', '2=show 1', '[SavedWristBoy]', '1=hud', '[SavedPouch]', '1=0.18 -0.12 0.47 1.23', '2=anchor 3 -6 13 8 1 0 0 0 1 0 0 0 1', '3=radius 0.1125');
     return rows.join('\r\n') + '\r\n';
   }
   const api = {ANCHORS, parse, serialize, validate, clone, same, decode, encode, demo};

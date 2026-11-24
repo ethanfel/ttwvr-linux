@@ -149,7 +149,17 @@
   function opposite(anchor) {
     return anchor.startsWith('right_') ? anchor.replace('right_', 'left_') : anchor.startsWith('left_') ? anchor.replace('left_', 'right_') : anchor;
   }
-  for (const [key, f] of Object.entries(frames)) {
+  // Pouch bone IDs use the torso chain, independently of the holster anchor list.
+  const lowerSpine = {
+    origin: [0, .0323561, 1.0566253],
+    rotation: [0, 0, -1, .0180342, .9998374, 0, .9998375, -.0180342, 0]
+  };
+  const middleSpine = {
+    origin: [0, .0341797, 1.1634306],
+    rotation: [0, 0, -1, -.0293736, .9995685, 0, .9995686, .0293735, 0]
+  };
+  const referenceFrames = {...frames, lowerSpine, middleSpine};
+  for (const [key, f] of Object.entries(referenceFrames)) {
     // Orthonormalize rounded reference data; transforms remain invertible.
     const x = norm([f.rotation[0], f.rotation[3], f.rotation[6]]);
     const z = norm(cross(x, [f.rotation[1], f.rotation[4], f.rotation[7]]));
@@ -163,13 +173,18 @@
   // determinant, not their inverse (transpose). Never reflect bone-local Y.
   const toPreview = p => [p[0], -p[1], p[2]];
   for (const [key, p] of Object.entries(joints)) joints[key] = toPreview(p);
-  for (const [key, f] of Object.entries(frames)) {
+  for (const [key, f] of Object.entries({...frames, lowerSpine, middleSpine})) {
     f.origin = toPreview(f.origin);
     f.rotation = f.rotation.map((v, i) => i >= 3 && i < 6 ? -v : v);
     joints[key] = f.origin;
   }
   for (const key of ['right_hand', 'right_foot', 'right_toe']) joints[opposite(key)] = reflect(joints[key]);
-  function world(slot) {
+  const referenceEyeHeight = 1.67;
+  function world(slot, eyeHeight = referenceEyeHeight) {
+    if (slot.anchor === 'auto') {
+      const [forward, right, up] = slot.position;
+      return [right, -forward, eyeHeight + up];
+    }
     const f = frames[slot.anchor]; if (!f) return null;
     return multiply(f.rotation, slot.offset).map((v,i) => v + f.origin[i]);
   }
@@ -177,11 +192,38 @@
     const f = frames[anchor]; if (!f) throw new Error('Choose an explicit anchor to position a holster.');
     return multiply(transpose(f.rotation), p.map((v,i) => v - f.origin[i]));
   }
+  const pouchFrames = [frames.pelvis, lowerSpine, middleSpine, frames.chest];
+  const pouchLabels = ['Pelvis', 'Lower spine', 'Middle spine', 'Upper spine'];
+  const unitsPerMetre = 70;
+  function pouchWorld(pouch) {
+    if (pouch.bone === null) return [pouch.body[1], -pouch.body[0], pouch.body[3]];
+    const frame = pouchFrames[pouch.bone];
+    return multiply(frame.rotation, pouch.offset).map((v, i) => frame.origin[i] + v / unitsPerMetre);
+  }
+  function shiftPouch(pouch, delta) {
+    // Both records describe the same move. Retain calibration differences
+    // between the fallback and the skeleton, including eye vs. floor height.
+    const [right, back, up] = delta;
+    const body = pouch.body.map((v, i) => v + [-back, right, -up, up][i]);
+    let offset = pouch.offset;
+    if (pouch.bone !== null) {
+      const localDelta = multiply(transpose(pouchFrames[pouch.bone].rotation), delta);
+      offset = offset.map((v, i) => v + localDelta[i] * unitsPerMetre);
+    }
+    return {...pouch, body, offset};
+  }
   // Preserve the hidden dimension when dragging in either orthographic view.
   function move(slot, view, horizontal, vertical) {
+    if (slot.anchor === 'auto') return slot.offset.slice();
     const p = world(slot); if (!p) return slot.offset.slice();
     p[view === 'side' ? 1 : 0] -= horizontal; p[2] += vertical;
     return local(slot.anchor, p);
+  }
+  function moveSlot(slot, view, horizontal, vertical) {
+    if (slot.anchor !== 'auto') return {...slot, offset: move(slot, view, horizontal, vertical)};
+    const [forward, right, up] = slot.position;
+    return {...slot, position: [forward + (view === 'side' ? horizontal : 0),
+      right - (view === 'front' ? horizontal : 0), up + vertical]};
   }
   function mirror(slot, targetId) {
     if (!Number.isInteger(targetId) || targetId < 1 || targetId > 8 || targetId === slot.id) throw new Error('Choose a different destination slot.');
@@ -199,5 +241,5 @@
   }
   const SCALE = 230;
   const project = (p, view = 'front') => [220 - p[view === 'side' ? 1 : 0] * SCALE, 490 - p[2] * SCALE];
-  return {frames, joints, world, local, move, mirror, opposite, reflect, repairBodyPlacement, project, SCALE};
+  return {frames, joints, pouchWorld, shiftPouch, pouchLabels, referenceEyeHeight, world, moveSlot, local, move, mirror, opposite, reflect, repairBodyPlacement, project, SCALE};
 });

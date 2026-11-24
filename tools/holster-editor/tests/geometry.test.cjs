@@ -36,7 +36,7 @@ test('front and side dragging changes only the two displayed dimensions',()=>{
 });
 test('automatic anchors mirror fallback coordinates without inventing a bone binding',()=>{
  const row=sample('auto'),copy=G.mirror(row,2);
- assert.equal(copy.anchor,'auto');assert.equal(G.world(copy),null);assert.deepEqual(copy.offset,[0,0,0]);assert.deepEqual(copy.position,[.25,-.3,-.45]);
+ assert.equal(copy.anchor,'auto');near(G.world(copy,1.68),[-.3,-.25,1.23]);assert.deepEqual(copy.offset,[0,0,0]);assert.deepEqual(copy.position,[.25,-.3,-.45]);
 });
 test('mirror preserves source, replaces a different destination and serializes all eight slots',()=>{
  const doc=H.parse(H.demo()),model=H.clone(doc.model);model.slots[0]=sample('right_upper_arm');

@@ -1,6 +1,6 @@
 # TTWVR Holster Editor — Field Kit
 
-An offline, Fallout-inspired editor for **TTWVR 1.1.5 / 1.1.6** holster settings.
+An offline editor for TTWVR holsters and the ammo pouch.
 Open one HTML file in a current browser on **Windows or Linux**. No install,
 server, Python, Node, account or network connection is needed to use it.
 
@@ -8,9 +8,9 @@ server, Python, Node, account or network connection is needed to use it.
 
 ## Open the tool
 
-Download [index.html](index.html) using GitHub's **Download raw file** button,
-then open that downloaded file in Edge, Chrome or Firefox. Keep the `.html`
-extension. The file contains all scripts, styles and artwork.
+Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.5/TTWVR-Holster-Editor.html)
+and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.5/TTWVR-Holster-Editor.zip)
+also includes the offline instructions.
 
 1. **Load state file**: select your `TTWVR.state` file, or drop it onto the window.
 2. Select a numbered holster. Click a body anchor or choose it from the list.
@@ -27,6 +27,13 @@ extension. The file contains all scripts, styles and artwork.
 
 **Try a sample** demonstrates the controls. Load your own file to enable export.
 The tool never overwrites game files directly.
+
+## Move the ammo pouch
+
+Choose **Ammo pouch** below the eight slots. Drag **P** in Front for left/right and
+height, then in Side for depth. You can also enter centimetres directly.
+The editor moves the torso attachment and its fallback together. If your file has
+no saved pouch, use **Set initial position** to start at the front of the waist.
 
 ## Fix placements from Field Kit 1.1–1.3
 
@@ -117,9 +124,9 @@ TTWVR stores its configuration in New Vegas's `FalloutNV` Documents folder.
 | Windows | Your Documents folder → `My Games\FalloutNV\TTWVR.state` (Documents may be redirected to OneDrive) |
 | Linux / Proton | Your VR prefix → `drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state` |
 
-This is separate from `TTWVR.ini` and your savegame. The editor requires the eight
+This is separate from `TTWVR.ini` and your savegame. Editing holsters requires the eight
 position records and enabled/visibility flags written by the mod. If the holster
-sections are missing, place/toggle a holster in VR and quit once to create them.
+sections are missing, place/toggle a holster in VR and quit once to create them. A file containing only a saved ammo pouch can also be edited.
 
 ## Controls
 
@@ -133,7 +140,7 @@ sections are missing, place/toggle a holster in VR and quit once to create them.
 - Drag the centre to move in the displayed plane; drag its square handle to resize.
   Arrow keys move 1 cm; Shift + arrows moves 5 cm. On the radius handle these keys
   change the radius. Escape cancels a drag; each completed drag is one undo step.
-- **Other slots** shows/hides the remaining explicitly anchored holsters. Disabled
+- **Other placements** shows or hides the other holsters and the ammo pouch. Disabled
   slots use faded/dashed outlines. **Fit selected** recentres an off-screen holster;
   clicking Front or Side restores the whole-body view.
 - Grab radius from **5 to 45 cm**, the range enforced by 1.1.6.
@@ -152,17 +159,16 @@ The preview now shows the offset and radius at a consistent physical scale on an
 **approximate reference body (~1.8 m)**. Bone frames were checked against the
 skeleton supplied with TTWVR 1.1.6; no mesh assets are bundled. The state file
 contains no current tracked pose, so this is not a live avatar or a guaranteed
-fit for your calibration. Automatic anchors have no bone preview until you choose
-an explicit anchor. Check final placement in the headset.
+fit for your calibration. Automatic holsters show the saved eye-relative position. Moving a marker
+edits that position and keeps automatic binding enabled. Check final placement in the headset.
 ![Side view for depth adjustment](images/field-kit-side.png)
 
 This utility does not assign inventory items to hotkeys or fix holster drift.
 
 ## File preservation
 
-Only holster records inside `[SavedSlots]` and `[SavedSlotsOn]` are edited.
-Other sections, including height/arm calibration, Pip-Boy, magazine and pouch
-settings, remain unchanged. An unedited export is byte-identical to its input.
+Holster edits use `[SavedSlots]` and `[SavedSlotsOn]`. Ammo pouch edits use
+`[SavedPouch]` and preserve the saved orientation and grab radius. An unedited export is byte-identical to its input.
 UTF-8 and BOM-marked UTF-16 LE/BE, original line endings, comments and unknown
 extension records are retained. Numbered list keys are made contiguous when
 adding/removing a bone record; these keys are separate from the holster numbers.

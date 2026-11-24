@@ -48,6 +48,23 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await cdp('DOM.setFileInputFiles', {nodeId, files: [file]});
   };
   const click = selector => evaluate(`document.querySelector(${JSON.stringify(selector)}).click()`);
+  let lastExport = 0;
+  async function clickExport() {
+    // Chromium can throttle bursts of automatic downloads. Exercise the
+    // actual button with a pointer and keep this fixture below ten per second.
+    const delay = 150 - (Date.now() - lastExport);
+    if (delay > 0) await pause(delay);
+    const point = await evaluate(`(() => {
+      const button = document.querySelector('#export');
+      button.scrollIntoView({block:'nearest'});
+      const r = button.getBoundingClientRect();
+      return {x:r.x + r.width / 2, y:r.y + r.height / 2};
+    })()`);
+    await cdp('Input.dispatchMouseEvent', {type:'mouseMoved', ...point});
+    await cdp('Input.dispatchMouseEvent', {type:'mousePressed', ...point, button:'left', clickCount:1});
+    await cdp('Input.dispatchMouseEvent', {type:'mouseReleased', ...point, button:'left', clickCount:1});
+    lastExport = Date.now();
+  }
   const change = (selector, value) => evaluate(`(() => { const e=document.querySelector(${JSON.stringify(selector)}); e.value=${JSON.stringify(value)}; e.dispatchEvent(new Event('input',{bubbles:true})); e.dispatchEvent(new Event('change',{bubbles:true})); })()`);
   const screenshot = async name => {
     if (!process.env.SCREENSHOT_DIR) return;
@@ -72,7 +89,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await click('#demo'); assert.equal(await evaluate('document.querySelector("#export").disabled'), true);
     await upload(input); await waitFor('document.querySelector("#filename").textContent === "TTWVR.state"','state load');
     assert.equal(await evaluate('document.querySelector("#offset-x").value'), '10');
-    await click('#export');
+    await clickExport();
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     assert.deepEqual(await fs.readFile(path.join(downloads,'TTWVR.state')),await fs.readFile(input));
     await fs.unlink(path.join(downloads,'TTWVR.state'));
@@ -80,7 +97,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await change('#offset-x','34.28074171588672');
     await change('#offset-y','-3.40234804687308');
     await change('#offset-z','13.368773126694206');
-    await click('#export');
+    await clickExport();
     if (process.env.LEGACY_EDITOR) {
       assert.match(await evaluate('document.querySelector("#notice").textContent'),/Export verification failed for a position value/);
       assert.equal((await fs.readdir(downloads)).includes('TTWVR.state'),false);
@@ -108,7 +125,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     const legacyInput=path.join(temp,'old-placement.state'),legacyBytes=H.serialize(legacyDoc,legacyModel);
     await fs.writeFile(legacyInput,legacyBytes);await upload(legacyInput);
     await waitFor('document.querySelector("#filename").textContent === "old-placement.state"','old layout load');
-    await click('#export');
+    await clickExport();
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     assert.deepEqual(await fs.readFile(path.join(downloads,'TTWVR.state')),Buffer.from(legacyBytes));
     await fs.unlink(path.join(downloads,'TTWVR.state'));
@@ -116,12 +133,12 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await click('#repair-body');assert.equal(await evaluate('document.querySelector("#instructions").open'),false);
     assert.equal(await evaluate('document.querySelector("#view-side").getAttribute("aria-pressed")'),'true');
     assert.equal(await evaluate('document.querySelector("#repair-body").disabled'),true);
-    await click('#export');
+    await clickExport();
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     const repaired=H.parse(await fs.readFile(path.join(downloads,'TTWVR.state'))).model;
     assert.deepEqual(repaired,{...legacyModel,slots:legacyModel.slots.map(G.repairBodyPlacement)});
     await fs.unlink(path.join(downloads,'TTWVR.state'));
-    await click('#undo');await click('#export');
+    await click('#undo');await clickExport();
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     assert.deepEqual(await fs.readFile(path.join(downloads,'TTWVR.state')),Buffer.from(legacyBytes));
     await fs.unlink(path.join(downloads,'TTWVR.state'));
@@ -133,7 +150,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await click('#open-presets');await click('[data-preset="field_rig"]');
     assert.equal(await evaluate('document.querySelectorAll("#preset-front [data-preset-slot]").length'),8);
     await change('#preset-side','left');await change('#preset-forward','10');
-    await click('#close-presets');await click('#export');
+    await click('#close-presets');await clickExport();
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     assert.deepEqual(await fs.readFile(path.join(downloads,'TTWVR.state')),await fs.readFile(input));
     await fs.unlink(path.join(downloads,'TTWVR.state'));
@@ -159,14 +176,14 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     assert.equal(await evaluate('document.querySelector("#presets").open'),false);
     assert.equal(await evaluate('document.querySelector("#anchor").value'),'pelvis');
     assert.equal(await evaluate('document.querySelector("#enabled-count").textContent'),'8 / 8');
-    await click('#export');
+    await clickExport();
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     const presetExport=H.parse(await fs.readFile(path.join(downloads,'TTWVR.state'))).model;
     assert.deepEqual(presetExport,P.apply(H.parse(H.demo()).model,'utility_rig','left',5,'right'));
     assert.equal(presetExport.slots[7].anchor,'left_forearm');
     assert.equal(presetExport.slots.some(s=>s.anchor==='right_forearm'),false);
     await fs.unlink(path.join(downloads,'TTWVR.state'));
-    await click('#undo');await click('#export');
+    await click('#undo');await clickExport();
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     assert.deepEqual(await fs.readFile(path.join(downloads,'TTWVR.state')),await fs.readFile(input));
     await fs.unlink(path.join(downloads,'TTWVR.state'));
@@ -182,6 +199,44 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
       await cdp('Input.dispatchMouseEvent',{type:'mouseMoved',x:p.x+dx,y:p.y+dy,button:'left',buttons:1});
       await cdp('Input.dispatchMouseEvent',{type:'mouseReleased',x:p.x+dx,y:p.y+dy,button:'left',clickCount:1});return p.scale;
     };
+    // Move equipment through the same front/side handles used by players and
+    // re-read the actual download to catch preview-only edits and unit errors.
+    const marker = id => `[data-preview-slot="${id}"] .holster-centre`;
+    const readCm = async ids => Promise.all(ids.map(id => evaluate(`Number(document.getElementById('${id}').value)/100`)));
+    const downloadState = async () => {
+      await clickExport();
+      const file = path.join(downloads, 'TTWVR.state');
+      for (let i = 0; i < 100 && !(await fs.readdir(downloads)).includes('TTWVR.state'); i++) await pause(50);
+      const result = H.parse(await fs.readFile(file));
+      await fs.unlink(file);
+      return result;
+    };
+    const original = H.parse(H.demo());
+    await click('#select-pouch');
+    const pouchStart = G.pouchWorld(original.model.pouch);
+    const dragScale = await dragHandle(marker('pouch'), 19, -12);
+    const right = pouchStart[0] - 19 / (230 * dragScale), height = pouchStart[2] + 12 / (230 * dragScale);
+    near(await readCm(['pouch-right','pouch-height']), [right, height]);
+    await click('#view-side');
+    const sideScale = await dragHandle(marker('pouch'), 16, 0);
+    const back = pouchStart[1] - 16 / (230 * sideScale);
+    await change('#pouch-height', '127');
+    let saved = await downloadState();
+    near(G.pouchWorld(saved.model.pouch), [right, back, 1.27]);
+    assert.deepEqual(saved.model.slots, original.model.slots);
+    await click('#reset-slot');
+    assert.deepEqual((await downloadState()).bytes, original.bytes);
+    await click('[data-slot="3"]');
+    assert.equal(await evaluate('document.querySelector("#fit-preview").disabled'), false);
+    const autoScale = await dragHandle(marker(3), 23, -12);
+    saved = await downloadState();
+    assert.equal(saved.model.slots[2].anchor, 'auto');
+    near(saved.model.slots[2].position, [.25 + 23/(230*autoScale), .075, -.35 + 12/(230*autoScale)]);
+    assert.deepEqual(saved.model.pouch, original.model.pouch);
+    await click('#undo');
+    assert.deepEqual((await downloadState()).bytes, original.bytes);
+    await click('#view-front');
+    await click('[data-slot="1"]');
     const originalWorld=await currentWorld();
     let scale=await dragHandle('[data-preview-slot="1"] .holster-centre',35,18);
     near(await currentWorld(),[originalWorld[0]-35/(230*scale),originalWorld[1],originalWorld[2]-18/(230*scale)],.00001);
@@ -218,7 +273,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     assert.equal(await evaluate('document.querySelector("#radius").value'),'20.4');
     await click('#undo');assert.equal(await evaluate('document.querySelector("#offset-z").value'),'0');
     await click('#redo');assert.equal(await evaluate('document.querySelector("#offset-z").value'),'-8.62');
-    await click('#export');
+    await clickExport();
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     const mirrored=H.parse(await fs.readFile(path.join(downloads,'TTWVR.state')));
     assert.deepEqual(mirrored.model.slots[1].offset,[.1679,.2,-.0862]);assert.deepEqual(mirrored.model.slots[0].offset,[.1679,.2,.0862]);
@@ -241,7 +296,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await change('#offset-z','2.4');
     assert.equal(await evaluate('document.querySelector("#export").disabled'),true);
     await change('#radius','10'); assert.equal(await evaluate('document.querySelector("#export").disabled'),false);
-    await click('#show'); await click('#export');
+    await click('#show'); await clickExport();
     for(let i=0;i<100;i++){if((await fs.readdir(downloads)).includes('TTWVR.state'))break;await pause(50);}
     const exported = H.parse(await fs.readFile(path.join(downloads,'TTWVR.state')));
     assert.equal(exported.model.slots[2].anchor,'left_forearm'); assert.deepEqual(exported.model.slots[2].offset.map(Math.fround),[.123,-.045,.024].map(Math.fround));
@@ -263,7 +318,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await cdp('Emulation.setDeviceMetricsOverride', {width:1024,height:768,deviceScaleFactor:1,mobile:false});
     assert.equal(await evaluate('document.documentElement.scrollWidth <= window.innerWidth'),true);
     assert.equal(errors.length,0,JSON.stringify(errors));assert.equal(requests.some(u=>/^https?:/.test(u)),false,JSON.stringify(requests));
-    console.log('PASS browser: explicit body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
+    console.log('PASS browser: ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
     console.log('PASS no network requests; source file unchanged; no browser exceptions.');
   } finally {
     try { await send('Browser.close'); } catch {}

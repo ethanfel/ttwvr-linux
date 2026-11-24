@@ -1,4 +1,4 @@
-TTWVR HOLSTER EDITOR — FIELD KIT 1.4
+TTWVR HOLSTER EDITOR — FIELD KIT 1.5
 
 1. Extract this ZIP to a folder.
 2. Open TTWVR-Holster-Editor.html in a current browser (Edge, Chrome or Firefox).
@@ -9,6 +9,8 @@ TTWVR HOLSTER EDITOR — FIELD KIT 1.4
    Arrow keys move 1 cm; Shift + arrows moves 5 cm. Escape cancels a drag.
    Mirror to another slot copies this placement to the opposite body side.
    The destination is replaced; Undo restores it. Later edits remain independent.
+   For the ammo pouch, select Ammo pouch and drag P in Front and Side.
+   If you have never placed it, choose Set initial position first.
 4. Export a copy. With the game and mod manager closed, back up the original
    TTWVR.state and replace it with the exported file. Remove any browser-added
    suffix such as "(1)". Launch the game and check the placement in VR.
@@ -19,7 +21,7 @@ Windows location, inside your Documents folder (possibly redirected to OneDrive)
 Linux/Proton location, inside the prefix used by your VR profile:
   drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state
 
-The file needs SavedSlots and SavedSlotsOn sections. If these do not exist,
+Editing holsters needs SavedSlots and SavedSlotsOn sections. If these do not exist,
 place/toggle a holster in VR and quit once so TTWVR saves the full configuration.
 
 The editor runs offline on Windows and Linux. No Python, Node, installation,
@@ -30,7 +32,7 @@ Supported format: TTWVR 1.1.5 / 1.1.6. Eight game hotkey slots, ten explicit bon
 anchors, automatic anchoring, local offsets, enabled flags, visibility and grab
 radius. The preview shows offsets and radius on an approximate reference body,
 not your live avatar. Final fit depends on calibration and pose. Automatic
-anchors have no preview until you choose an explicit bone.
+markers show their saved eye-relative positions and can be dragged in either view.
 Changing an anchor preserves its local offsets. New bindings start at zero.
 Automatic removes the explicit binding: the game chooses a nearby bone using
 its saved body-relative position when the avatar is ready.

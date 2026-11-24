@@ -23,3 +23,10 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
 /* Waist reference and gear layout options. */
 .body-belt{fill:var(--panel);stroke:var(--muted);stroke-width:1.1;stroke-linejoin:round}.body-buckle{fill:var(--dim);stroke:var(--accent);stroke-width:1}.preset-options{grid-template-columns:1fr 1fr 1fr;gap:10px}.preset-options select:disabled{opacity:.45;cursor:default}
 @media(max-width:700px){.preset-options{grid-template-columns:1fr}}
+
+[hidden]{display:none!important}
+.pouch-button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:8px;padding:10px 12px}
+.pouch-button span{font-weight:bold}
+.pouch-button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+#pouch-panel{padding:0 18px 18px}
+#pouch-fields{border:0;margin:0;padding:0;min-width:0}

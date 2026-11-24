@@ -54,6 +54,18 @@ retain the saved local offsets; they are not world-space positions.
 The eight `on` values correspond to slots 1–8. Nonzero means enabled. `show`
 controls the always-shown setting. Editing writes canonical 0/1 values.
 
+## Ammo pouch
+
+TTWVR 1.1.7 stores the ammo pouch separately in `[SavedPouch]`. Its four
+body-relative values are forward, right, below-eye and above-feet in metres.
+The optional `anchor` record contains a torso bone ID (0 pelvis, 1 spine,
+2 spine1, 3 spine2), three translations in skeleton units and nine orientation
+values. The reference preview uses 70 skeleton units per metre. Moving the pouch
+converts the displacement to bone-local translation and applies the same move to
+the fallback, subtracting upward movement from below-eye distance. The orientation
+tokens and optional radius keep their original spelling. Files with only the
+four-value position use above-feet height for the preview.
+
 ## Verified behavior
 
 The supplied 1.1.6 reader at RVA `0x21ffa0` accepts the record shapes above,
@@ -165,8 +177,10 @@ The preview uses the supplied 1.1.6 skeleton's parent-composed transforms at a
 nominal 70 skeleton units/metre (roughly a 1.8 m figure). It does not read or
 rewrite the player's height or arm calibration. Bone-local offsets and radii
 remain in metres; front and side are orthographic projections at the same scale.
-Automatic binding is not guessed: its fallback record can be edited/mirrored,
-but a sphere preview requires an explicit anchor.
+Automatic markers use the saved forward/right/up offsets from eye level. The
+editor reads a positive finite `[SavedHeight] Head` in metres when available,
+otherwise it uses a nominal 1.67 m eye height. Front and side drags update the
+saved position and preserve automatic binding.
 
 The mod transforms an explicit offset by the chosen bone rotation and adds the
 bone origin. Body anchors use cached body nodes; arm anchors use the rendered
