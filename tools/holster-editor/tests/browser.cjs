@@ -240,11 +240,41 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
       });
       path.remove();return coverage;
     })()`),[true,true,false,false,true,true,false,false]);
+    // Measure the rendered skin surface at waist height from the front and side.
+    const widths=await evaluate(`(()=>{
+      const O=HolsterOrbit, path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('opacity','0');document.getElementById('body-map').append(path);
+      const samples=[45,75,110,145,180].map(kg=>[0,Math.PI/2].map((yaw,side)=>{
+        const c=O.camera(yaw,0);path.setAttribute('d',O.skinPath(c,kg));
+        let lo=0,hi=.5;
+        for(let i=0;i<14;i++){
+          const mid=(lo+hi)/2,world=side?[0,-mid,1.11]:[mid,0,1.11];
+          if(path.isPointInFill(new DOMPoint(...O.project(world,c)))) lo=mid; else hi=mid;
+        }
+        return lo;
+      }));
+      path.remove();return samples;
+    })()`);
+    for(let i=1;i<widths.length;i++) for(let axis=0;axis<2;axis++)
+      assert.ok(widths[i][axis]>widths[i-1][axis]+.012,JSON.stringify(widths));
+    assert.equal(await evaluate("document.getElementById('weight-value').value"),'75 kg · 165 lb');
+    const markerPosition=()=>evaluate(`document.querySelector('[data-preview-slot="pouch"] .holster-centre circle').outerHTML`);
+    const markerBefore=await markerPosition();
+    await change('#body-weight','130');
+    const largeOutline=await outlinePath();assert.notEqual(largeOutline,beforeSkin);
+    assert.equal(await markerPosition(),markerBefore);assert.equal(await skeletonPath(),beforeOrbit);
+    assert.equal(await evaluate("document.getElementById('weight-value').value"),'130 kg · 287 lb');
+    assert.deepEqual((await downloadState()).bytes,original.bytes);
+    await screenshot('holster-editor-estimated-weight.png');
     await click('#show-skin');assert.equal(await outlineVisible(),false);
+    assert.equal(await evaluate("document.getElementById('weight-control').hidden"),true);
+
     await click('#view-side');
     assert.equal(await evaluate("document.getElementById('skin-control').hidden"),true);
     await click('#view-orbit');assert.equal(await outlineVisible(),false);
     await click('#show-skin');assert.ok(await outlineVisible());
+    assert.equal(await outlinePath(),largeOutline);
+    await change('#body-weight','75');assert.equal(await outlinePath(),beforeSkin);
     assert.deepEqual((await downloadState()).bytes,original.bytes);
 
     // Orbit over clear background, then drag each constrained axis with real browser input.
@@ -394,10 +424,14 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await click('#reset-slot');assert.equal(await evaluate('document.querySelector("#anchor").value'),'pelvis');
     await cdp('Emulation.setDeviceMetricsOverride', {width:390,height:844,deviceScaleFactor:1,mobile:true});
     assert.equal(await evaluate('document.documentElement.scrollWidth <= window.innerWidth'),true);await screenshot('holster-editor-mobile.png');
+    await click('#view-orbit');
+    await change('#body-weight','180');
+    assert.equal(await evaluate("document.documentElement.scrollWidth <= window.innerWidth && document.getElementById('body-weight').getBoundingClientRect().width>60"),true);
+    await click('#view-front');
     await cdp('Emulation.setDeviceMetricsOverride', {width:1024,height:768,deviceScaleFactor:1,mobile:false});
     assert.equal(await evaluate('document.documentElement.scrollWidth <= window.innerWidth'),true);
     assert.equal(errors.length,0,JSON.stringify(errors));assert.equal(requests.some(u=>/^https?:/.test(u)),false,JSON.stringify(requests));
-    console.log('PASS browser: translucent silhouette, toggle, state preservation, 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
+    console.log('PASS browser: estimated-weight outlines, fixed anchors, mobile slider, translucent silhouette, toggle, state preservation, 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
     console.log('PASS no network requests; source file unchanged; no browser exceptions.');
   } finally {
     try { await send('Browser.close'); } catch {}

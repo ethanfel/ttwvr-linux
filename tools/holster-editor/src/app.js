@@ -4,7 +4,9 @@
   const H = globalThis.HolsterState, G = globalThis.HolsterGeometry, P = globalThis.HolsterPresets, $ = id => document.getElementById(id);
   const O = globalThis.HolsterOrbit;
   let camera = O.camera(), lastBodyCamera = null, orbitDrag = null;
-  let lastSkinCamera = null;
+  let lastSkinCamera = null, lastSkinWeight = null;
+  const weightControl = $('body-weight');
+  Object.assign(weightControl,{min:O.buildRange.minKg,max:O.buildRange.maxKg,value:O.buildRange.referenceKg});
   const svgNS = 'http://www.w3.org/2000/svg';
   const labels = Object.fromEntries(H.ANCHORS.map(a => [a.id, a.label]));
   let doc = null, model = null, selected = 1, filename = '', history = [], historyIndex = 0, exported = null, loading = 0, demoMode = false;
@@ -300,12 +302,7 @@
     $('body-map').setAttribute('aria-label',orbit?'3D skeleton. Drag the background or use the arrow keys to orbit. Drag a gizmo to move equipment.':'Holster placement preview. Drag the centre to move and the square to resize.');
     $('orbit-reset').hidden=!orbit;
     $('skin-control').hidden=!orbit;
-    const skinVisible=orbit && $('show-skin').checked;
-    $('skin-surface').toggleAttribute('hidden',!skinVisible);
-    if(skinVisible && lastSkinCamera!==camera) {
-      $('skin-shape').setAttribute('d',O.skinPath(camera));
-      lastSkinCamera=camera;
-    }
+    updateSkin();
     $('direction-left').textContent = orbit ? '' : view === 'front' ? 'YOUR RIGHT' : 'BEHIND';
     $('direction-right').textContent = orbit ? '' : view === 'front' ? 'YOUR LEFT' : 'IN FRONT';
     $('anchor-points').replaceChildren();
@@ -536,7 +533,25 @@
     map.setAttribute('viewBox',`${x+(box.x-x)*ratio} ${y+(box.y-y)*ratio} ${width} ${box.height*ratio}`);
     renderPreview();
   },{passive:false});
-  $('show-skin').addEventListener('change',renderPreview);
+  function updateSkin() {
+    const skinVisible=view==='orbit' && $('show-skin').checked;
+    $('skin-surface').toggleAttribute('hidden',!skinVisible);
+    $('weight-control').hidden=!skinVisible;
+    if (!skinVisible) return;
+    const kg=weightControl.valueAsNumber;
+    if (lastSkinWeight!==kg) {
+      const value=kg+' kg · '+Math.round(kg*2.20462262)+' lb';
+      $('weight-value').value=value;
+      weightControl.setAttribute('aria-valuetext',value);
+    }
+    if (lastSkinCamera!==camera || lastSkinWeight!==kg) {
+      $('skin-shape').setAttribute('d',O.skinPath(camera,kg));
+      lastSkinCamera=camera;
+      lastSkinWeight=kg;
+    }
+  }
+  weightControl.addEventListener('input',updateSkin);
+  $('show-skin').addEventListener('change',updateSkin);
   $('orbit-reset').addEventListener('click',()=>{
     camera=O.camera();map.setAttribute('viewBox','0 0 440 540');renderPreview();
   });

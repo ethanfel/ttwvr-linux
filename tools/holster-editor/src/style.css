@@ -55,3 +55,8 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
 .skin-fill{fill:var(--accent);fill-opacity:.10}
 .skin-edge{fill:none;stroke:var(--accent);stroke-opacity:.70;stroke-width:2.8;stroke-linejoin:round}
 .preview-toolbar{flex-wrap:wrap;align-items:center;row-gap:6px}
+
+.weight-control{display:grid;grid-template-columns:auto minmax(65px,1fr) auto;align-items:center;gap:9px;margin:9px 15px 0;font-size:11px;color:var(--muted)}
+.weight-control input{min-width:0;width:100%;margin:0;accent-color:var(--accent);cursor:pointer}
+.weight-control output{color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:440px){.weight-control{grid-template-columns:1fr auto}.weight-control input{grid-column:1/-1;grid-row:2}}
