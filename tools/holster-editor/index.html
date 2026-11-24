@@ -59,6 +59,11 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
 
 .pouch-leader{fill:none;stroke:var(--accent);stroke-width:1}
 .pouch-pin{fill:var(--accent)}
+
+/* All sections fill once. Mask the inner half of the stroke to hide joint seams. */
+.skin-fill{fill:var(--accent);fill-opacity:.10}
+.skin-edge{fill:none;stroke:var(--accent);stroke-opacity:.70;stroke-width:2.8;stroke-linejoin:round}
+.preview-toolbar{flex-wrap:wrap;align-items:center;row-gap:6px}
 </style>
 </head>
 <body>
@@ -84,13 +89,22 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
 
     <section class="map-panel" aria-labelledby="map-title">
       <div class="panel-title"><h2 id="map-title">PLACEMENT PREVIEW</h2><div class="view-tabs" role="group" aria-label="Preview direction"><button type="button" id="view-front" aria-pressed="true">FRONT</button><button type="button" id="view-side" aria-pressed="false">SIDE</button><button type="button" id="view-orbit" aria-pressed="false">3D</button></div></div>
-      <div class="preview-toolbar"><span>10 CM GRID · REFERENCE POSE</span><button type="button" id="orbit-reset" class="text-button" hidden>Reset view</button><label><input type="checkbox" id="show-other" checked> Other placements</label></div>
+      <div class="preview-toolbar"><span>10 CM GRID · REFERENCE POSE</span><button type="button" id="orbit-reset" class="text-button" hidden>Reset view</button><label id="skin-control" hidden><input type="checkbox" id="show-skin" checked> Body outline</label><label><input type="checkbox" id="show-other" checked> Other placements</label></div>
       <div class="body-view">
         <svg id="body-map" viewBox="0 0 440 540" role="group" aria-label="Holster placement preview. Drag the numbered centre to move; drag the square handle to resize.">
-          <defs><pattern id="grid" x="220" y="490" width="23" height="23" patternUnits="userSpaceOnUse"><path d="M23 0H0V23" fill="none" stroke="currentColor" stroke-width=".4"/></pattern></defs>
+          <defs><pattern id="grid" x="220" y="490" width="23" height="23" patternUnits="userSpaceOnUse"><path d="M23 0H0V23" fill="none" stroke="currentColor" stroke-width=".4"/></pattern>
+            <path id="skin-shape" fill-rule="nonzero"></path>
+            <mask id="skin-exterior" maskUnits="userSpaceOnUse" x="0" y="0" width="440" height="540">
+              <rect width="440" height="540" fill="white"/><use href="#skin-shape" fill="black"/>
+            </mask>
+          </defs>
           <rect width="440" height="520" fill="url(#grid)" class="map-grid"/>
           <path class="guide-line" d="M220 15V500M15 490H425"/>
           <g id="reference-body" aria-hidden="true"></g>
+          <g id="skin-surface" aria-hidden="true" pointer-events="none" hidden>
+            <use href="#skin-shape" class="skin-fill"/>
+            <use href="#skin-shape" class="skin-edge" mask="url(#skin-exterior)"/>
+          </g>
           <g id="anchor-points"></g><g id="slot-markers"></g>
           <g id="preview-handles"></g>
           <text x="18" y="530" id="direction-left" class="map-direction">YOUR RIGHT</text><text x="422" y="530" id="direction-right" text-anchor="end" class="map-direction">YOUR LEFT</text>
@@ -142,7 +156,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       <div class="apply-note"><span class="eyebrow">AFTER EXPORT</span><p>Close the game, back up your current file, and replace it with the exported <b>TTWVR.state</b>. Check the placement in VR.</p></div>
     </section>
   </main>
-  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">FIELD KIT 1.6.0</span></footer>
+  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">FIELD KIT 1.6.1</span></footer>
   <p class="bottom-note">Independent community utility · Fallout-inspired interface · no game assets bundled</p>
 </div>
 <dialog id="presets" aria-labelledby="presets-title">
@@ -162,7 +176,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   <p class="preset-caveat">Reference pose only: spacing changes as you move. These are starting layouts, not headset-tested fits. Fine-tune with your equipment and wrist Pip-Boy in VR.</p>
   <div class="preset-apply-row"><p id="preset-impact" aria-live="polite"></p><button type="button" id="apply-preset" class="primary" disabled>Apply layout</button></div>
 </dialog>
-<dialog id="instructions"><div class="dialog-heading"><p class="eyebrow">FIELD MANUAL</p><button type="button" id="close-help" class="icon-button" aria-label="Close instructions">×</button></div><h2>Configure. Export. Equip.</h2><ol><li><b>Quit Fallout and your mod manager.</b> This tool edits a copy; the game writes its state when it closes.</li><li><b>Load TTWVR.state.</b> It contains the numbered holsters and their anchors. A savegame or TTWVR.ini is a different file.</li><li><b>Choose a slot and an anchor.</b> Numbers match the game’s 1–8 hotkeys. Drag its numbered centre to position it; drag the square handle to resize its grab sphere. Use Front for left/right and Side for depth. Both views adjust height. Arrow keys move 1 cm (Shift: 5 cm). Numeric controls remain available.</li><li><b>Export the file.</b> Keep a backup of the original and replace it with the downloaded copy. Its filename must be <code>TTWVR.state</code>, without a browser-added “(1)”.</li><li><b>Launch the game and check the fit.</b> The preview uses an approximate reference body and pose. Fine placement depends on your avatar and calibration.</li></ol><h3>Ammo pouch</h3><p>Select <b>Ammo pouch</b> below the eight slots. In <b>3D</b>, drag the background to orbit and drag the R, F or U arrow to move right, forward or up. You can also drag <b>P</b> in Front and Side or enter its right, forward and floor height in centimetres. If your file has no saved pouch, choose <b>Set initial position</b> to place one. Undo or Reset pouch restores the loaded placement.</p><h3>Start from a preset</h3><p><b>Preset layouts</b> offers seven belt, vest and holster layouts, from four to eight enabled holsters. The P marks the ammo pouch. Choose its side and preview its reach before applying. One export saves the pouch and holsters together. Utility rig puts one forearm target opposite the selected Pip-Boy arm; this remains independent of pair order. One Undo restores your previous layout. Slots outside the chosen layout are disabled while their positions are retained. Visibility, calibration and other state sections stay as loaded. Export and check your reach in VR.</p><h3>Body holsters behind you?</h3><p>Field Kit 1.1–1.3 reversed front and back in the preview. If you exported body placements with those versions, this moves centres behind the reference body to the front. It affects pelvis, chest and leg anchors, including disabled slots; arms and Automatic slots stay unchanged. Intentionally rear-mounted body holsters would also move. Review the Side view, then export. One Undo restores the layout. Loading a file never repairs it automatically.</p><button type="button" id="repair-body" disabled>Repair old body placement</button><h3>Mirror a holster</h3><p>Choose a different destination slot under <b>Mirror to another slot</b>, then press the mirror button. Right upper arm becomes left upper arm, for example, with the matching local offset and grab radius. The destination is replaced in one undoable action. Subsequent edits are independent; this does not link the slots. Automatic slots show and mirror their saved position relative to the eyes. TTWVR chooses the nearest bone when the avatar loads.</p><h3>Where is the file?</h3><p><b>Windows</b> — your Documents folder, which may be redirected to OneDrive:</p><code class="path">My Games\FalloutNV\TTWVR.state</code><p><b>Linux / Proton</b> — inside the prefix used by your VR profile:</p><code class="path">drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state</code><p>TTWVR stores this configuration in New Vegas’s <code>FalloutNV</code> folder. Place a holster in VR and quit once if the holster sections have not been created yet.</p><h3>What gets edited?</h3><p>Holsters use <code>[SavedSlots]</code> and <code>[SavedSlotsOn]</code>. The ammo pouch uses <code>[SavedPouch]</code>. Select <b>Ammo pouch</b> to change its body anchor or grab radius. Other sections, encoding and line endings are preserved. This does not assign weapons to hotkeys or change a savegame.</p><p><b>Automatic</b> removes an explicit bone binding. TTWVR then chooses a nearby bone from the saved body-relative position. New explicit bindings start at a zero local offset; adjust the offset or finish placement in VR.</p><p class="field-help">Runs entirely offline. No installation, uploads, runtime libraries or network connection required. Original tool code: GPL-3.0-only.</p></dialog>
+<dialog id="instructions"><div class="dialog-heading"><p class="eyebrow">FIELD MANUAL</p><button type="button" id="close-help" class="icon-button" aria-label="Close instructions">×</button></div><h2>Configure. Export. Equip.</h2><ol><li><b>Quit Fallout and your mod manager.</b> This tool edits a copy; the game writes its state when it closes.</li><li><b>Load TTWVR.state.</b> It contains the numbered holsters and their anchors. A savegame or TTWVR.ini is a different file.</li><li><b>Choose a slot and an anchor.</b> Numbers match the game’s 1–8 hotkeys. Drag its numbered centre to position it; drag the square handle to resize its grab sphere. Use Front for left/right and Side for depth. Both views adjust height. Arrow keys move 1 cm (Shift: 5 cm). Numeric controls remain available.</li><li><b>Export the file.</b> Keep a backup of the original and replace it with the downloaded copy. Its filename must be <code>TTWVR.state</code>, without a browser-added “(1)”.</li><li><b>Launch the game and check the fit.</b> The preview uses an approximate reference body and pose. Fine placement depends on your avatar and calibration.</li></ol><h3>Ammo pouch</h3><p>Select <b>Ammo pouch</b> below the eight slots. In <b>3D</b>, <b>Body outline</b> shows the approximate skin surface around the skeleton. Drag the background to orbit and drag the R, F or U arrow to move right, forward or up. You can also drag <b>P</b> in Front and Side or enter its right, forward and floor height in centimetres. If your file has no saved pouch, choose <b>Set initial position</b> to place one. Undo or Reset pouch restores the loaded placement.</p><h3>Start from a preset</h3><p><b>Preset layouts</b> offers seven belt, vest and holster layouts, from four to eight enabled holsters. The P marks the ammo pouch. Choose its side and preview its reach before applying. One export saves the pouch and holsters together. Utility rig puts one forearm target opposite the selected Pip-Boy arm; this remains independent of pair order. One Undo restores your previous layout. Slots outside the chosen layout are disabled while their positions are retained. Visibility, calibration and other state sections stay as loaded. Export and check your reach in VR.</p><h3>Body holsters behind you?</h3><p>Field Kit 1.1–1.3 reversed front and back in the preview. If you exported body placements with those versions, this moves centres behind the reference body to the front. It affects pelvis, chest and leg anchors, including disabled slots; arms and Automatic slots stay unchanged. Intentionally rear-mounted body holsters would also move. Review the Side view, then export. One Undo restores the layout. Loading a file never repairs it automatically.</p><button type="button" id="repair-body" disabled>Repair old body placement</button><h3>Mirror a holster</h3><p>Choose a different destination slot under <b>Mirror to another slot</b>, then press the mirror button. Right upper arm becomes left upper arm, for example, with the matching local offset and grab radius. The destination is replaced in one undoable action. Subsequent edits are independent; this does not link the slots. Automatic slots show and mirror their saved position relative to the eyes. TTWVR chooses the nearest bone when the avatar loads.</p><h3>Where is the file?</h3><p><b>Windows</b> — your Documents folder, which may be redirected to OneDrive:</p><code class="path">My Games\FalloutNV\TTWVR.state</code><p><b>Linux / Proton</b> — inside the prefix used by your VR profile:</p><code class="path">drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state</code><p>TTWVR stores this configuration in New Vegas’s <code>FalloutNV</code> folder. Place a holster in VR and quit once if the holster sections have not been created yet.</p><h3>What gets edited?</h3><p>Holsters use <code>[SavedSlots]</code> and <code>[SavedSlotsOn]</code>. The ammo pouch uses <code>[SavedPouch]</code>. Select <b>Ammo pouch</b> to change its body anchor or grab radius. Other sections, encoding and line endings are preserved. This does not assign weapons to hotkeys or change a savegame.</p><p><b>Automatic</b> removes an explicit bone binding. TTWVR then chooses a nearby bone from the saved body-relative position. New explicit bindings start at a zero local offset; adjust the offset or finish placement in VR.</p><p class="field-help">Runs entirely offline. No installation, uploads, runtime libraries or network connection required. Original tool code: GPL-3.0-only.</p></dialog>
 <script>/* SPDX-License-Identifier: GPL-3.0-only */
 /* Lossless TTWVR state editor. No filesystem or network access. */
 (function (root) {
@@ -957,7 +971,101 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       return {shade, path:'M'+f.points.map(p=>project(p,cam).map(v=>v.toFixed(2)).join(' ')).join('L')+'Z'};
     });
   }
-  return {axes,camera,project,axisDelta,planeDelta,move,shadedFaces,dot,add,times};
+  // Each part is a series of elliptical cross-sections in the skeleton's metre space.
+  // The outside of their combined projection stays continuous across joints.
+  function bodySections() {
+    const j=G.joints, parts=[];
+    const circle=Array.from({length:24},(_,i)=>{
+      const a=2*Math.PI*i/24;
+      return [Math.cos(a),Math.sin(a)];
+    });
+    function sections(rows,u,v) {
+      parts.push(rows.map(([centre,ru,rv])=>circle.map(([c,s])=>
+        add(centre,add(times(u,ru*c),times(v,rv*s))))));
+    }
+    function upright(origin,rows) {
+      sections(rows.map(([z,back,width,depth])=>[add(origin,[0,back,z]),width,depth]),[1,0,0],[0,1,0]);
+    }
+    function limb(a,b,rows) {
+      const span=sub(b,a), axis=unit(span);
+      const back=unit(sub([0,1,0],times(axis,axis[1])));
+      const across=cross(axis,back);
+      sections(rows.map(([t,depth,width])=>[add(a,times(span,t)),depth,width]),back,across);
+    }
+    upright(j.pelvis,[
+      [-.11,.008,.08,.066],[-.065,.017,.147,.106],[.005,.020,.177,.124],
+      [.085,.012,.159,.115],[.15,.006,.15,.108],[.23,0,.17,.12],
+      [.34,-.002,.195,.132],[.43,.010,.208,.12],[.49,.027,.189,.09],[.55,.023,.063,.062]
+    ]);
+    upright(j.neck,[[-.041,.001,.073,.070],[.012,0,.058,.056],[.088,-.007,.056,.060]]);
+    upright(j.head,[
+      [-.041,-.043,.037,.051],[-.012,-.029,.066,.078],[.023,-.012,.084,.093],
+      [.069,0,.092,.104],[.114,.005,.088,.099],[.15,.009,.065,.077],[.166,.01,.028,.033]
+    ]);
+    upright(j.head,[[.014,-.093,.014,.020],[.030,-.103,.017,.024],[.065,-.094,.010,.012]]);
+    for(const [side,sign] of [['right',1],['left',-1]]) {
+      const at=name=>j[side+'_'+name];
+      limb(at('upper_arm'),at('forearm'),[
+        [-.19,.045,.049],[.04,.073,.072],[.32,.063,.060],[.59,.052,.054],[.90,.043,.042],[1.06,.039,.04]
+      ]);
+      limb(at('forearm'),at('hand'),[
+        [-.09,.04,.04],[.12,.05,.047],[.36,.047,.045],[.69,.034,.034],[1.02,.027,.026]
+      ]);
+      const hand=at('hand');
+      limb(hand,add(hand,[sign*.083,-.006,-.032]),[
+        [-.18,.025,.025],[.24,.041,.027],[.55,.038,.024],[.90,.029,.018],[1.03,.013,.012]
+      ]);
+      limb(add(hand,[sign*.009,-.025,0]),add(hand,[sign*.052,-.055,-.023]),[
+        [0,.019,.016],[.51,.016,.014],[1,.009,.010]
+      ]);
+      limb(at('thigh'),at('shin'),[
+        [-.10,.079,.076],[.09,.112,.097],[.31,.104,.089],[.61,.083,.072],[.83,.063,.056],[1.05,.056,.055]
+      ]);
+      limb(at('shin'),at('foot'),[
+        [-.08,.050,.052],[.12,.060,.055],[.32,.070,.057],[.50,.060,.051],[.76,.038,.035],[1.04,.034,.032]
+      ]);
+      const ankle=at('foot'), toe=at('toe');
+      const sole=[(ankle[0]+toe[0])/2,(ankle[1]+toe[1])/2,0];
+      upright(sole,[[.004,0,.047,.113],[.021,-.002,.052,.124],[.043,.002,.050,.118],
+        [.067,.024,.043,.089],[.092,.050,.035,.051],[.114,.065,.030,.033]]);
+    }
+    return parts;
+  }
+  const skin=bodySections();
+  function convexOutline(points) {
+    const sorted=points.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
+    function chain(sequence) {
+      const hull=[];
+      for(const p of sequence) {
+        while(hull.length>=2) {
+          const a=hull[hull.length-2], b=hull[hull.length-1];
+          if((b[0]-a[0])*(p[1]-a[1])>(b[1]-a[1])*(p[0]-a[0])) break;
+          hull.pop();
+        }
+        hull.push(p);
+      }
+      hull.pop();
+      return hull;
+    }
+    const lower=chain(sorted);
+    return lower.concat(chain(sorted.reverse()));
+  }
+  function skinPath(cam) {
+    const polygons=[];
+    for(const part of skin) {
+      let last=null;
+      for(const ring of part) {
+        const current=ring.map(p=>project(p,cam));
+        if(last) {
+          const hull=convexOutline(last.concat(current));
+          polygons.push('M'+hull.map(([x,y])=>x.toFixed(2)+' '+y.toFixed(2)).join('L')+'Z');
+        }
+        last=current;
+      }
+    }
+    return polygons.join('');
+  }
+  return {axes,camera,project,axisDelta,planeDelta,move,shadedFaces,skinPath,dot,add,times};
 });
 </script>
 <script>/* SPDX-License-Identifier: GPL-3.0-only */
@@ -966,6 +1074,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   const H = globalThis.HolsterState, G = globalThis.HolsterGeometry, P = globalThis.HolsterPresets, $ = id => document.getElementById(id);
   const O = globalThis.HolsterOrbit;
   let camera = O.camera(), lastBodyCamera = null, orbitDrag = null;
+  let lastSkinCamera = null;
   const svgNS = 'http://www.w3.org/2000/svg';
   const labels = Object.fromEntries(H.ANCHORS.map(a => [a.id, a.label]));
   let doc = null, model = null, selected = 1, filename = '', history = [], historyIndex = 0, exported = null, loading = 0, demoMode = false;
@@ -1260,6 +1369,13 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     $('body-map').setAttribute('tabindex',orbit?'0':'-1');
     $('body-map').setAttribute('aria-label',orbit?'3D skeleton. Drag the background or use the arrow keys to orbit. Drag a gizmo to move equipment.':'Holster placement preview. Drag the centre to move and the square to resize.');
     $('orbit-reset').hidden=!orbit;
+    $('skin-control').hidden=!orbit;
+    const skinVisible=orbit && $('show-skin').checked;
+    $('skin-surface').toggleAttribute('hidden',!skinVisible);
+    if(skinVisible && lastSkinCamera!==camera) {
+      $('skin-shape').setAttribute('d',O.skinPath(camera));
+      lastSkinCamera=camera;
+    }
     $('direction-left').textContent = orbit ? '' : view === 'front' ? 'YOUR RIGHT' : 'BEHIND';
     $('direction-right').textContent = orbit ? '' : view === 'front' ? 'YOUR LEFT' : 'IN FRONT';
     $('anchor-points').replaceChildren();
@@ -1490,6 +1606,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     map.setAttribute('viewBox',`${x+(box.x-x)*ratio} ${y+(box.y-y)*ratio} ${width} ${box.height*ratio}`);
     renderPreview();
   },{passive:false});
+  $('show-skin').addEventListener('change',renderPreview);
   $('orbit-reset').addEventListener('click',()=>{
     camera=O.camera();map.setAttribute('viewBox','0 0 440 540');renderPreview();
   });

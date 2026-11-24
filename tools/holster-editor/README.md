@@ -8,8 +8,8 @@ server, Python, Node, account or network connection is needed to use it.
 
 ## Open the tool
 
-Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.0/TTWVR-Holster-Editor.html)
-and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.0/TTWVR-Holster-Editor.zip)
+Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.1/TTWVR-Holster-Editor.html)
+and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.1/TTWVR-Holster-Editor.zip)
 also includes the offline instructions.
 
 1. **Load state file**: select your `TTWVR.state` file, or drop it onto the window.
@@ -140,7 +140,7 @@ sections are missing, place/toggle a holster in VR and quit once to create them.
 - Ten explicit anchors: pelvis, chest, left/right upper arm, forearm, thigh and shin.
 - **Automatic** removes an explicit bone binding. TTWVR chooses a nearby bone
   using the saved body-relative position when the avatar is ready.
-- **3D** shows an orbitable reference skeleton. Drag the background to look around or scroll to zoom. Select **P** or a numbered holster and drag **R** (right), **F** (forward) or **U** (up). Focus an arrow and use the arrow keys for 1 cm steps or Shift for 5 cm. **Reset view** restores the starting angle.
+- **3D** shows an orbitable reference skeleton. **Body outline** shows a translucent estimate of the skin surface to help judge pouch depth. Toggle it in the preview toolbar. Drag the background to look around or scroll to zoom. Select **P** or a numbered holster and drag **R** (right), **F** (forward) or **U** (up). Focus an arrow and use the arrow keys for 1 cm steps or Shift for 5 cm. **Reset view** restores the starting angle.
 - Front and side orthographic previews, a **10 cm grid**, live grab spheres and
   radius/diameter readout. Numeric edits update the preview while typing.
 - Drag the centre to move in the displayed plane; drag its square handle to resize.

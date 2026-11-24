@@ -222,14 +222,39 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await click('#view-orbit');
     const skeletonPath=()=>evaluate('document.querySelector("#reference-body .orbit-bone").getAttribute("d")');
     const beforeOrbit=await skeletonPath();
+    const outlineVisible=()=>evaluate("getComputedStyle(document.getElementById('skin-surface')).display !== 'none' && getComputedStyle(document.querySelector('.skin-fill')).fillOpacity < 1");
+    const outlinePath=()=>evaluate('document.getElementById("skin-shape").getAttribute("d")');
+    const beforeSkin=await outlinePath();
+    assert.ok(await outlineVisible());
+    assert.ok(beforeSkin.length>1000);
+    assert.equal(await evaluate("getComputedStyle(document.querySelector('.skin-edge')).pointerEvents"),'none');
+    // Check front/side surface coverage in the actual SVG fill. The gap between
+    // the legs is open, and in profile the belly has depth around the spine.
+    assert.deepEqual(await evaluate(`(()=>{
+      const O=HolsterOrbit, path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('opacity','0');document.getElementById('body-map').append(path);
+      const coverage=[[0,[[0,0,1.1],[.14,0,1.3],[.29,0,1.1],[0,0,.5],[.10,0,.50]]],
+        [Math.PI/2,[[0,-.08,1.1],[0,-.24,1.1],[0,.22,1.1]]]].flatMap(([yaw,points])=>{
+        const c=O.camera(yaw,0);path.setAttribute('d',O.skinPath(c));
+        return points.map(p=>path.isPointInFill(new DOMPoint(...O.project(p,c))));
+      });
+      path.remove();return coverage;
+    })()`),[true,true,false,false,true,true,false,false]);
+    await click('#show-skin');assert.equal(await outlineVisible(),false);
+    await click('#view-side');
+    assert.equal(await evaluate("document.getElementById('skin-control').hidden"),true);
+    await click('#view-orbit');assert.equal(await outlineVisible(),false);
+    await click('#show-skin');assert.ok(await outlineVisible());
+    assert.deepEqual((await downloadState()).bytes,original.bytes);
+
     // Orbit over clear background, then drag each constrained axis with real browser input.
     const corner=await evaluate(`(()=>{const r=document.querySelector('#body-map').getBoundingClientRect();return {x:r.left+20,y:r.top+45};})()`);
     await cdp('Input.dispatchMouseEvent',{type:'mousePressed',...corner,button:'left',clickCount:1});
     await cdp('Input.dispatchMouseEvent',{type:'mouseMoved',x:corner.x+24,y:corner.y+10,button:'left',buttons:1});
     await cdp('Input.dispatchMouseEvent',{type:'mouseReleased',x:corner.x+24,y:corner.y+10,button:'left',clickCount:1});
-    assert.notEqual(await skeletonPath(),beforeOrbit);
+    assert.notEqual(await skeletonPath(),beforeOrbit);assert.notEqual(await outlinePath(),beforeSkin);
     assert.equal(await evaluate('document.querySelector("#undo").disabled'),true);
-    await click('#orbit-reset');assert.equal(await skeletonPath(),beforeOrbit);
+    await click('#orbit-reset');assert.equal(await skeletonPath(),beforeOrbit);assert.equal(await outlinePath(),beforeSkin);
     await screenshot('holster-editor-3d.png');
     for(const [axis,index,dx,dy] of [['right',0,-20,2],['forward',1,14,4],['up',2,0,-18]]) {
       await dragHandle('[data-axis="'+axis+'"] .axis-hit',dx,dy);
@@ -372,7 +397,7 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await cdp('Emulation.setDeviceMetricsOverride', {width:1024,height:768,deviceScaleFactor:1,mobile:false});
     assert.equal(await evaluate('document.documentElement.scrollWidth <= window.innerWidth'),true);
     assert.equal(errors.length,0,JSON.stringify(errors));assert.equal(requests.some(u=>/^https?:/.test(u)),false,JSON.stringify(requests));
-    console.log('PASS browser: 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
+    console.log('PASS browser: translucent silhouette, toggle, state preservation, 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
     console.log('PASS no network requests; source file unchanged; no browser exceptions.');
   } finally {
     try { await send('Browser.close'); } catch {}

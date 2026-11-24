@@ -50,3 +50,8 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
 
 .pouch-leader{fill:none;stroke:var(--accent);stroke-width:1}
 .pouch-pin{fill:var(--accent)}
+
+/* All sections fill once. Mask the inner half of the stroke to hide joint seams. */
+.skin-fill{fill:var(--accent);fill-opacity:.10}
+.skin-edge{fill:none;stroke:var(--accent);stroke-opacity:.70;stroke-width:2.8;stroke-linejoin:round}
+.preview-toolbar{flex-wrap:wrap;align-items:center;row-gap:6px}

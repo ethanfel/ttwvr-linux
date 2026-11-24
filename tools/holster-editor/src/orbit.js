@@ -120,5 +120,99 @@
       return {shade, path:'M'+f.points.map(p=>project(p,cam).map(v=>v.toFixed(2)).join(' ')).join('L')+'Z'};
     });
   }
-  return {axes,camera,project,axisDelta,planeDelta,move,shadedFaces,dot,add,times};
+  // Each part is a series of elliptical cross-sections in the skeleton's metre space.
+  // The outside of their combined projection stays continuous across joints.
+  function bodySections() {
+    const j=G.joints, parts=[];
+    const circle=Array.from({length:24},(_,i)=>{
+      const a=2*Math.PI*i/24;
+      return [Math.cos(a),Math.sin(a)];
+    });
+    function sections(rows,u,v) {
+      parts.push(rows.map(([centre,ru,rv])=>circle.map(([c,s])=>
+        add(centre,add(times(u,ru*c),times(v,rv*s))))));
+    }
+    function upright(origin,rows) {
+      sections(rows.map(([z,back,width,depth])=>[add(origin,[0,back,z]),width,depth]),[1,0,0],[0,1,0]);
+    }
+    function limb(a,b,rows) {
+      const span=sub(b,a), axis=unit(span);
+      const back=unit(sub([0,1,0],times(axis,axis[1])));
+      const across=cross(axis,back);
+      sections(rows.map(([t,depth,width])=>[add(a,times(span,t)),depth,width]),back,across);
+    }
+    upright(j.pelvis,[
+      [-.11,.008,.08,.066],[-.065,.017,.147,.106],[.005,.020,.177,.124],
+      [.085,.012,.159,.115],[.15,.006,.15,.108],[.23,0,.17,.12],
+      [.34,-.002,.195,.132],[.43,.010,.208,.12],[.49,.027,.189,.09],[.55,.023,.063,.062]
+    ]);
+    upright(j.neck,[[-.041,.001,.073,.070],[.012,0,.058,.056],[.088,-.007,.056,.060]]);
+    upright(j.head,[
+      [-.041,-.043,.037,.051],[-.012,-.029,.066,.078],[.023,-.012,.084,.093],
+      [.069,0,.092,.104],[.114,.005,.088,.099],[.15,.009,.065,.077],[.166,.01,.028,.033]
+    ]);
+    upright(j.head,[[.014,-.093,.014,.020],[.030,-.103,.017,.024],[.065,-.094,.010,.012]]);
+    for(const [side,sign] of [['right',1],['left',-1]]) {
+      const at=name=>j[side+'_'+name];
+      limb(at('upper_arm'),at('forearm'),[
+        [-.19,.045,.049],[.04,.073,.072],[.32,.063,.060],[.59,.052,.054],[.90,.043,.042],[1.06,.039,.04]
+      ]);
+      limb(at('forearm'),at('hand'),[
+        [-.09,.04,.04],[.12,.05,.047],[.36,.047,.045],[.69,.034,.034],[1.02,.027,.026]
+      ]);
+      const hand=at('hand');
+      limb(hand,add(hand,[sign*.083,-.006,-.032]),[
+        [-.18,.025,.025],[.24,.041,.027],[.55,.038,.024],[.90,.029,.018],[1.03,.013,.012]
+      ]);
+      limb(add(hand,[sign*.009,-.025,0]),add(hand,[sign*.052,-.055,-.023]),[
+        [0,.019,.016],[.51,.016,.014],[1,.009,.010]
+      ]);
+      limb(at('thigh'),at('shin'),[
+        [-.10,.079,.076],[.09,.112,.097],[.31,.104,.089],[.61,.083,.072],[.83,.063,.056],[1.05,.056,.055]
+      ]);
+      limb(at('shin'),at('foot'),[
+        [-.08,.050,.052],[.12,.060,.055],[.32,.070,.057],[.50,.060,.051],[.76,.038,.035],[1.04,.034,.032]
+      ]);
+      const ankle=at('foot'), toe=at('toe');
+      const sole=[(ankle[0]+toe[0])/2,(ankle[1]+toe[1])/2,0];
+      upright(sole,[[.004,0,.047,.113],[.021,-.002,.052,.124],[.043,.002,.050,.118],
+        [.067,.024,.043,.089],[.092,.050,.035,.051],[.114,.065,.030,.033]]);
+    }
+    return parts;
+  }
+  const skin=bodySections();
+  function convexOutline(points) {
+    const sorted=points.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
+    function chain(sequence) {
+      const hull=[];
+      for(const p of sequence) {
+        while(hull.length>=2) {
+          const a=hull[hull.length-2], b=hull[hull.length-1];
+          if((b[0]-a[0])*(p[1]-a[1])>(b[1]-a[1])*(p[0]-a[0])) break;
+          hull.pop();
+        }
+        hull.push(p);
+      }
+      hull.pop();
+      return hull;
+    }
+    const lower=chain(sorted);
+    return lower.concat(chain(sorted.reverse()));
+  }
+  function skinPath(cam) {
+    const polygons=[];
+    for(const part of skin) {
+      let last=null;
+      for(const ring of part) {
+        const current=ring.map(p=>project(p,cam));
+        if(last) {
+          const hull=convexOutline(last.concat(current));
+          polygons.push('M'+hull.map(([x,y])=>x.toFixed(2)+' '+y.toFixed(2)).join('L')+'Z');
+        }
+        last=current;
+      }
+    }
+    return polygons.join('');
+  }
+  return {axes,camera,project,axisDelta,planeDelta,move,shadedFaces,skinPath,dot,add,times};
 });
