@@ -60,3 +60,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
 .weight-control input{min-width:0;width:100%;margin:0;accent-color:var(--accent);cursor:pointer}
 .weight-control output{color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
 @media(max-width:440px){.weight-control{grid-template-columns:1fr auto}.weight-control input{grid-column:1/-1;grid-row:2}}
+
+.preview-toolbar .pose-control{font-size:11px;letter-spacing:0;gap:7px}
+.pose-control select{width:auto;margin:0;padding:3px 5px;font-size:11px}
+.chair-outline{fill:none;stroke:var(--muted);stroke-width:1.25;stroke-linejoin:round;opacity:.66;pointer-events:none}

@@ -1,9 +1,11 @@
-TTWVR HOLSTER EDITOR — FIELD KIT 1.6.2
+TTWVR HOLSTER EDITOR — FIELD KIT 1.6.3
 
 1. Extract this ZIP to a folder.
 2. Open TTWVR-Holster-Editor.html in a current browser (Edge, Chrome or Firefox).
 3. Load your TTWVR.state file. Select a numbered holster, then choose a body
    anchor from the diagram or list. Drag its numbered centre to position it.
+   Choose Seated · desk chair under Pose to check reach around the seat and
+   armrests. It works in Front, Side and 3D. Pose changes affect the preview only.
    Body outline shows the approximate skin surface in 3D. Adjust Estimated body
    weight (45–180 kg) to check pouch clearance. The original reference is 75 kg.
    In 3D, drag the background to orbit and scroll to zoom. Drag R (right),

@@ -33,7 +33,57 @@
   function planeDelta(dx,dy,cam) {
     return times(add(times(cam.right,dx),times(cam.up,-dy)),1/G.SCALE);
   }
-  function move(row,isPouch,delta) {
+  // Rotate a bone from its standing direction to its seated direction. Applying
+  // the inverse to a drag keeps the file's offset in the original bone frame.
+  function seatTransforms() {
+    const j=G.joints, transforms={};
+    function bone(start,end,direction,origin) {
+      const span=sub(j[end],j[start]), from=unit(span), to=unit(direction);
+      const axis=cross(from,to), divisor=1+dot(from,to);
+      function rotate(v,inverse=false) {
+        const first=cross(axis,v);
+        return add(add(v,times(first,inverse?-1:1)),times(cross(axis,first),1/divisor));
+      }
+      transforms[start]={origin,rest:j[start],rotate};
+      return add(origin,times(to,Math.hypot(...span)));
+    }
+    // Solve upward from a level foot so the sole keeps its original floor height.
+    const thigh=[.13,-1,-.095], shin=[.035,-.085,-1];
+    const legDrop=(name,end,direction)=>Math.hypot(...sub(j['right_'+end],j['right_'+name]))*unit(direction)[2];
+    const hipZ=j.right_foot[2]-legDrop('thigh','shin',thigh)-legDrop('shin','foot',shin);
+    const lower=[0,0,hipZ-j.pelvis[2]], identity=v=>v;
+    transforms.torso={origin:add(j.pelvis,lower),rest:j.pelvis,rotate:identity};
+    for(const [side,sign] of [['right',1],['left',-1]]) {
+      const key=name=>side+'_'+name;
+      const direction=([x,y,z])=>[sign*x,y,z];
+      const thighAt=add(j[key('thigh')],lower);
+      const knee=bone(key('thigh'),key('shin'),direction(thigh),thighAt);
+      const ankle=bone(key('shin'),key('foot'),direction(shin),knee);
+      transforms[key('foot')]={origin:ankle,rest:j[key('foot')],rotate:identity};
+      const shoulder=add(j[key('upper_arm')],lower);
+      const elbow=bone(key('upper_arm'),key('forearm'),direction([.30,.06,-1]),shoulder);
+      bone(key('forearm'),key('hand'),direction([-.13,-1,.04]),elbow);
+    }
+    return transforms;
+  }
+  const seated=seatTransforms();
+  function seatPoint(point,anchor) {
+    const t=seated[anchor] || seated.torso;
+    return add(t.origin,t.rotate(sub(point,t.rest)));
+  }
+  function equipmentWorld(row,isPouch,pose,eyeHeight=G.referenceEyeHeight) {
+    if(pose==='seated') {
+      // The reference figure has a known seated eye height. Use below-eye
+      // offsets directly, including for files calibrated while already seated.
+      if(isPouch && row.bone===null)
+        return seatPoint([row.body[1],-row.body[0],G.referenceEyeHeight-row.body[2]]);
+      if(!isPouch) return seatPoint(G.world(row),row.anchor);
+      return seatPoint(G.pouchWorld(row));
+    }
+    return isPouch ? G.pouchWorld(row) : G.world(row,eyeHeight);
+  }
+  function move(row,isPouch,delta,pose) {
+    if(pose==='seated' && !isPouch && seated[row.anchor]) delta=seated[row.anchor].rotate(delta,true);
     if (isPouch) return G.shiftPouch(row,delta);
     if (row.anchor==='auto') {
       const [forward,right,up]=row.position;
@@ -44,9 +94,11 @@
 
   // Build the reference skeleton once. All geometry is in the same metre-space
   // as the holsters. Closed rings give the bones volume from every camera angle.
-  function skeleton() {
+  function skeleton(pose) {
     const faces=[], j=G.joints;
+    let anchor='torso';
     function shell(rings, tone=1) {
+      if(pose==='seated') rings=rings.map(ring=>ring.map(p=>seatPoint(p,anchor)));
       const count=rings[0].length;
       for (let r=1;r<rings.length;r++) for(let i=0;i<count;i++) {
         const k=(i+1)%count;
@@ -88,7 +140,9 @@
       bone(add(skull,[sign*.014,-.094,.024]),add(skull,[sign*.061,-.063,.022]),.012);
       oval(add(j.pelvis,[sign*.071,0,0]),[.096,.091,.070]);
       bone(j.neck,at('upper_arm'),.025);
+      anchor=side+'_upper_arm';
       bone(at('upper_arm'),at('forearm'),.036);
+      anchor=side+'_forearm';
       bone(at('forearm'),at('hand'),.024);
       bone(add(at('forearm'),[0,.015,-.008]),add(at('hand'),[0,.022,0]),.015);
       oval(at('hand'),[.045,.027,.031]);
@@ -97,11 +151,16 @@
         const tip=add(knuckle,[sign*(.039-.006*Math.abs(i-1)),(i-1.5)*.004,-.020]);
         bone(knuckle,tip,.007);
       }
+      anchor=side+'_thigh';
       bone(at('thigh'),at('shin'),.049);
+      anchor=side+'_shin';
       bone(at('shin'),at('foot'),.034);
+      anchor=side+'_foot';
       bone(at('foot'),at('toe'),.037);
-      for(const [name,r] of [['upper_arm',.041],['forearm',.029],['thigh',.049],['shin',.043]])
-        oval(at(name),[r,r,r]);
+      for(const [name,r] of [['upper_arm',.041],['forearm',.029],['thigh',.049],['shin',.043]]) {
+        anchor=side+'_'+name; oval(at(name),[r,r,r]);
+      }
+      anchor='torso';
       // Ribs wrap from the spine to the sternum. Each arc is visible when orbited.
       for(let i=0;i<6;i++) {
         const z=j.chest[2]-.075+i*.036, width=.138+.033*Math.sin(i*Math.PI/6);
@@ -112,8 +171,10 @@
     }
     return faces;
   }
-  const faces=skeleton();
-  function shadedFaces(cam) {
+  const skeletons=new Map();
+  function shadedFaces(cam,pose='standing') {
+    if(!skeletons.has(pose)) skeletons.set(pose,skeleton(pose));
+    const faces=skeletons.get(pose);
     const light=unit(add(cam.depth,add(times(cam.right,-.55),times(cam.up,.75))));
     return faces.filter(f=>dot(f.normal,cam.depth)>0).sort((a,b)=>dot(a.centre,cam.depth)-dot(b.centre,cam.depth)).map(f=>{
       const shade=Math.round((23+Math.max(0,dot(f.normal,light))*54)*f.tone);
@@ -123,19 +184,22 @@
   // Each part is a series of elliptical cross-sections in the skeleton's metre space.
   // The outside of their combined projection stays continuous across joints.
   const buildRange = {minKg:45, referenceKg:75, maxKg:180};
-  function bodySections(weightKg) {
+  function bodySections(weightKg,pose) {
     // Model a change in cross-section at a fixed skeleton height. These are
     // illustrative regional proportions, not an anthropometric prediction.
     const size = Math.sqrt(weightKg/buildRange.referenceKg)-1;
     const change = size<0 ? size*.68 : size;
     const j=G.joints, parts=[];
+    let anchor='torso';
     const circle=Array.from({length:24},(_,i)=>{
       const a=2*Math.PI*i/24;
       return [Math.cos(a),Math.sin(a)];
     });
     function sections(rows,u,v) {
-      parts.push(rows.map(([centre,ru,rv])=>circle.map(([c,s])=>
-        add(centre,add(times(u,ru*c),times(v,rv*s))))));
+      parts.push(rows.map(([centre,ru,rv])=>circle.map(([c,s])=>{
+        const point=add(centre,add(times(u,ru*c),times(v,rv*s)));
+        return pose==='seated' ? seatPoint(point,anchor) : point;
+      })));
     }
     function upright(origin,rows) {
       sections(rows.map(([z,back,width,depth,fullness=0])=>{
@@ -166,9 +230,11 @@
     upright(j.head,[[.014,-.093,.014,.020],[.030,-.103,.017,.024],[.065,-.094,.010,.012]]);
     for(const [side,sign] of [['right',1],['left',-1]]) {
       const at=name=>j[side+'_'+name];
+      anchor=side+'_upper_arm';
       limb(at('upper_arm'),at('forearm'),[
         [-.19,.045,.049,.33],[.04,.073,.072,.49],[.32,.063,.060,.76],[.59,.052,.054,.75],[.90,.043,.042,.43],[1.06,.039,.04,.22]
       ]);
+      anchor=side+'_forearm';
       limb(at('forearm'),at('hand'),[
         [-.09,.04,.04,.22],[.12,.05,.047,.43],[.36,.047,.045,.48],[.69,.034,.034,.32],[1.02,.027,.026,.12]
       ]);
@@ -179,12 +245,15 @@
       limb(add(hand,[sign*.009,-.025,0]),add(hand,[sign*.052,-.055,-.023]),[
         [0,.019,.016],[.51,.016,.014],[1,.009,.010]
       ]);
+      anchor=side+'_thigh';
       limb(at('thigh'),at('shin'),[
         [-.10,.079,.076,.72],[.09,.112,.097,1.03],[.31,.104,.089,.95],[.61,.083,.072,.82],[.83,.063,.056,.54],[1.05,.056,.055,.36]
       ]);
+      anchor=side+'_shin';
       limb(at('shin'),at('foot'),[
         [-.08,.050,.052,.36],[.12,.060,.055,.43],[.32,.070,.057,.60],[.50,.060,.051,.49],[.76,.038,.035,.29],[1.04,.034,.032,.14]
       ]);
+      anchor=side+'_foot';
       const ankle=at('foot'), toe=at('toe');
       const sole=[(ankle[0]+toe[0])/2,(ankle[1]+toe[1])/2,0];
       upright(sole,[[.004,0,.047,.113],[.021,-.002,.052,.124],[.043,.002,.050,.118],
@@ -192,7 +261,7 @@
     }
     return parts;
   }
-  let skin, cachedWeight;
+  let skin, cachedWeight, cachedPose;
   function convexOutline(points) {
     const sorted=points.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
     function chain(sequence) {
@@ -211,11 +280,12 @@
     const lower=chain(sorted);
     return lower.concat(chain(sorted.reverse()));
   }
-  function skinPath(cam,weightKg=buildRange.referenceKg) {
+  function skinPath(cam,weightKg=buildRange.referenceKg,pose='standing') {
     if(!Number.isFinite(weightKg) || weightKg<buildRange.minKg || weightKg>buildRange.maxKg)
       throw new RangeError('Body weight outside the reference range.');
-    if(weightKg!==cachedWeight) {
-      skin=bodySections(weightKg);
+    if(weightKg!==cachedWeight || pose!==cachedPose) {
+      skin=bodySections(weightKg,pose);
+      cachedPose=pose;
       cachedWeight=weightKg;
     }
     const polygons=[];
@@ -232,5 +302,37 @@
     }
     return polygons.join('');
   }
-  return {axes,camera,project,axisDelta,planeDelta,move,shadedFaces,skinPath,buildRange,dot,add,times};
+  function chairPath(cam) {
+    const lines=[];
+    function cushion(top,bottom) {
+      lines.push([...top,top[0]],[...bottom,bottom[0]]);
+      for(let i=0;i<top.length;i+=2) lines.push([bottom[i],top[i]]);
+    }
+    const rim=[[-.195,-.37],[.195,-.37],[.245,-.32],[.245,.12],
+      [.20,.17],[-.20,.17],[-.245,.12],[-.245,-.32]];
+    const seatZ=seated.torso.origin[2]-.098;
+    cushion(rim.map(([x,y])=>[x,y,seatZ]),rim.map(([x,y])=>[x,y,seatZ-.042]));
+    const back=[[-.175,.04],[.175,.04],[.21,.09],[.21,.44],
+      [.17,.49],[-.17,.49],[-.21,.44],[-.21,.09]];
+    const pad=depth=>back.map(([x,h])=>[x,.14+h*.16+depth,seatZ+h]);
+    cushion(pad(0),pad(.03));
+    for(const sign of [-1,1]) {
+      const x=sign*.274;
+      lines.push([[sign*.22,.026,seatZ-.02],[x,.026,seatZ+.207]]);
+      const arm=[[x,-.19,seatZ+.215],[x,.08,seatZ+.215],[x,.08,seatZ+.196],[x,-.19,seatZ+.196]];
+      lines.push([...arm,arm[0]]);
+    }
+    lines.push([[0,0,.10],[0,0,seatZ-.042]]);
+    for(let i=0;i<5;i++){
+      const a=i*Math.PI*2/5, x=.28*Math.cos(a), y=.28*Math.sin(a);
+      lines.push([[0,0,.10],[x,y,.050],[x,y,.031]]);
+      const wheel=Array.from({length:13},(_,k)=>{
+        const t=k*Math.PI/6;
+        return [x+.026*Math.cos(t)*Math.cos(a),y+.026*Math.cos(t)*Math.sin(a),.027+.026*Math.sin(t)];
+      });
+      lines.push(wheel);
+    }
+    return lines.map(line=>'M'+line.map(p=>project(p,cam).map(v=>v.toFixed(2)).join(' ')).join('L')).join('');
+  }
+  return {axes,camera,project,axisDelta,planeDelta,move,seatPoint,equipmentWorld,chairPath,shadedFaces,skinPath,buildRange,dot,add,times};
 });

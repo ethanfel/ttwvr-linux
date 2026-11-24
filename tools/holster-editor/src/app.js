@@ -5,6 +5,10 @@
   const O = globalThis.HolsterOrbit;
   let camera = O.camera(), lastBodyCamera = null, orbitDrag = null;
   let lastSkinCamera = null, lastSkinWeight = null;
+  const flatCameras={front:O.camera(0,0),side:O.camera(Math.PI/2,0)};
+  const previewCamera=()=>flatCameras[view] || camera;
+  let pose='standing';
+  const defaultBox=()=>pose==='seated' ? '20 95 400 491' : '0 0 440 540';
   const weightControl = $('body-weight');
   Object.assign(weightControl,{min:O.buildRange.minKg,max:O.buildRange.maxKg,value:O.buildRange.referenceKg});
   const svgNS = 'http://www.w3.org/2000/svg';
@@ -30,14 +34,14 @@
   const pouchId = 'pouch';
   const pouchInputs = ['pouch-right', 'pouch-forward', 'pouch-height'];
   const activeRow = (m, id) => id === pouchId ? m?.pouch : m?.slots[id - 1];
-  const rowWorld = (row, id) => id === pouchId ? G.pouchWorld(row) : G.world(row, doc?.eyeHeight ?? G.referenceEyeHeight);
+  const rowWorld = (row, id) => O.equipmentWorld(row,id===pouchId,pose,doc?.eyeHeight ?? G.referenceEyeHeight);
   function assignRow(m, id, row) {
     if (id === pouchId) m.pouch = row;
     else m.slots[id - 1] = row;
   }
   function moveRow(row, id, horizontal, vertical) {
-    if (id !== pouchId) return G.moveSlot(row, view, horizontal, vertical);
-    return G.shiftPouch(row, view === 'front' ? [-horizontal, 0, vertical] : [0, -horizontal, vertical]);
+    const shift=view==='front' ? [-horizontal,0,vertical] : [0,-horizontal,vertical];
+    return O.move(row,id===pouchId,shift,pose);
   }
   function selectRow(id) {
     if (errors.size) { notify('Correct the highlighted value before switching equipment.', 'error'); return; }
@@ -161,7 +165,7 @@
   function confirmReplace() { return demoMode || !(dirty() || errors.size) || confirm('Replace the current edits? Export a copy first if you want to keep them.'); }
   function install(bytes, name, isDemo = false) {
     const parsed = H.parse(bytes);
-    drag = null; $('body-map').setAttribute('viewBox', '0 0 440 540');
+    drag = null; $('body-map').setAttribute('viewBox', defaultBox());
     doc = parsed; demoMode = isDemo; model = H.clone(doc.model); filename = name; selected = model.slots.length ? 1 : pouchId; history = [H.clone(model)]; historyIndex = 0; exported = null;
     clearErrors(); $('filename').textContent = name; $('file-kind').textContent = isDemo ? 'DEMONSTRATION FILE' : 'CONFIGURATION FILE';
     $('fallback-details').open = activeRow(model, selected)?.anchor === 'auto'; render();
@@ -215,19 +219,21 @@
   }
   function project(point) { return view === 'orbit' ? O.project(point,camera) : G.project(point,view); }
   function drawSkeleton(body) {
-    if (lastBodyCamera === camera) return;
-    lastBodyCamera = camera;
+    const cam=previewCamera();
+    if (lastBodyCamera===cam) return;
+    lastBodyCamera=cam;
     const layer=document.createDocumentFragment();
     const line=(a,b)=>'M'+project(a).join(' ')+'L'+project(b).join(' ');
     let grid='';
     for (let i=-7;i<=7;i++) {
       grid+=line([i/10,-.7,0],[i/10,.7,0])+line([-.7,i/10,0],[.7,i/10,0]);
     }
-    layer.append(svg('path',{d:grid,class:'orbit-floor'}));
+    if(view==='orbit') layer.append(svg('path',{d:grid,class:'orbit-floor'}));
+    if(pose==='seated') layer.append(svg('path',{d:O.chairPath(cam),class:'chair-outline'}));
     // Keep the far-to-near order while batching adjacent equally lit faces.
     let path='', shade=null;
     const flush=()=>{ if(path) layer.append(svg('path',{d:path,class:'orbit-bone',style:'--light:'+shade+'%'})); };
-    for(const face of O.shadedFaces(camera)) {
+    for(const face of O.shadedFaces(cam,pose)) {
       if (face.shade!==shade) { flush(); path=''; shade=face.shade; }
       path+=face.path;
     }
@@ -253,7 +259,7 @@
     });
   }
   function drawBody(body = $('reference-body'), projection = view) {
-    if (projection==='orbit') { drawSkeleton(body); return; }
+    if (projection==='orbit' || (pose==='seated' && body===$('reference-body'))) { drawSkeleton(body); return; }
     if (body===$('reference-body')) lastBodyCamera=null;
     body.replaceChildren();
     const projected = p => G.project(p, projection);
@@ -301,7 +307,7 @@
     $('body-map').setAttribute('tabindex',orbit?'0':'-1');
     $('body-map').setAttribute('aria-label',orbit?'3D skeleton. Drag the background or use the arrow keys to orbit. Drag a gizmo to move equipment.':'Holster placement preview. Drag the centre to move and the square to resize.');
     $('orbit-reset').hidden=!orbit;
-    $('skin-control').hidden=!orbit;
+    $('skin-control').hidden=!orbit && pose!=='seated';
     updateSkin();
     $('direction-left').textContent = orbit ? '' : view === 'front' ? 'YOUR RIGHT' : 'BEHIND';
     $('direction-right').textContent = orbit ? '' : view === 'front' ? 'YOUR LEFT' : 'IN FRONT';
@@ -313,7 +319,7 @@
       : Object.entries(G.frames);
     anchors.sort(([a],[b]) => Number(a === activeAnchor) - Number(b === activeAnchor));
     for (const [anchor, frame] of anchors) {
-      const [x,y] = project(frame.origin);
+      const [x,y] = project(pose==='seated' ? O.seatPoint(frame.origin,anchor) : frame.origin);
       const label = editingPouch ? G.pouchLabels[anchor] : labels[anchor];
       const g = svg('g',{class:`anchor-point${anchor === activeAnchor ? ' selected' : ''}`, 'data-anchor':anchor, role:'button', tabindex:doc ? '0' : '-1', 'aria-label':`Assign ${label} anchor`, 'aria-disabled':String(!doc), 'aria-pressed':String(anchor === activeAnchor)});
       const title=svg('title',{}); title.textContent=label; g.append(title);
@@ -348,7 +354,7 @@
       const g=svg('g',{class:`holster-volume${chosen ? ' selected' : ''}${row.enabled === false ? ' off' : ''}`, 'data-preview-slot':id});
       const attachment = isPouch ? G.pouchFrames[row.bone] : G.frames[row.anchor];
       if (chosen && attachment) {
-        const [ax,ay]=project(attachment.origin);
+        const [ax,ay]=project(pose==='seated' ? O.seatPoint(attachment.origin,row.anchor) : attachment.origin);
         g.append(svg('path',{d:`M${ax} ${ay}L${x} ${y}`,class:'offset-line'}));
       }
       if (radius > 0) g.append(svg('circle',{cx:x,cy:y,r:radius,class:'grab-sphere'}));
@@ -440,7 +446,7 @@
     const profile=P.list().find(p=>p.id===presetId);
     commit(m=>Object.assign(m,P.apply(m,presetId,$('preset-side').value,Number($('preset-forward').value),$('preset-pipboy').value,
       {pouchSide:$('preset-pouch-side').value,eyeHeight:doc.eyeHeight,includePouch:!doc.pouchIssue})));
-    $('presets').close();$('body-map').setAttribute('viewBox','0 0 440 540');
+    $('presets').close();$('body-map').setAttribute('viewBox',defaultBox());
     selected=model.slots.length?1:pouchId;$('show-other').checked=true;render();
     notify(`${profile.name} applied. ${doc.pouchIssue?'Original pouch section preserved. ':''}Undo restores your previous layout.`, 'success');
   });
@@ -466,7 +472,7 @@
     commit(m=>{const row=activeRow(m, id); if(kind==='radius')row.radius=Math.max(.05,Math.min(.45,row.radius+(delta[0]+delta[1])*step));
       else if (view==='orbit') {
         const shift=kind==='axis' ? O.times(O.axes[axis].vector,(delta[0]+delta[1])*step) : O.planeDelta(delta[0]*step*G.SCALE,-delta[1]*step*G.SCALE,camera);
-        assignRow(m,id,O.move(row,id===pouchId,shift));
+        assignRow(m,id,O.move(row,id===pouchId,shift,pose));
       } else assignRow(m, id, moveRow(row, id, delta[0]*step, delta[1]*step));});
     const selector=kind==='axis' ? `[data-axis="${O.axes[axis].name}"]` : kind==='radius' ? '.radius-handle' : `[data-preview-slot="${id}"] .holster-centre`;
     document.querySelector(selector)?.focus({preventScroll:true});
@@ -488,7 +494,7 @@
     if (view==='orbit') {
       const dx=p[0]-drag.point[0],dy=p[1]-drag.point[1];
       const shift=drag.kind==='axis' ? O.axisDelta(O.axes[drag.axis].vector,dx,dy,camera) : O.planeDelta(dx,dy,camera);
-      drag.slot=O.move(drag.start,selected===pouchId,shift);
+      drag.slot=O.move(drag.start,selected===pouchId,shift,pose);
     } else if (drag.kind==='move') drag.slot=moveRow(drag.start,selected,(p[0]-drag.point[0])/G.SCALE,(drag.point[1]-p[1])/G.SCALE);
     else { const centre=project(rowWorld(drag.slot, selected)); drag.slot.radius=Math.max(.05,Math.min(.45,Math.hypot(p[0]-centre[0],p[1]-centre[1])/G.SCALE)); }
     const row = drag.slot;
@@ -534,7 +540,8 @@
     renderPreview();
   },{passive:false});
   function updateSkin() {
-    const skinVisible=view==='orbit' && $('show-skin').checked;
+    const cam=previewCamera();
+    const skinVisible=(view==='orbit' || pose==='seated') && $('show-skin').checked;
     $('skin-surface').toggleAttribute('hidden',!skinVisible);
     $('weight-control').hidden=!skinVisible;
     if (!skinVisible) return;
@@ -544,21 +551,28 @@
       $('weight-value').value=value;
       weightControl.setAttribute('aria-valuetext',value);
     }
-    if (lastSkinCamera!==camera || lastSkinWeight!==kg) {
-      $('skin-shape').setAttribute('d',O.skinPath(camera,kg));
-      lastSkinCamera=camera;
+    if (lastSkinCamera!==cam || lastSkinWeight!==kg) {
+      $('skin-shape').setAttribute('d',O.skinPath(cam,kg,pose));
+      lastSkinCamera=cam;
       lastSkinWeight=kg;
     }
   }
+  $('preview-pose').addEventListener('change',e=>{
+    if (drag || orbitDrag) finishPointer({pointerId:(drag || orbitDrag).pointer},true);
+    pose=e.target.value;
+    lastBodyCamera=null; lastSkinCamera=null;
+    map.setAttribute('viewBox',defaultBox());
+    renderPreview();
+  });
   weightControl.addEventListener('input',updateSkin);
   $('show-skin').addEventListener('change',updateSkin);
   $('orbit-reset').addEventListener('click',()=>{
-    camera=O.camera();map.setAttribute('viewBox','0 0 440 540');renderPreview();
+    camera=O.camera();map.setAttribute('viewBox',defaultBox());renderPreview();
   });
   const views=['front','side','orbit'];
   for(const v of views) $(`view-${v}`).addEventListener('click',()=>{
     if (drag || orbitDrag) finishPointer({pointerId:(drag || orbitDrag).pointer},true);
-    view=v;map.setAttribute('viewBox','0 0 440 540');
+    view=v;map.setAttribute('viewBox',defaultBox());
     for(const choice of views) $(`view-${choice}`).setAttribute('aria-pressed',String(v===choice));
     renderPreview();
   });

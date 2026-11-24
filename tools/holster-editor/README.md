@@ -4,12 +4,12 @@ An offline editor for TTWVR holsters and the ammo pouch.
 Open one HTML file in a current browser on **Windows or Linux**. No install,
 server, Python, Node, account or network connection is needed to use it.
 
-![Ammo pouch selected on the 3D reference skeleton](images/field-kit-3d.png)
+![Ammo pouch selected on the seated desk-chair reference in 3D](images/field-kit-3d.png)
 
 ## Open the tool
 
-Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.2/TTWVR-Holster-Editor.html)
-and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.2/TTWVR-Holster-Editor.zip)
+Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.3/TTWVR-Holster-Editor.html)
+and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.3/TTWVR-Holster-Editor.zip)
 also includes the offline instructions.
 
 1. **Load state file**: select your `TTWVR.state` file, or drop it onto the window.
@@ -27,6 +27,10 @@ also includes the offline instructions.
 
 **Try a sample** demonstrates the controls. Load your own file to enable export.
 The tool never overwrites game files directly.
+
+## Check seated reach
+
+Set **Pose** to **Seated · desk chair**. Use **Side** to check the front of the seat and your knees, then orbit in **3D** to check clearance around the armrests. The chair has fixed reference dimensions. Arm and leg holsters follow their bones as the pose changes. Automatic holsters and body-relative pouches use the seated reference eye height. Switching pose only changes the preview. Dragging a marker edits the placement shared by both poses.
 
 ## Edit the ammo pouch
 

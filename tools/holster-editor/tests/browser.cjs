@@ -9,6 +9,7 @@ const assert = require('node:assert/strict');
 const H = require('../src/state.js');
 const P = require('../src/presets.js');
 const G = require('../src/geometry.js');
+const O = require('../src/orbit.js');
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 (async () => {
   const chrome = process.env.CHROME_BIN || '/opt/google/chrome/chrome';
@@ -277,6 +278,34 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await change('#body-weight','75');assert.equal(await outlinePath(),beforeSkin);
     assert.deepEqual((await downloadState()).bytes,original.bytes);
 
+    await change('#preview-pose','seated');
+    assert.notEqual(await skeletonPath(),beforeOrbit);assert.notEqual(await outlinePath(),beforeSkin);
+    const chairVisible=()=>evaluate("!!document.querySelector('#reference-body .chair-outline')");
+    assert.ok(await chairVisible());assert.notEqual(await markerPosition(),markerBefore);
+    assert.deepEqual((await downloadState()).bytes,original.bytes);
+    await change('#body-weight','115');
+    await screenshot('holster-editor-seated.png');
+    await click('#show-skin');assert.ok(await chairVisible());assert.equal(await outlineVisible(),false);
+    await click('#show-skin');await change('#body-weight','75');
+    await click('[data-slot="1"]');await change('#anchor','right_thigh');
+    const seatedThigh=O.equipmentWorld((await downloadState()).model.slots[0],false,'seated');
+    await dragHandle('[data-axis="up"] .axis-hit',0,-16);
+    const raised=O.equipmentWorld((await downloadState()).model.slots[0],false,'seated');
+    near(raised.slice(0,2),seatedThigh.slice(0,2));assert.ok(raised[2]>seatedThigh[2]+.02);
+    await click('#undo');
+    for(const direction of ['side','front']){
+      await click('#view-'+direction);assert.ok(await chairVisible());
+      const scale=await dragHandle(marker(1),15,-13);
+      const edited=O.equipmentWorld((await downloadState()).model.slots[0],false,'seated');
+      const d=15/(scale*G.SCALE);
+      near(edited,O.add(seatedThigh,[direction==='front'?-d:0,direction==='side'?-d:0,13/(scale*G.SCALE)]),.006);
+      await click('#undo');
+    }
+    await click('#undo');await click('#select-pouch');
+    await change('#preview-pose','standing');await click('#view-orbit');
+    assert.equal(await chairVisible(),false);assert.equal(await outlinePath(),beforeSkin);
+    assert.equal(await markerPosition(),markerBefore);assert.deepEqual((await downloadState()).bytes,original.bytes);
+
     // Orbit over clear background, then drag each constrained axis with real browser input.
     const corner=await evaluate(`(()=>{const r=document.querySelector('#body-map').getBoundingClientRect();return {x:r.left+20,y:r.top+45};})()`);
     await cdp('Input.dispatchMouseEvent',{type:'mousePressed',...corner,button:'left',clickCount:1});
@@ -425,13 +454,14 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     await cdp('Emulation.setDeviceMetricsOverride', {width:390,height:844,deviceScaleFactor:1,mobile:true});
     assert.equal(await evaluate('document.documentElement.scrollWidth <= window.innerWidth'),true);await screenshot('holster-editor-mobile.png');
     await click('#view-orbit');
+    await change('#preview-pose','seated');
     await change('#body-weight','180');
     assert.equal(await evaluate("document.documentElement.scrollWidth <= window.innerWidth && document.getElementById('body-weight').getBoundingClientRect().width>60"),true);
     await click('#view-front');
     await cdp('Emulation.setDeviceMetricsOverride', {width:1024,height:768,deviceScaleFactor:1,mobile:false});
     assert.equal(await evaluate('document.documentElement.scrollWidth <= window.innerWidth'),true);
     assert.equal(errors.length,0,JSON.stringify(errors));assert.equal(requests.some(u=>/^https?:/.test(u)),false,JSON.stringify(requests));
-    console.log('PASS browser: estimated-weight outlines, fixed anchors, mobile slider, translucent silhouette, toggle, state preservation, 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
+    console.log('PASS browser: seated desk-chair geometry, seated view and drag/export/undo, estimated-weight outlines, fixed anchors, mobile slider, translucent silhouette, toggle, state preservation, 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
     console.log('PASS no network requests; source file unchanged; no browser exceptions.');
   } finally {
     try { await send('Browser.close'); } catch {}

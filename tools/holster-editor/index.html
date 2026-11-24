@@ -69,6 +69,10 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
 .weight-control input{min-width:0;width:100%;margin:0;accent-color:var(--accent);cursor:pointer}
 .weight-control output{color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
 @media(max-width:440px){.weight-control{grid-template-columns:1fr auto}.weight-control input{grid-column:1/-1;grid-row:2}}
+
+.preview-toolbar .pose-control{font-size:11px;letter-spacing:0;gap:7px}
+.pose-control select{width:auto;margin:0;padding:3px 5px;font-size:11px}
+.chair-outline{fill:none;stroke:var(--muted);stroke-width:1.25;stroke-linejoin:round;opacity:.66;pointer-events:none}
 </style>
 </head>
 <body>
@@ -94,7 +98,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
 
     <section class="map-panel" aria-labelledby="map-title">
       <div class="panel-title"><h2 id="map-title">PLACEMENT PREVIEW</h2><div class="view-tabs" role="group" aria-label="Preview direction"><button type="button" id="view-front" aria-pressed="true">FRONT</button><button type="button" id="view-side" aria-pressed="false">SIDE</button><button type="button" id="view-orbit" aria-pressed="false">3D</button></div></div>
-      <div class="preview-toolbar"><span>10 CM GRID · REFERENCE POSE</span><button type="button" id="orbit-reset" class="text-button" hidden>Reset view</button><label id="skin-control" hidden><input type="checkbox" id="show-skin" checked> Body outline</label><label><input type="checkbox" id="show-other" checked> Other placements</label></div>
+      <div class="preview-toolbar"><span>10 CM GRID</span><label class="pose-control">Pose <select id="preview-pose"><option value="standing">Standing</option><option value="seated">Seated · desk chair</option></select></label><button type="button" id="orbit-reset" class="text-button" hidden>Reset view</button><label id="skin-control" hidden><input type="checkbox" id="show-skin" checked> Body outline</label><label><input type="checkbox" id="show-other" checked> Other placements</label></div>
       <div id="weight-control" class="weight-control" hidden>
         <label for="body-weight">Estimated body weight</label>
         <input id="body-weight" type="range" step="1" aria-describedby="weight-note"/>
@@ -154,7 +158,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
           <div class="radius-row"><input type="range" id="pouch-radius-slider" min="5" max="45" step="0.1" aria-label="Ammo pouch grab radius in centimetres"><input type="number" id="pouch-radius" min="5" max="45" step="any" placeholder="Default" aria-label="Ammo pouch grab radius in centimetres"></div>
           <div class="range-labels"><span>5 CM</span><span>45 CM</span></div>
           <button type="button" class="text-button" id="pouch-default-radius">Use game radius</button>
-          <div class="field-heading"><span class="field-label">REFERENCE POSITION</span><span class="unit">CM</span></div>
+          <div class="field-heading"><span class="field-label">STANDING REFERENCE POSITION</span><span class="unit">CM</span></div>
           <div class="coordinate-row">
             <label>RIGHT<input id="pouch-right" type="number" step="any" aria-label="Ammo pouch right in centimetres"></label>
             <label>FORWARD<input id="pouch-forward" type="number" step="any" aria-label="Ammo pouch forward in centimetres"></label>
@@ -166,7 +170,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       <div class="apply-note"><span class="eyebrow">AFTER EXPORT</span><p>Close the game, back up your current file, and replace it with the exported <b>TTWVR.state</b>. Check the placement in VR.</p></div>
     </section>
   </main>
-  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">FIELD KIT 1.6.2</span></footer>
+  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">FIELD KIT 1.6.3</span></footer>
   <p class="bottom-note">Independent community utility · Fallout-inspired interface · no game assets bundled</p>
 </div>
 <dialog id="presets" aria-labelledby="presets-title">
@@ -186,7 +190,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   <p class="preset-caveat">Reference pose only: spacing changes as you move. These are starting layouts, not headset-tested fits. Fine-tune with your equipment and wrist Pip-Boy in VR.</p>
   <div class="preset-apply-row"><p id="preset-impact" aria-live="polite"></p><button type="button" id="apply-preset" class="primary" disabled>Apply layout</button></div>
 </dialog>
-<dialog id="instructions"><div class="dialog-heading"><p class="eyebrow">FIELD MANUAL</p><button type="button" id="close-help" class="icon-button" aria-label="Close instructions">×</button></div><h2>Configure. Export. Equip.</h2><ol><li><b>Quit Fallout and your mod manager.</b> This tool edits a copy; the game writes its state when it closes.</li><li><b>Load TTWVR.state.</b> It contains the numbered holsters and their anchors. A savegame or TTWVR.ini is a different file.</li><li><b>Choose a slot and an anchor.</b> Numbers match the game’s 1–8 hotkeys. Drag its numbered centre to position it; drag the square handle to resize its grab sphere. Use Front for left/right and Side for depth. Both views adjust height. Arrow keys move 1 cm (Shift: 5 cm). Numeric controls remain available.</li><li><b>Export the file.</b> Keep a backup of the original and replace it with the downloaded copy. Its filename must be <code>TTWVR.state</code>, without a browser-added “(1)”.</li><li><b>Launch the game and check the fit.</b> The preview uses an approximate reference body and pose. Fine placement depends on your avatar and calibration.</li></ol><h3>Ammo pouch</h3><p>Select <b>Ammo pouch</b> below the eight slots. In <b>3D</b>, <b>Body outline</b> shows the approximate skin surface around the skeleton. Use <b>Estimated body weight</b> to preview a slimmer or larger build at the same reference height. Drag the background to orbit and drag the R, F or U arrow to move right, forward or up. You can also drag <b>P</b> in Front and Side or enter its right, forward and floor height in centimetres. If your file has no saved pouch, choose <b>Set initial position</b> to place one. Undo or Reset pouch restores the loaded placement.</p><h3>Start from a preset</h3><p><b>Preset layouts</b> offers seven belt, vest and holster layouts, from four to eight enabled holsters. The P marks the ammo pouch. Choose its side and preview its reach before applying. One export saves the pouch and holsters together. Utility rig puts one forearm target opposite the selected Pip-Boy arm; this remains independent of pair order. One Undo restores your previous layout. Slots outside the chosen layout are disabled while their positions are retained. Visibility, calibration and other state sections stay as loaded. Export and check your reach in VR.</p><h3>Body holsters behind you?</h3><p>Field Kit 1.1–1.3 reversed front and back in the preview. If you exported body placements with those versions, this moves centres behind the reference body to the front. It affects pelvis, chest and leg anchors, including disabled slots; arms and Automatic slots stay unchanged. Intentionally rear-mounted body holsters would also move. Review the Side view, then export. One Undo restores the layout. Loading a file never repairs it automatically.</p><button type="button" id="repair-body" disabled>Repair old body placement</button><h3>Mirror a holster</h3><p>Choose a different destination slot under <b>Mirror to another slot</b>, then press the mirror button. Right upper arm becomes left upper arm, for example, with the matching local offset and grab radius. The destination is replaced in one undoable action. Subsequent edits are independent; this does not link the slots. Automatic slots show and mirror their saved position relative to the eyes. TTWVR chooses the nearest bone when the avatar loads.</p><h3>Where is the file?</h3><p><b>Windows</b> — your Documents folder, which may be redirected to OneDrive:</p><code class="path">My Games\FalloutNV\TTWVR.state</code><p><b>Linux / Proton</b> — inside the prefix used by your VR profile:</p><code class="path">drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state</code><p>TTWVR stores this configuration in New Vegas’s <code>FalloutNV</code> folder. Place a holster in VR and quit once if the holster sections have not been created yet.</p><h3>What gets edited?</h3><p>Holsters use <code>[SavedSlots]</code> and <code>[SavedSlotsOn]</code>. The ammo pouch uses <code>[SavedPouch]</code>. Select <b>Ammo pouch</b> to change its body anchor or grab radius. Other sections, encoding and line endings are preserved. This does not assign weapons to hotkeys or change a savegame.</p><p><b>Automatic</b> removes an explicit bone binding. TTWVR then chooses a nearby bone from the saved body-relative position. New explicit bindings start at a zero local offset; adjust the offset or finish placement in VR.</p><p class="field-help">Runs entirely offline. No installation, uploads, runtime libraries or network connection required. Original tool code: GPL-3.0-only.</p></dialog>
+<dialog id="instructions"><div class="dialog-heading"><p class="eyebrow">FIELD MANUAL</p><button type="button" id="close-help" class="icon-button" aria-label="Close instructions">×</button></div><h2>Configure. Export. Equip.</h2><ol><li><b>Quit Fallout and your mod manager.</b> This tool edits a copy; the game writes its state when it closes.</li><li><b>Load TTWVR.state.</b> It contains the numbered holsters and their anchors. A savegame or TTWVR.ini is a different file.</li><li><b>Choose a preview pose.</b> Select Seated · desk chair to check reach around the seat and armrests. Switching pose only changes the preview.</li><li><b>Choose a slot and an anchor.</b> Numbers match the game’s 1–8 hotkeys. Drag its numbered centre to position it; drag the square handle to resize its grab sphere. Use Front for left/right and Side for depth. Both views adjust height. Arrow keys move 1 cm (Shift: 5 cm). Numeric controls remain available.</li><li><b>Export the file.</b> Keep a backup of the original and replace it with the downloaded copy. Its filename must be <code>TTWVR.state</code>, without a browser-added “(1)”.</li><li><b>Launch the game and check the fit.</b> The preview uses an approximate reference body and pose. Fine placement depends on your avatar and calibration.</li></ol><h3>Ammo pouch</h3><p>Select <b>Ammo pouch</b> below the eight slots. In <b>3D</b>, <b>Body outline</b> shows the approximate skin surface around the skeleton. Use <b>Estimated body weight</b> to preview a slimmer or larger build at the same reference height. Drag the background to orbit and drag the R, F or U arrow to move right, forward or up. You can also drag <b>P</b> in Front and Side or enter its right, forward and floor height in centimetres. If your file has no saved pouch, choose <b>Set initial position</b> to place one. Undo or Reset pouch restores the loaded placement.</p><h3>Start from a preset</h3><p><b>Preset layouts</b> offers seven belt, vest and holster layouts, from four to eight enabled holsters. The P marks the ammo pouch. Choose its side and preview its reach before applying. One export saves the pouch and holsters together. Utility rig puts one forearm target opposite the selected Pip-Boy arm; this remains independent of pair order. One Undo restores your previous layout. Slots outside the chosen layout are disabled while their positions are retained. Visibility, calibration and other state sections stay as loaded. Export and check your reach in VR.</p><h3>Body holsters behind you?</h3><p>Field Kit 1.1–1.3 reversed front and back in the preview. If you exported body placements with those versions, this moves centres behind the reference body to the front. It affects pelvis, chest and leg anchors, including disabled slots; arms and Automatic slots stay unchanged. Intentionally rear-mounted body holsters would also move. Review the Side view, then export. One Undo restores the layout. Loading a file never repairs it automatically.</p><button type="button" id="repair-body" disabled>Repair old body placement</button><h3>Mirror a holster</h3><p>Choose a different destination slot under <b>Mirror to another slot</b>, then press the mirror button. Right upper arm becomes left upper arm, for example, with the matching local offset and grab radius. The destination is replaced in one undoable action. Subsequent edits are independent; this does not link the slots. Automatic slots show and mirror their saved position relative to the eyes. TTWVR chooses the nearest bone when the avatar loads.</p><h3>Where is the file?</h3><p><b>Windows</b> — your Documents folder, which may be redirected to OneDrive:</p><code class="path">My Games\FalloutNV\TTWVR.state</code><p><b>Linux / Proton</b> — inside the prefix used by your VR profile:</p><code class="path">drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state</code><p>TTWVR stores this configuration in New Vegas’s <code>FalloutNV</code> folder. Place a holster in VR and quit once if the holster sections have not been created yet.</p><h3>What gets edited?</h3><p>Holsters use <code>[SavedSlots]</code> and <code>[SavedSlotsOn]</code>. The ammo pouch uses <code>[SavedPouch]</code>. Select <b>Ammo pouch</b> to change its body anchor or grab radius. Other sections, encoding and line endings are preserved. This does not assign weapons to hotkeys or change a savegame.</p><p><b>Automatic</b> removes an explicit bone binding. TTWVR then chooses a nearby bone from the saved body-relative position. New explicit bindings start at a zero local offset; adjust the offset or finish placement in VR.</p><p class="field-help">Runs entirely offline. No installation, uploads, runtime libraries or network connection required. Original tool code: GPL-3.0-only.</p></dialog>
 <script>/* SPDX-License-Identifier: GPL-3.0-only */
 /* Lossless TTWVR state editor. No filesystem or network access. */
 (function (root) {
@@ -894,7 +898,57 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   function planeDelta(dx,dy,cam) {
     return times(add(times(cam.right,dx),times(cam.up,-dy)),1/G.SCALE);
   }
-  function move(row,isPouch,delta) {
+  // Rotate a bone from its standing direction to its seated direction. Applying
+  // the inverse to a drag keeps the file's offset in the original bone frame.
+  function seatTransforms() {
+    const j=G.joints, transforms={};
+    function bone(start,end,direction,origin) {
+      const span=sub(j[end],j[start]), from=unit(span), to=unit(direction);
+      const axis=cross(from,to), divisor=1+dot(from,to);
+      function rotate(v,inverse=false) {
+        const first=cross(axis,v);
+        return add(add(v,times(first,inverse?-1:1)),times(cross(axis,first),1/divisor));
+      }
+      transforms[start]={origin,rest:j[start],rotate};
+      return add(origin,times(to,Math.hypot(...span)));
+    }
+    // Solve upward from a level foot so the sole keeps its original floor height.
+    const thigh=[.13,-1,-.095], shin=[.035,-.085,-1];
+    const legDrop=(name,end,direction)=>Math.hypot(...sub(j['right_'+end],j['right_'+name]))*unit(direction)[2];
+    const hipZ=j.right_foot[2]-legDrop('thigh','shin',thigh)-legDrop('shin','foot',shin);
+    const lower=[0,0,hipZ-j.pelvis[2]], identity=v=>v;
+    transforms.torso={origin:add(j.pelvis,lower),rest:j.pelvis,rotate:identity};
+    for(const [side,sign] of [['right',1],['left',-1]]) {
+      const key=name=>side+'_'+name;
+      const direction=([x,y,z])=>[sign*x,y,z];
+      const thighAt=add(j[key('thigh')],lower);
+      const knee=bone(key('thigh'),key('shin'),direction(thigh),thighAt);
+      const ankle=bone(key('shin'),key('foot'),direction(shin),knee);
+      transforms[key('foot')]={origin:ankle,rest:j[key('foot')],rotate:identity};
+      const shoulder=add(j[key('upper_arm')],lower);
+      const elbow=bone(key('upper_arm'),key('forearm'),direction([.30,.06,-1]),shoulder);
+      bone(key('forearm'),key('hand'),direction([-.13,-1,.04]),elbow);
+    }
+    return transforms;
+  }
+  const seated=seatTransforms();
+  function seatPoint(point,anchor) {
+    const t=seated[anchor] || seated.torso;
+    return add(t.origin,t.rotate(sub(point,t.rest)));
+  }
+  function equipmentWorld(row,isPouch,pose,eyeHeight=G.referenceEyeHeight) {
+    if(pose==='seated') {
+      // The reference figure has a known seated eye height. Use below-eye
+      // offsets directly, including for files calibrated while already seated.
+      if(isPouch && row.bone===null)
+        return seatPoint([row.body[1],-row.body[0],G.referenceEyeHeight-row.body[2]]);
+      if(!isPouch) return seatPoint(G.world(row),row.anchor);
+      return seatPoint(G.pouchWorld(row));
+    }
+    return isPouch ? G.pouchWorld(row) : G.world(row,eyeHeight);
+  }
+  function move(row,isPouch,delta,pose) {
+    if(pose==='seated' && !isPouch && seated[row.anchor]) delta=seated[row.anchor].rotate(delta,true);
     if (isPouch) return G.shiftPouch(row,delta);
     if (row.anchor==='auto') {
       const [forward,right,up]=row.position;
@@ -905,9 +959,11 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
 
   // Build the reference skeleton once. All geometry is in the same metre-space
   // as the holsters. Closed rings give the bones volume from every camera angle.
-  function skeleton() {
+  function skeleton(pose) {
     const faces=[], j=G.joints;
+    let anchor='torso';
     function shell(rings, tone=1) {
+      if(pose==='seated') rings=rings.map(ring=>ring.map(p=>seatPoint(p,anchor)));
       const count=rings[0].length;
       for (let r=1;r<rings.length;r++) for(let i=0;i<count;i++) {
         const k=(i+1)%count;
@@ -949,7 +1005,9 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       bone(add(skull,[sign*.014,-.094,.024]),add(skull,[sign*.061,-.063,.022]),.012);
       oval(add(j.pelvis,[sign*.071,0,0]),[.096,.091,.070]);
       bone(j.neck,at('upper_arm'),.025);
+      anchor=side+'_upper_arm';
       bone(at('upper_arm'),at('forearm'),.036);
+      anchor=side+'_forearm';
       bone(at('forearm'),at('hand'),.024);
       bone(add(at('forearm'),[0,.015,-.008]),add(at('hand'),[0,.022,0]),.015);
       oval(at('hand'),[.045,.027,.031]);
@@ -958,11 +1016,16 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
         const tip=add(knuckle,[sign*(.039-.006*Math.abs(i-1)),(i-1.5)*.004,-.020]);
         bone(knuckle,tip,.007);
       }
+      anchor=side+'_thigh';
       bone(at('thigh'),at('shin'),.049);
+      anchor=side+'_shin';
       bone(at('shin'),at('foot'),.034);
+      anchor=side+'_foot';
       bone(at('foot'),at('toe'),.037);
-      for(const [name,r] of [['upper_arm',.041],['forearm',.029],['thigh',.049],['shin',.043]])
-        oval(at(name),[r,r,r]);
+      for(const [name,r] of [['upper_arm',.041],['forearm',.029],['thigh',.049],['shin',.043]]) {
+        anchor=side+'_'+name; oval(at(name),[r,r,r]);
+      }
+      anchor='torso';
       // Ribs wrap from the spine to the sternum. Each arc is visible when orbited.
       for(let i=0;i<6;i++) {
         const z=j.chest[2]-.075+i*.036, width=.138+.033*Math.sin(i*Math.PI/6);
@@ -973,8 +1036,10 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     }
     return faces;
   }
-  const faces=skeleton();
-  function shadedFaces(cam) {
+  const skeletons=new Map();
+  function shadedFaces(cam,pose='standing') {
+    if(!skeletons.has(pose)) skeletons.set(pose,skeleton(pose));
+    const faces=skeletons.get(pose);
     const light=unit(add(cam.depth,add(times(cam.right,-.55),times(cam.up,.75))));
     return faces.filter(f=>dot(f.normal,cam.depth)>0).sort((a,b)=>dot(a.centre,cam.depth)-dot(b.centre,cam.depth)).map(f=>{
       const shade=Math.round((23+Math.max(0,dot(f.normal,light))*54)*f.tone);
@@ -984,19 +1049,22 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   // Each part is a series of elliptical cross-sections in the skeleton's metre space.
   // The outside of their combined projection stays continuous across joints.
   const buildRange = {minKg:45, referenceKg:75, maxKg:180};
-  function bodySections(weightKg) {
+  function bodySections(weightKg,pose) {
     // Model a change in cross-section at a fixed skeleton height. These are
     // illustrative regional proportions, not an anthropometric prediction.
     const size = Math.sqrt(weightKg/buildRange.referenceKg)-1;
     const change = size<0 ? size*.68 : size;
     const j=G.joints, parts=[];
+    let anchor='torso';
     const circle=Array.from({length:24},(_,i)=>{
       const a=2*Math.PI*i/24;
       return [Math.cos(a),Math.sin(a)];
     });
     function sections(rows,u,v) {
-      parts.push(rows.map(([centre,ru,rv])=>circle.map(([c,s])=>
-        add(centre,add(times(u,ru*c),times(v,rv*s))))));
+      parts.push(rows.map(([centre,ru,rv])=>circle.map(([c,s])=>{
+        const point=add(centre,add(times(u,ru*c),times(v,rv*s)));
+        return pose==='seated' ? seatPoint(point,anchor) : point;
+      })));
     }
     function upright(origin,rows) {
       sections(rows.map(([z,back,width,depth,fullness=0])=>{
@@ -1027,9 +1095,11 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     upright(j.head,[[.014,-.093,.014,.020],[.030,-.103,.017,.024],[.065,-.094,.010,.012]]);
     for(const [side,sign] of [['right',1],['left',-1]]) {
       const at=name=>j[side+'_'+name];
+      anchor=side+'_upper_arm';
       limb(at('upper_arm'),at('forearm'),[
         [-.19,.045,.049,.33],[.04,.073,.072,.49],[.32,.063,.060,.76],[.59,.052,.054,.75],[.90,.043,.042,.43],[1.06,.039,.04,.22]
       ]);
+      anchor=side+'_forearm';
       limb(at('forearm'),at('hand'),[
         [-.09,.04,.04,.22],[.12,.05,.047,.43],[.36,.047,.045,.48],[.69,.034,.034,.32],[1.02,.027,.026,.12]
       ]);
@@ -1040,12 +1110,15 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       limb(add(hand,[sign*.009,-.025,0]),add(hand,[sign*.052,-.055,-.023]),[
         [0,.019,.016],[.51,.016,.014],[1,.009,.010]
       ]);
+      anchor=side+'_thigh';
       limb(at('thigh'),at('shin'),[
         [-.10,.079,.076,.72],[.09,.112,.097,1.03],[.31,.104,.089,.95],[.61,.083,.072,.82],[.83,.063,.056,.54],[1.05,.056,.055,.36]
       ]);
+      anchor=side+'_shin';
       limb(at('shin'),at('foot'),[
         [-.08,.050,.052,.36],[.12,.060,.055,.43],[.32,.070,.057,.60],[.50,.060,.051,.49],[.76,.038,.035,.29],[1.04,.034,.032,.14]
       ]);
+      anchor=side+'_foot';
       const ankle=at('foot'), toe=at('toe');
       const sole=[(ankle[0]+toe[0])/2,(ankle[1]+toe[1])/2,0];
       upright(sole,[[.004,0,.047,.113],[.021,-.002,.052,.124],[.043,.002,.050,.118],
@@ -1053,7 +1126,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     }
     return parts;
   }
-  let skin, cachedWeight;
+  let skin, cachedWeight, cachedPose;
   function convexOutline(points) {
     const sorted=points.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
     function chain(sequence) {
@@ -1072,11 +1145,12 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     const lower=chain(sorted);
     return lower.concat(chain(sorted.reverse()));
   }
-  function skinPath(cam,weightKg=buildRange.referenceKg) {
+  function skinPath(cam,weightKg=buildRange.referenceKg,pose='standing') {
     if(!Number.isFinite(weightKg) || weightKg<buildRange.minKg || weightKg>buildRange.maxKg)
       throw new RangeError('Body weight outside the reference range.');
-    if(weightKg!==cachedWeight) {
-      skin=bodySections(weightKg);
+    if(weightKg!==cachedWeight || pose!==cachedPose) {
+      skin=bodySections(weightKg,pose);
+      cachedPose=pose;
       cachedWeight=weightKg;
     }
     const polygons=[];
@@ -1093,7 +1167,39 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     }
     return polygons.join('');
   }
-  return {axes,camera,project,axisDelta,planeDelta,move,shadedFaces,skinPath,buildRange,dot,add,times};
+  function chairPath(cam) {
+    const lines=[];
+    function cushion(top,bottom) {
+      lines.push([...top,top[0]],[...bottom,bottom[0]]);
+      for(let i=0;i<top.length;i+=2) lines.push([bottom[i],top[i]]);
+    }
+    const rim=[[-.195,-.37],[.195,-.37],[.245,-.32],[.245,.12],
+      [.20,.17],[-.20,.17],[-.245,.12],[-.245,-.32]];
+    const seatZ=seated.torso.origin[2]-.098;
+    cushion(rim.map(([x,y])=>[x,y,seatZ]),rim.map(([x,y])=>[x,y,seatZ-.042]));
+    const back=[[-.175,.04],[.175,.04],[.21,.09],[.21,.44],
+      [.17,.49],[-.17,.49],[-.21,.44],[-.21,.09]];
+    const pad=depth=>back.map(([x,h])=>[x,.14+h*.16+depth,seatZ+h]);
+    cushion(pad(0),pad(.03));
+    for(const sign of [-1,1]) {
+      const x=sign*.274;
+      lines.push([[sign*.22,.026,seatZ-.02],[x,.026,seatZ+.207]]);
+      const arm=[[x,-.19,seatZ+.215],[x,.08,seatZ+.215],[x,.08,seatZ+.196],[x,-.19,seatZ+.196]];
+      lines.push([...arm,arm[0]]);
+    }
+    lines.push([[0,0,.10],[0,0,seatZ-.042]]);
+    for(let i=0;i<5;i++){
+      const a=i*Math.PI*2/5, x=.28*Math.cos(a), y=.28*Math.sin(a);
+      lines.push([[0,0,.10],[x,y,.050],[x,y,.031]]);
+      const wheel=Array.from({length:13},(_,k)=>{
+        const t=k*Math.PI/6;
+        return [x+.026*Math.cos(t)*Math.cos(a),y+.026*Math.cos(t)*Math.sin(a),.027+.026*Math.sin(t)];
+      });
+      lines.push(wheel);
+    }
+    return lines.map(line=>'M'+line.map(p=>project(p,cam).map(v=>v.toFixed(2)).join(' ')).join('L')).join('');
+  }
+  return {axes,camera,project,axisDelta,planeDelta,move,seatPoint,equipmentWorld,chairPath,shadedFaces,skinPath,buildRange,dot,add,times};
 });
 </script>
 <script>/* SPDX-License-Identifier: GPL-3.0-only */
@@ -1103,6 +1209,10 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   const O = globalThis.HolsterOrbit;
   let camera = O.camera(), lastBodyCamera = null, orbitDrag = null;
   let lastSkinCamera = null, lastSkinWeight = null;
+  const flatCameras={front:O.camera(0,0),side:O.camera(Math.PI/2,0)};
+  const previewCamera=()=>flatCameras[view] || camera;
+  let pose='standing';
+  const defaultBox=()=>pose==='seated' ? '20 95 400 491' : '0 0 440 540';
   const weightControl = $('body-weight');
   Object.assign(weightControl,{min:O.buildRange.minKg,max:O.buildRange.maxKg,value:O.buildRange.referenceKg});
   const svgNS = 'http://www.w3.org/2000/svg';
@@ -1128,14 +1238,14 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   const pouchId = 'pouch';
   const pouchInputs = ['pouch-right', 'pouch-forward', 'pouch-height'];
   const activeRow = (m, id) => id === pouchId ? m?.pouch : m?.slots[id - 1];
-  const rowWorld = (row, id) => id === pouchId ? G.pouchWorld(row) : G.world(row, doc?.eyeHeight ?? G.referenceEyeHeight);
+  const rowWorld = (row, id) => O.equipmentWorld(row,id===pouchId,pose,doc?.eyeHeight ?? G.referenceEyeHeight);
   function assignRow(m, id, row) {
     if (id === pouchId) m.pouch = row;
     else m.slots[id - 1] = row;
   }
   function moveRow(row, id, horizontal, vertical) {
-    if (id !== pouchId) return G.moveSlot(row, view, horizontal, vertical);
-    return G.shiftPouch(row, view === 'front' ? [-horizontal, 0, vertical] : [0, -horizontal, vertical]);
+    const shift=view==='front' ? [-horizontal,0,vertical] : [0,-horizontal,vertical];
+    return O.move(row,id===pouchId,shift,pose);
   }
   function selectRow(id) {
     if (errors.size) { notify('Correct the highlighted value before switching equipment.', 'error'); return; }
@@ -1259,7 +1369,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   function confirmReplace() { return demoMode || !(dirty() || errors.size) || confirm('Replace the current edits? Export a copy first if you want to keep them.'); }
   function install(bytes, name, isDemo = false) {
     const parsed = H.parse(bytes);
-    drag = null; $('body-map').setAttribute('viewBox', '0 0 440 540');
+    drag = null; $('body-map').setAttribute('viewBox', defaultBox());
     doc = parsed; demoMode = isDemo; model = H.clone(doc.model); filename = name; selected = model.slots.length ? 1 : pouchId; history = [H.clone(model)]; historyIndex = 0; exported = null;
     clearErrors(); $('filename').textContent = name; $('file-kind').textContent = isDemo ? 'DEMONSTRATION FILE' : 'CONFIGURATION FILE';
     $('fallback-details').open = activeRow(model, selected)?.anchor === 'auto'; render();
@@ -1313,19 +1423,21 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   }
   function project(point) { return view === 'orbit' ? O.project(point,camera) : G.project(point,view); }
   function drawSkeleton(body) {
-    if (lastBodyCamera === camera) return;
-    lastBodyCamera = camera;
+    const cam=previewCamera();
+    if (lastBodyCamera===cam) return;
+    lastBodyCamera=cam;
     const layer=document.createDocumentFragment();
     const line=(a,b)=>'M'+project(a).join(' ')+'L'+project(b).join(' ');
     let grid='';
     for (let i=-7;i<=7;i++) {
       grid+=line([i/10,-.7,0],[i/10,.7,0])+line([-.7,i/10,0],[.7,i/10,0]);
     }
-    layer.append(svg('path',{d:grid,class:'orbit-floor'}));
+    if(view==='orbit') layer.append(svg('path',{d:grid,class:'orbit-floor'}));
+    if(pose==='seated') layer.append(svg('path',{d:O.chairPath(cam),class:'chair-outline'}));
     // Keep the far-to-near order while batching adjacent equally lit faces.
     let path='', shade=null;
     const flush=()=>{ if(path) layer.append(svg('path',{d:path,class:'orbit-bone',style:'--light:'+shade+'%'})); };
-    for(const face of O.shadedFaces(camera)) {
+    for(const face of O.shadedFaces(cam,pose)) {
       if (face.shade!==shade) { flush(); path=''; shade=face.shade; }
       path+=face.path;
     }
@@ -1351,7 +1463,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     });
   }
   function drawBody(body = $('reference-body'), projection = view) {
-    if (projection==='orbit') { drawSkeleton(body); return; }
+    if (projection==='orbit' || (pose==='seated' && body===$('reference-body'))) { drawSkeleton(body); return; }
     if (body===$('reference-body')) lastBodyCamera=null;
     body.replaceChildren();
     const projected = p => G.project(p, projection);
@@ -1399,7 +1511,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     $('body-map').setAttribute('tabindex',orbit?'0':'-1');
     $('body-map').setAttribute('aria-label',orbit?'3D skeleton. Drag the background or use the arrow keys to orbit. Drag a gizmo to move equipment.':'Holster placement preview. Drag the centre to move and the square to resize.');
     $('orbit-reset').hidden=!orbit;
-    $('skin-control').hidden=!orbit;
+    $('skin-control').hidden=!orbit && pose!=='seated';
     updateSkin();
     $('direction-left').textContent = orbit ? '' : view === 'front' ? 'YOUR RIGHT' : 'BEHIND';
     $('direction-right').textContent = orbit ? '' : view === 'front' ? 'YOUR LEFT' : 'IN FRONT';
@@ -1411,7 +1523,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       : Object.entries(G.frames);
     anchors.sort(([a],[b]) => Number(a === activeAnchor) - Number(b === activeAnchor));
     for (const [anchor, frame] of anchors) {
-      const [x,y] = project(frame.origin);
+      const [x,y] = project(pose==='seated' ? O.seatPoint(frame.origin,anchor) : frame.origin);
       const label = editingPouch ? G.pouchLabels[anchor] : labels[anchor];
       const g = svg('g',{class:`anchor-point${anchor === activeAnchor ? ' selected' : ''}`, 'data-anchor':anchor, role:'button', tabindex:doc ? '0' : '-1', 'aria-label':`Assign ${label} anchor`, 'aria-disabled':String(!doc), 'aria-pressed':String(anchor === activeAnchor)});
       const title=svg('title',{}); title.textContent=label; g.append(title);
@@ -1446,7 +1558,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       const g=svg('g',{class:`holster-volume${chosen ? ' selected' : ''}${row.enabled === false ? ' off' : ''}`, 'data-preview-slot':id});
       const attachment = isPouch ? G.pouchFrames[row.bone] : G.frames[row.anchor];
       if (chosen && attachment) {
-        const [ax,ay]=project(attachment.origin);
+        const [ax,ay]=project(pose==='seated' ? O.seatPoint(attachment.origin,row.anchor) : attachment.origin);
         g.append(svg('path',{d:`M${ax} ${ay}L${x} ${y}`,class:'offset-line'}));
       }
       if (radius > 0) g.append(svg('circle',{cx:x,cy:y,r:radius,class:'grab-sphere'}));
@@ -1538,7 +1650,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     const profile=P.list().find(p=>p.id===presetId);
     commit(m=>Object.assign(m,P.apply(m,presetId,$('preset-side').value,Number($('preset-forward').value),$('preset-pipboy').value,
       {pouchSide:$('preset-pouch-side').value,eyeHeight:doc.eyeHeight,includePouch:!doc.pouchIssue})));
-    $('presets').close();$('body-map').setAttribute('viewBox','0 0 440 540');
+    $('presets').close();$('body-map').setAttribute('viewBox',defaultBox());
     selected=model.slots.length?1:pouchId;$('show-other').checked=true;render();
     notify(`${profile.name} applied. ${doc.pouchIssue?'Original pouch section preserved. ':''}Undo restores your previous layout.`, 'success');
   });
@@ -1564,7 +1676,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     commit(m=>{const row=activeRow(m, id); if(kind==='radius')row.radius=Math.max(.05,Math.min(.45,row.radius+(delta[0]+delta[1])*step));
       else if (view==='orbit') {
         const shift=kind==='axis' ? O.times(O.axes[axis].vector,(delta[0]+delta[1])*step) : O.planeDelta(delta[0]*step*G.SCALE,-delta[1]*step*G.SCALE,camera);
-        assignRow(m,id,O.move(row,id===pouchId,shift));
+        assignRow(m,id,O.move(row,id===pouchId,shift,pose));
       } else assignRow(m, id, moveRow(row, id, delta[0]*step, delta[1]*step));});
     const selector=kind==='axis' ? `[data-axis="${O.axes[axis].name}"]` : kind==='radius' ? '.radius-handle' : `[data-preview-slot="${id}"] .holster-centre`;
     document.querySelector(selector)?.focus({preventScroll:true});
@@ -1586,7 +1698,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     if (view==='orbit') {
       const dx=p[0]-drag.point[0],dy=p[1]-drag.point[1];
       const shift=drag.kind==='axis' ? O.axisDelta(O.axes[drag.axis].vector,dx,dy,camera) : O.planeDelta(dx,dy,camera);
-      drag.slot=O.move(drag.start,selected===pouchId,shift);
+      drag.slot=O.move(drag.start,selected===pouchId,shift,pose);
     } else if (drag.kind==='move') drag.slot=moveRow(drag.start,selected,(p[0]-drag.point[0])/G.SCALE,(drag.point[1]-p[1])/G.SCALE);
     else { const centre=project(rowWorld(drag.slot, selected)); drag.slot.radius=Math.max(.05,Math.min(.45,Math.hypot(p[0]-centre[0],p[1]-centre[1])/G.SCALE)); }
     const row = drag.slot;
@@ -1632,7 +1744,8 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     renderPreview();
   },{passive:false});
   function updateSkin() {
-    const skinVisible=view==='orbit' && $('show-skin').checked;
+    const cam=previewCamera();
+    const skinVisible=(view==='orbit' || pose==='seated') && $('show-skin').checked;
     $('skin-surface').toggleAttribute('hidden',!skinVisible);
     $('weight-control').hidden=!skinVisible;
     if (!skinVisible) return;
@@ -1642,21 +1755,28 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       $('weight-value').value=value;
       weightControl.setAttribute('aria-valuetext',value);
     }
-    if (lastSkinCamera!==camera || lastSkinWeight!==kg) {
-      $('skin-shape').setAttribute('d',O.skinPath(camera,kg));
-      lastSkinCamera=camera;
+    if (lastSkinCamera!==cam || lastSkinWeight!==kg) {
+      $('skin-shape').setAttribute('d',O.skinPath(cam,kg,pose));
+      lastSkinCamera=cam;
       lastSkinWeight=kg;
     }
   }
+  $('preview-pose').addEventListener('change',e=>{
+    if (drag || orbitDrag) finishPointer({pointerId:(drag || orbitDrag).pointer},true);
+    pose=e.target.value;
+    lastBodyCamera=null; lastSkinCamera=null;
+    map.setAttribute('viewBox',defaultBox());
+    renderPreview();
+  });
   weightControl.addEventListener('input',updateSkin);
   $('show-skin').addEventListener('change',updateSkin);
   $('orbit-reset').addEventListener('click',()=>{
-    camera=O.camera();map.setAttribute('viewBox','0 0 440 540');renderPreview();
+    camera=O.camera();map.setAttribute('viewBox',defaultBox());renderPreview();
   });
   const views=['front','side','orbit'];
   for(const v of views) $(`view-${v}`).addEventListener('click',()=>{
     if (drag || orbitDrag) finishPointer({pointerId:(drag || orbitDrag).pointer},true);
-    view=v;map.setAttribute('viewBox','0 0 440 540');
+    view=v;map.setAttribute('viewBox',defaultBox());
     for(const choice of views) $(`view-${choice}`).setAttribute('aria-pressed',String(v===choice));
     renderPreview();
   });

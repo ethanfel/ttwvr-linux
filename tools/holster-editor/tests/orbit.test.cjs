@@ -56,3 +56,35 @@ test('preset handles absent, pouch-only, and unrecognized pouch sections',()=>{
   const output=H.parse(H.serialize(broken,P.apply(broken.model,'gun_belt','right',0,'right',{includePouch:false})));
   assert.equal(output.pouchIssue,broken.pouchIssue);assert.ok(output.text.includes('1=anchor 7 unknown'));
 });
+
+test('seated desk pose joins the limbs at full length and plants the soles',()=>{
+  for(const side of ['right','left']){
+    for(const [parent,child] of [['upper_arm','forearm'],['thigh','shin'],['shin','foot']]){
+      const a=side+'_'+parent, b=side+'_'+child;
+      near(O.seatPoint(G.joints[b],a),O.seatPoint(G.joints[b],b));
+      const length=(p,q)=>Math.hypot(...p.map((x,i)=>x-q[i]));
+      near([length(O.seatPoint(G.joints[a],a),O.seatPoint(G.joints[b],b))],[length(G.joints[a],G.joints[b])]);
+    }
+    const posed=part=>O.seatPoint(G.joints[side+'_'+part],side+'_'+part);
+    const hip=posed('thigh'), knee=posed('shin'), ankle=posed('foot');
+    assert.ok(hip[2]>.50 && hip[2]<.62 && hip[1]-knee[1]>.40 && Math.abs(hip[2]-knee[2])<.06);
+    assert.ok(Math.abs(ankle[1]-knee[1])<.08 && knee[2]-ankle[2]>.39);
+    near([ankle[2]],[G.joints[side+'_foot'][2]]);
+    near(O.seatPoint(G.joints[side+'_upper_arm']),posed('upper_arm'));
+  }
+});
+test('seated moves round-trip through every bone, automatic and pouch fallback',()=>{
+  const doc=H.parse(H.demo()), shift=[.027,-.053,.039];
+  for(const anchor of [...Object.keys(G.frames),'auto']) {
+    const slot={...doc.model.slots[0],anchor,offset:[.045,-.07,.03]};
+    const start=O.equipmentWorld(slot,false,'seated',1.22);
+    const moved=O.move(slot,false,shift,'seated');
+    near(O.equipmentWorld(moved,false,'seated',1.22),O.add(start,shift));
+    near(O.move(moved,false,O.times(shift,-1),'seated').offset,slot.offset);
+    if(anchor==='auto') near(start,O.seatPoint(G.world(slot,G.referenceEyeHeight)));
+  }
+  for(const bone of [null,0,1,2,3]){
+    const pouch=G.reanchorPouch(doc.model.pouch,bone), start=O.equipmentWorld(pouch,true,'seated');
+    near(O.equipmentWorld(O.move(pouch,true,shift,'seated'),true,'seated'),O.add(start,shift));
+  }
+});
