@@ -34,15 +34,24 @@
   G.pouchLabels.forEach((label, bone) => $('pouch-anchor').append(element('option', {value: bone}, label)));
   const pouchId = 'pouch';
   const pouchInputs = ['pouch-right', 'pouch-forward', 'pouch-height'];
-  const activeRow = (m, id) => id === pouchId ? m?.pouch : m?.slots[id - 1];
-  const rowWorld = (row, id) => O.equipmentWorld(row,id===pouchId,pose,doc?.eyeHeight ?? G.referenceEyeHeight);
+  const spotNames = {pouch:'Ammo pouch', stim:'Stimpak circle'};
+  const marker = id => id === 'pouch' ? 'P' : id === 'stim' ? 'S' : String(id).padStart(2,'0');
+  const legacyPouch = id => id === pouchId && !model?.spots;
+  const activeRow = (m,id) => typeof id === 'number' ? m?.slots[id-1] : m?.spots ? m.spots[id] : id === pouchId ? m?.pouch : null;
+  const originalRow = id => model?.spots && typeof id === 'string' ? doc.original.spots?.[id] : activeRow(doc.original,id);
+  const equipmentIds = m => m?.spots ? Object.keys(m.spots) : m?.pouch ? [pouchId] : [];
+  const rowWorld = (row, id) => O.equipmentWorld(row,legacyPouch(id),pose,doc?.eyeHeight ?? G.referenceEyeHeight);
   function assignRow(m, id, row) {
-    if (id === pouchId) m.pouch = row;
+    if (typeof id === 'string' && m.spots) {
+      if (row) m.spots[id] = row;
+      else delete m.spots[id];
+      if (!doc.original.spots && !Object.keys(m.spots).length) m.spots = null;
+    } else if (id === pouchId) m.pouch = row;
     else m.slots[id - 1] = row;
   }
   function moveRow(row, id, horizontal, vertical) {
     const shift=view==='front' ? [-horizontal,0,vertical] : [0,-horizontal,vertical];
-    return O.move(row,id===pouchId,shift,pose);
+    return O.move(row,legacyPouch(id),shift,pose);
   }
   function selectRow(id) {
     if (errors.size) { notify('Correct the highlighted value before switching equipment.', 'error'); return; }
@@ -52,7 +61,18 @@
     render();
   }
   $('select-pouch').addEventListener('click', () => selectRow(pouchId));
+  $('select-stim').addEventListener('click', () => selectRow('stim'));
+  function initialSpot(m,id) {
+    if (id === pouchId && m.pouch) return G.pouchSpot(m.pouch,doc.eyeHeight);
+    const eyes = doc.eyeHeight ?? G.referenceEyeHeight;
+    return {id, anchor:'auto', offset:[0,0,0], position:[.18,id === pouchId ? -.12 : .12,-eyes/3], radius:.15};
+  }
+  $('use-spots').addEventListener('click', () => commit(m => { m.spots = {pouch:initialSpot(m,pouchId)}; }));
   $('place-pouch').addEventListener('click', () => {
+    if (model?.spots) {
+      if (!activeRow(model,selected)) commit(m => { m.spots[selected] = initialSpot(m,selected); });
+      return;
+    }
     if (!doc || model.pouch || doc.pouchIssue) return;
     // A proposed front-waist position, created only on an explicit click.
     const eyes = doc.eyeHeight ?? G.referenceEyeHeight;
@@ -63,7 +83,10 @@
   function render() {
     const focus = document.activeElement;
     const focusSlot = focus?.dataset?.slot;
-    const s = model?.slots[selected - 1];
+    if (selected === 'stim' && !model?.spots) selected = model?.slots.length ? 1 : pouchId;
+    const named = !!model?.spots && typeof selected === 'string';
+    const isLegacy = legacyPouch(selected);
+    const s = isLegacy ? null : activeRow(model,selected);
     $('slot-list').replaceChildren();
     for (let id = 1; id <= 8; id++) {
       const row = model?.slots[id - 1];
@@ -71,7 +94,7 @@
       button.disabled = !row;
       button.append(element('span', {class: 'slot-num'}, String(id).padStart(2, '0')));
       const text = element('span', {class: 'slot-text'});
-      text.append(element('span', {class: 'slot-label'}, row ? labels[row.anchor] : `Holster ${id}`), element('span', {class: 'slot-detail'}, row ? `${row.enabled ? 'ON' : 'OFF'}${row.anchor === 'auto' ? ' / AUTO-ASSIGN' : ' / BONE ANCHOR'}` : 'NO CONFIGURATION'));
+      text.append(element('span', {class: 'slot-label'}, row ? labels[row.anchor] : `Holster ${id}`), element('span', {class: 'slot-detail'}, row ? `${row.enabled ? 'ON' : 'OFF'}${row.anchor === 'auto' ? ' / AUTO-ASSIGN' : row.anchor === 'head' ? ' / HEAD-FOLLOWING' : ' / BONE ANCHOR'}` : 'NO CONFIGURATION'));
       button.append(text, element('i', {class: `slot-dot${row?.enabled ? ' on' : ''}`, 'aria-hidden': 'true'}));
       button.addEventListener('click', () => selectRow(id));
       $('slot-list').append(button);
@@ -81,16 +104,24 @@
     const pouchSelected = selected === pouchId;
     $('select-pouch').disabled = !doc;
     $('select-pouch').setAttribute('aria-pressed', String(pouchSelected));
-    $('pouch-panel').hidden = !pouchSelected;
-    $('holster-heading').hidden = $('editor-form').hidden = pouchSelected;
-    $('editor-title').textContent = pouchSelected ? 'AMMO POUCH' : 'SLOT DETAILS';
-    $('reset-slot').textContent = pouchSelected ? 'Reset pouch' : 'Reset slot';
-    if (pouchSelected) {
-      const pouch = model.pouch;
-      $('place-pouch').hidden = !!pouch || !!doc.pouchIssue;
+    $('select-stim').hidden = !model?.spots;
+    $('select-stim').setAttribute('aria-pressed', String(selected === 'stim'));
+    const pouchPanel = isLegacy || (named && !s);
+    $('pouch-panel').hidden = !pouchPanel;
+    $('use-spots').hidden = !isLegacy;
+    $('mirror-slot').closest('.mirror-panel').hidden = named;
+    $('enabled').closest('label').hidden = named;
+    $('show').closest('label').hidden = named;
+    $('placement-type').textContent = named ? 'EQUIPMENT SPOT' : 'SELECTED HOLSTER';
+    $('holster-heading').hidden = $('editor-form').hidden = pouchPanel;
+    $('editor-title').textContent = spotNames[selected]?.toUpperCase() || 'SLOT DETAILS';
+    $('reset-slot').textContent = named ? 'Reset spot' : pouchSelected ? 'Reset pouch' : 'Reset slot';
+    if (pouchPanel) {
+      const pouch = isLegacy && model.pouch;
+      $('place-pouch').hidden = !!pouch || (isLegacy && !!doc.pouchIssue);
       $('pouch-fields').hidden = !pouch;
       $('pouch-status').hidden = !!pouch;
-      $('pouch-status').textContent = doc.pouchIssue || 'This file has no saved ammo pouch. Set an initial position to edit it.';
+      $('pouch-status').textContent = (isLegacy && doc.pouchIssue) || 'No saved position for this placement.';
       if (pouch) displayPouch(pouch);
     }
     $('map-empty').hidden = !!doc;
@@ -106,10 +137,11 @@
     $('mirror-slot').disabled = !doc || !!errors.size;
     $('mirror-slot').textContent = `Mirror ${String(selected).padStart(2,'0')} → ${String(mirrorTarget).padStart(2,'0')}`;
     $('mirror-description').textContent = s ? `${labels[s.anchor]} → ${labels[G.opposite(s.anchor)]}. Replaces slot ${mirrorTarget} (position, radius, enabled). Undo restores it; later edits stay independent.` : 'Copy to the opposite side in a different slot.';
-    $('selected-number').textContent = String(selected).padStart(2, '0');
-    $('selected-name').textContent = s ? labels[s.anchor] : 'Awaiting file';
+    $('selected-number').textContent = marker(selected);
+    $('selected-name').textContent = named ? spotNames[selected] : s ? labels[s.anchor] : 'Awaiting file';
     $('enabled').disabled = !s; $('enabled').checked = !!s?.enabled;
     $('editor-fields').disabled = !s;
+    $('anchor').options[0].text = named ? 'Body-relative' : 'Automatic';
     $('anchor').value = s?.anchor || 'auto';
     $('radius').value = s ? numberDisplay(s.radius) : '6.5'; $('radius-slider').value = $('radius').value;
     for (const [i, id] of ['offset-x', 'offset-y', 'offset-z'].entries()) {
@@ -121,8 +153,13 @@
     $('offset-help').textContent = s?.anchor === 'auto' ? 'Move the saved position on the map or enter its body-relative coordinates below.' : 'Drag the preview to position this holster. X/Y/Z follow the chosen bone.';
     $('map-caption').textContent = s ? s.anchor === 'auto' ? `HOLSTER ${selected} / AUTOMATIC · SAVED POSITION` : `HOLSTER ${selected} / ${labels[s.anchor].toUpperCase()}${s.enabled ? '' : ' · DISABLED'}` : 'Choose a slot, then click its body anchor.';
     $('show').checked = model ? model.show : true;
-    if (pouchSelected) $('map-caption').textContent = 'AMMO POUCH';
-    $('reset-slot').disabled = !doc || H.same(activeRow(model, selected), activeRow(doc.original, selected));
+    if (spotNames[selected]) $('map-caption').textContent = spotNames[selected].toUpperCase();
+    if (s?.anchor === 'head') $('offset-help').textContent = 'From the neck, facing forward: X is forward, Y is right and Z is up.';
+    if (named && s?.anchor === 'auto') {
+      $('anchor-help').textContent = 'This spot uses the body-relative position.';
+      $('offset-help').textContent = 'Drag its marker or edit the body-relative position below.';
+    }
+    $('reset-slot').disabled = !doc || H.same(activeRow(model, selected), originalRow(selected));
     for (const [id, value] of drafts) { $(id).value = value; if (errors.has(id)) $(id).setAttribute('aria-invalid', 'true'); }
     updateStatus();
   }
@@ -138,6 +175,9 @@
     $('revert').disabled = !changed && !errors.size;
     const changes = [];
     if (count) changes.push(`${count} HOLSTER${count === 1 ? '' : 'S'}`);
+    for (const [id,name] of Object.entries(spotNames)) {
+      if (!H.same(model?.spots?.[id], doc?.original.spots?.[id])) changes.push(name.toUpperCase());
+    }
     if (model && !H.same(model.pouch, doc.original.pouch)) changes.push('AMMO POUCH');
     if (model && model.show !== doc.original.show) changes.push('VISIBILITY');
     $('change-status').textContent = !doc ? 'NO FILE LOADED' : errors.size ? 'CORRECT THE HIGHLIGHTED VALUE' : changed ? `${changes.join(' + ')} MODIFIED${dirty() ? '' : ' · COPY EXPORTED'}` : 'CONFIGURATION LOADED · NO CHANGES';
@@ -168,7 +208,7 @@
   function install(bytes, name, isDemo = false) {
     const parsed = H.parse(bytes);
     drag = null; $('body-map').setAttribute('viewBox', defaultBox());
-    doc = parsed; demoMode = isDemo; model = H.clone(doc.model); filename = name; selected = model.slots.length ? 1 : pouchId; history = [H.clone(model)]; historyIndex = 0; exported = null;
+    doc = parsed; demoMode = isDemo; model = H.clone(doc.model); filename = name; selected = model.slots.length ? 1 : (equipmentIds(model)[0] || pouchId); history = [H.clone(model)]; historyIndex = 0; exported = null;
     clearErrors(); $('filename').textContent = name; $('file-kind').textContent = isDemo ? 'DEMONSTRATION FILE' : 'CONFIGURATION FILE';
     $('fallback-details').open = activeRow(model, selected)?.anchor === 'auto'; render();
     notify(isDemo ? 'Sample mode: try the controls, then load your own state file to export changes.' : `Loaded ${name}. Select a holster or the ammo pouch.`, 'success');
@@ -205,7 +245,7 @@
   }
   function rowWithDrafts(row) {
     if (!row || errors.size || !drafts.size) return row;
-    if (selected === pouchId) {
+    if (legacyPouch(selected)) {
       const point = G.pouchWorld(row);
       const delta = pouchInputs.map((id, i) => drafts.has(id) ? Number(drafts.get(id)) / 100 * (i === 1 ? -1 : 1) - point[i] : 0);
       const updated = G.shiftPouch(row, delta);
@@ -325,11 +365,11 @@
     $('direction-left').textContent = orbit ? '' : view === 'front' ? 'YOUR RIGHT' : 'BEHIND';
     $('direction-right').textContent = orbit ? '' : view === 'front' ? 'YOUR LEFT' : 'IN FRONT';
     $('anchor-points').replaceChildren();
-    const editingPouch = selected === pouchId;
+    const editingPouch = legacyPouch(selected);
     const activeAnchor = editingPouch ? current?.bone : current?.anchor;
     const anchors = editingPouch
       ? (current ? G.pouchFrames.map((frame, bone) => [bone, frame]) : [])
-      : Object.entries(G.frames);
+      : doc && !current ? [] : Object.entries(G.frames);
     anchors.sort(([a],[b]) => Number(a === activeAnchor) - Number(b === activeAnchor));
     for (const [anchor, frame] of anchors) {
       const [x,y] = project(pose==='seated' ? O.seatPoint(frame.origin,anchor) : frame.origin);
@@ -340,7 +380,7 @@
       const assign = () => {
         if (doc && !errors.size) commit(m => {
           if (editingPouch) m.pouch = G.reanchorPouch(m.pouch, anchor);
-          else m.slots[selected-1].anchor = anchor;
+          else changeAnchor(m,anchor);
         });
       };
       g.addEventListener('click',assign);
@@ -349,18 +389,18 @@
     }
     $('slot-markers').replaceChildren(); $('preview-handles').replaceChildren();
     const ids = model?.slots.map(s => s.id) || [];
-    if (model?.pouch) ids.push(pouchId);
+    ids.push(...equipmentIds(model));
     ids.sort((a,b)=>{
       const selectionOrder=Number(a===selected)-Number(b===selected);
       if (selectionOrder || !orbit) return selectionOrder;
       return O.dot(rowWorld(activeRow(model,a),a),camera.depth)-O.dot(rowWorld(activeRow(model,b),b),camera.depth);
     });
     for (const id of ids) {
-      const chosen = id === selected, isPouch = id === pouchId;
+      const chosen = id === selected, isPouch = legacyPouch(id);
       const row = chosen ? current : activeRow(model, id);
       const world = rowWorld(row, id);
       if (!world || (!chosen && !$('show-other').checked)) continue;
-      const name = isPouch ? 'Ammo pouch' : 'Holster ' + id;
+      const name = spotNames[id] || 'Holster ' + id;
       const [x,y]=project(world), radius=(row.radius ?? 0)*G.SCALE;
       // Non-finite SVG geometry is never emitted, even for extreme but valid float32 state values.
       if (![x,y,radius].every(Number.isFinite)) continue;
@@ -381,7 +421,7 @@
         g.append(svg('path',{d:overlap,class:'body-overlap','pointer-events':'none','aria-hidden':'true'}));
         hasOverlap=true;
       }
-      const text=svg('text',{x,y});text.textContent=isPouch ? 'P' : String(id).padStart(2,'0');centre.append(text);
+      const text=svg('text',{x,y});text.textContent=marker(id);centre.append(text);
       centre.addEventListener('pointerdown',e=>beginDrag(e,id,'move'));
       centre.addEventListener('keydown',e=>keyboardMove(e,id));
       g.append(centre); $('slot-markers').append(g);
@@ -397,7 +437,8 @@
     $('preview-measure').textContent = current?.radius != null ? `R ${numberDisplay(current.radius)} CM · Ø ${numberDisplay(current.radius*2)} CM` : 'RADIUS —';
     $('fit-preview').disabled = !current;
     $('preview-hint').textContent = current?.anchor === 'auto' ? 'Automatic · drag the saved position. TTWVR chooses the nearest bone in VR.' : 'Drag centre to move · square handle to resize. Use Side for depth. Arrow keys: 1 cm; Shift: 5 cm.';
-    if (selected === pouchId) $('preview-hint').textContent = current ? 'Drag P to move the pouch. Set the grab radius in cm or drag its square handle. Use Side for depth.' : '';
+    if (model?.spots && typeof selected === 'string' && current?.anchor === 'auto') $('preview-hint').textContent = 'Drag the marker to move the saved spot.';
+    if (legacyPouch(selected)) $('preview-hint').textContent = current ? 'Drag P to move the pouch. Set the grab radius in cm or drag its square handle. Use Side for depth.' : '';
     if (orbit) $('preview-hint').textContent = 'Drag the background to orbit. Drag R (right), F (forward) or U (up) to move. Scroll to zoom.';
     const p=current && rowWorld(current, selected);
     if (p) {
@@ -449,7 +490,7 @@
     $('apply-preset').disabled=!doc || !!errors.size;
     $('apply-preset').textContent=`Apply ${profile.name}`;
     const impact=!model?.slots.length ? 'Places the ammo pouch in this pouch-only file.' :
-      `Updates slots 1–${profile.count}${doc?.pouchIssue?' and preserves the unreadable pouch section':' and places the ammo pouch'}.${profile.count<8 ? ` Disables ${profile.count+1}–8, retaining their positions.` : ''}`;
+      `Updates slots 1–${profile.count}${doc?.pouchIssue && !model?.spots?' and preserves the unreadable pouch section':' and places the ammo pouch'}.${profile.count<8 ? ` Disables ${profile.count+1}–8, retaining their positions.` : ''}`;
     $('preset-impact').textContent=!doc ? 'Load your TTWVR.state file before applying a layout.' : errors.size ? 'Close this preview and correct the highlighted value before applying.' : impact+' One Undo restores your previous layout.';
   }
   for(const profile of P.list()) {
@@ -467,10 +508,10 @@
     if(!doc || errors.size)return;
     const profile=P.list().find(p=>p.id===presetId);
     commit(m=>Object.assign(m,P.apply(m,presetId,$('preset-side').value,Number($('preset-forward').value),$('preset-pipboy').value,
-      {pouchSide:$('preset-pouch-side').value,eyeHeight:doc.eyeHeight,includePouch:!doc.pouchIssue})));
+      {pouchSide:$('preset-pouch-side').value,eyeHeight:doc.eyeHeight,includePouch:!!model.spots || !doc.pouchIssue})));
     $('presets').close();$('body-map').setAttribute('viewBox',defaultBox());
     selected=model.slots.length?1:pouchId;$('show-other').checked=true;render();
-    notify(`${profile.name} applied. ${doc.pouchIssue?'Original pouch section preserved. ':''}Undo restores your previous layout.`, 'success');
+    notify(`${profile.name} applied. ${doc.pouchIssue && !model.spots?'Original pouch section preserved. ':''}Undo restores your previous layout.`, 'success');
   });
   function mousePoint(e) {
     const p=new DOMPoint(e.clientX,e.clientY).matrixTransform($('body-map').getScreenCTM().inverse());
@@ -494,7 +535,7 @@
     commit(m=>{const row=activeRow(m, id); if(kind==='radius')row.radius=Math.max(.05,Math.min(.45,row.radius+(delta[0]+delta[1])*step));
       else if (view==='orbit') {
         const shift=kind==='axis' ? O.times(O.axes[axis].vector,(delta[0]+delta[1])*step) : O.planeDelta(delta[0]*step*G.SCALE,-delta[1]*step*G.SCALE,camera);
-        assignRow(m,id,O.move(row,id===pouchId,shift,pose));
+        assignRow(m,id,O.move(row,legacyPouch(id),shift,pose));
       } else assignRow(m, id, moveRow(row, id, delta[0]*step, delta[1]*step));});
     const selector=kind==='axis' ? `[data-axis="${O.axes[axis].name}"]` : kind==='radius' ? '.radius-handle' : `[data-preview-slot="${id}"] .holster-centre`;
     document.querySelector(selector)?.focus({preventScroll:true});
@@ -516,11 +557,11 @@
     if (view==='orbit') {
       const dx=p[0]-drag.point[0],dy=p[1]-drag.point[1];
       const shift=drag.kind==='axis' ? O.axisDelta(O.axes[drag.axis].vector,dx,dy,camera) : O.planeDelta(dx,dy,camera);
-      drag.slot=O.move(drag.start,selected===pouchId,shift,pose);
+      drag.slot=O.move(drag.start,legacyPouch(selected),shift,pose);
     } else if (drag.kind==='move') drag.slot=moveRow(drag.start,selected,(p[0]-drag.point[0])/G.SCALE,(drag.point[1]-p[1])/G.SCALE);
     else { const centre=project(rowWorld(drag.slot, selected)); drag.slot.radius=Math.max(.05,Math.min(.45,Math.hypot(p[0]-centre[0],p[1]-centre[1])/G.SCALE)); }
     const row = drag.slot;
-    if (selected === pouchId) displayPouch(row);
+    if (legacyPouch(selected)) displayPouch(row);
     else {
       for (const [i,id] of ['position-f','position-r','position-u'].entries()) $(id).value = numberDisplay(row.position[i]);
       for(const [i,id] of ['offset-x','offset-y','offset-z'].entries())$(id).value=numberDisplay(row.offset[i]);
@@ -591,7 +632,7 @@
     if(!doc || errors.size || drag || orbitDrag) return;
     const layout=$('adapt-scope').value==='layout';
     const ids=layout ? model.slots.filter(s=>s.enabled).map(s=>s.id) : [selected];
-    if(layout && model.pouch) ids.push(pouchId);
+    if(layout) ids.push(...equipmentIds(model));
     let moved=0, checked=0, unknownRadius=false, stillInside=0;
     const applied=commit(m=>{
       for(const id of ids) {
@@ -599,7 +640,7 @@
         if(!row) continue;
         if(!(row.radius>0)) { unknownRadius=true; continue; }
         checked++;
-        const adapted=O.adaptPlacement(row,id===pouchId,weightControl.valueAsNumber,pose,doc.eyeHeight ?? G.referenceEyeHeight);
+        const adapted=O.adaptPlacement(row,legacyPouch(id),weightControl.valueAsNumber,pose,doc.eyeHeight ?? G.referenceEyeHeight);
         if(adapted!==row) { assignRow(m,id,adapted); moved++; }
         else if(grabOverlap(id,rowWorld(row,id),row.radius)) stillInside++;
       }
@@ -637,7 +678,22 @@
     notify(`Mirrored holster ${selected} to ${mirrorTarget} (${labels[model.slots[mirrorTarget-1].anchor]}). Undo restores the previous destination.`, 'success');
   });
   $('enabled').addEventListener('change', e => commit(m => { m.slots[selected - 1].enabled = e.target.checked; }));
-  $('anchor').addEventListener('change', e => commit(m => { m.slots[selected - 1].anchor = e.target.value; }));
+  function changeAnchor(m,anchor) {
+    const row = activeRow(m, selected);
+    if (!row || row.anchor === anchor) return;
+    // Head offsets are forward/right/up from the neck. Convert across that
+    // frame (and for named spots) so the placement stays where it was.
+    if (row.anchor === 'head' || anchor === 'head' || typeof selected === 'string') {
+      const eyes = doc.eyeHeight ?? G.referenceEyeHeight;
+      const point = G.world(row,eyes);
+      if (anchor === 'auto') {
+        row.position = [-point[1],point[0],point[2]-eyes];
+        row.offset = [0,0,0];
+      } else row.offset = G.local(anchor,point);
+    }
+    row.anchor = anchor;
+  }
+  $('anchor').addEventListener('change', e => commit(m => changeAnchor(m,e.target.value)));
   $('show').addEventListener('change', e => commit(m => { m.show = e.target.checked; }));
   function numeric(id, mutate, min = -Infinity, max = Infinity) {
     const el = $(id);
@@ -685,7 +741,7 @@
     });
     $(id + '-slider').addEventListener('change', e => commit(m => { activeRow(m, selected).radius = Number(e.target.value) / 100; }));
   }
-  $('reset-slot').addEventListener('click', () => commit(m => assignRow(m, selected, H.clone(activeRow(doc.original, selected))), true));
+  $('reset-slot').addEventListener('click', () => commit(m => assignRow(m, selected, H.clone(originalRow(selected) ?? null)), true));
   function travel(delta) {
     const next = historyIndex + delta;
     if (next < 0 || next >= history.length) return;

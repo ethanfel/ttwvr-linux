@@ -81,7 +81,11 @@
       const target=next.slots[placement.id-1],position=target.position;
       Object.assign(target,placement,{position});
     }
-    if (options.includePouch !== false) next.pouch = ammoPouch(id,forwardCm,options.pouchSide,model.pouch,options.eyeHeight);
+    if (options.includePouch !== false) {
+      const pouch = ammoPouch(id, forwardCm, options.pouchSide, model.pouch, options.eyeHeight);
+      if (next.spots) next.spots.pouch = G.pouchSpot(pouch,options.eyeHeight);
+      else next.pouch = pouch;
+    }
     return next;
   }
   function metrics(placements, pouch=null) {

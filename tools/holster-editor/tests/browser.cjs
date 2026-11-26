@@ -537,8 +537,38 @@ const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
     assert.equal((await downloadState()).model.pouch.radius,null);
     await click('#undo');assert.deepEqual((await downloadState()).model,layout);
 
+    const spotFile=path.join(temp,'head-and-spots.state');
+    const modern = H.demo().replace('bone 1 right_upper_arm 0.1000 0.0000 0.0000','head 1 .14 .11 -.09') +
+      '[SavedSpots]\r\n1=spot pouch .22 -.15 -.30 .125\r\n2=bone pouch pelvis .15 .12 -.10\r\n3=spot stim .21 .16 -.35 .095\r\n4=head stim .2 .14 -.25';
+    await fs.writeFile(spotFile,modern); await upload(spotFile);
+    await waitFor("document.querySelector('#filename').textContent==='head-and-spots.state'","1.1.8 layout");
+    assert.deepEqual((await downloadState()).bytes,new TextEncoder().encode(modern));
+    assert.equal(await evaluate("document.querySelector('#anchor').value"),'head');
+    await change('#anchor','chest'); await click('#select-pouch');
+    assert.equal(await evaluate("document.querySelector('#selected-number').textContent"),'P',JSON.stringify(errors));
+    await change('#radius','11');
+    await click('#select-stim');
+    assert.equal(await evaluate("document.querySelector('#selected-number').textContent"),'S',JSON.stringify(errors));
+    await change('#anchor','left_upper_arm');
+    await change('#offset-x','12'); await change('#offset-y','-8');
+    const edited = await downloadState();
+    assert.equal(edited.model.slots[0].anchor,'chest');assert.equal(edited.model.spots.pouch.radius,.11);
+    assert.deepEqual(edited.model.pouch,H.parse(modern).model.pouch);
+    assert.equal(edited.model.spots.stim.anchor,'left_upper_arm');
+    assert.deepEqual(edited.model.spots.stim.offset.slice(0,2),[.12,-.08]);
+    assert.equal(await evaluate("document.querySelectorAll('[data-preview-slot=stim]').length"),1);
+    const exportedText=H.decode(edited.bytes).text;
+    assert.ok(!exportedText.includes('=head stim ') && !exportedText.includes('=head 1 '));
+    await click('#reset-slot');assert.deepEqual((await downloadState()).model.spots.stim,H.parse(modern).model.spots.stim);
+    await upload(input);await waitFor("!document.querySelector('#select-stim').getClientRects().length","legacy controls");
+    await click('#select-pouch');await click('#use-spots');await click('#select-stim');await click('#place-pouch');
+    const migrated = (await downloadState()).model;
+    assert.ok(migrated.spots.pouch && migrated.spots.stim);
+    await click('#undo');assert.ok(!(await downloadState()).model.spots.stim);
+    await click('#undo');assert.equal((await downloadState()).model.spots,null);
+
     assert.equal(errors.length,0,JSON.stringify(errors));assert.equal(requests.some(u=>/^https?:/.test(u)),false,JSON.stringify(requests));
-    console.log('PASS browser: lower-weight fitting after reload in both scopes, partial body overlap, depth-separated placements, seated desk-chair geometry, seated view and drag/export/undo, estimated-weight outlines, fixed anchors, mobile slider, translucent silhouette, toggle, state preservation, 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
+    console.log('PASS browser: 1.1.8 head and equipment editing, legacy pouch migration, lower-weight fitting after reload in both scopes, partial body overlap, depth-separated placements, seated desk-chair geometry, seated view and drag/export/undo, estimated-weight outlines, fixed anchors, mobile slider, translucent silhouette, toggle, state preservation, 3D orbit and gizmo drag/export/undo, preset ammo pouch previews, ammo pouch and automatic holster drag/export/reset, body repair/export/undo/redo, preset preview/apply/undo/export and mobile chooser, local load/export, exact no-op bytes, front/side mouse drags, live sphere radius, mirror export/undo, map/keyboard anchors, cm conversion, enable/visibility, radius validation, undo/redo, reset, invalid-file retention, green/amber, help and responsive layout.');
     console.log('PASS no network requests; source file unchanged; no browser exceptions.');
   } finally {
     try { await send('Browser.close'); } catch {}

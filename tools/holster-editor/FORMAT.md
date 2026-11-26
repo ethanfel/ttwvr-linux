@@ -1,7 +1,6 @@
 # Holster state format and validation
 
-This editor targets the state format observed in the supplied TTWVR 1.1.5 and
-1.1.6 builds. It does not infer format support from a file extension or change a
+This editor supports the placement formats in TTWVR 1.1.5 through 1.1.8. It does not infer format support from a file extension or change a
 mod DLL. The 1.1.6 plugin hash and compatibility audit are recorded in
 [the version audit](../../docs/ttwvr-1.1.6.md).
 
@@ -54,7 +53,25 @@ retain the saved local offsets; they are not world-space positions.
 The eight `on` values correspond to slots 1–8. Nonzero means enabled. `show`
 controls the always-shown setting. Editing writes canonical 0/1 values.
 
-## Ammo pouch
+## Head bindings and equipment spots in 1.1.8
+
+A numbered holster in `[SavedSlots]` can have a binding such as `head 1 0.21 -0.14 -0.31`. The three metre offsets are forward, right and up from the neck. Mirroring negates the right offset. In older editor exports, a bone and head record can coexist for the same placement. The game uses the valid bone first. Editing the binding writes one explicit record or removes both for automatic anchoring.
+
+The ammo pouch and Stimpak circle each have a named position in `[SavedSpots]` with a forward/right/up fallback and grab radius in metres. Either spot can have a bone or head binding. With only a position record, the spot uses its body-relative coordinates.
+
+```ini
+[SavedSpots]
+1=spot pouch 0.18 -0.12 -0.50 0.078
+2=bone pouch right_forearm 0.13 -0.04 0.08
+3=spot stim 0.18 0.12 -0.50 0.128
+4=head stim 0.18 0.09 -0.21
+```
+
+The editor recognises either spot independently. On an older file, the user can explicitly create the new section from the legacy pouch. A named placement uses an explicit 5–45 cm radius. When creating one without a saved radius, the editor starts at 15 cm.
+
+The stock 1.1.8 DLL loaded an editor-exported head holster, forearm ammo pouch and head-following Stimpak circle in an isolated Wine prefix. All three bindings, offsets and radii matched. The game’s writer then saved the placements, the editor read them back and an unedited export matched those bytes exactly.
+
+## Ammo pouch in 1.1.7
 
 TTWVR 1.1.7 stores the ammo pouch separately in `[SavedPouch]`. Its four
 body-relative values are forward, right, below-eye and above-feet in metres.

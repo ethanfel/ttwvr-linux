@@ -52,7 +52,7 @@ test('repair handles tilted chest/shin frames, retains front/automatic/arm slots
  for(const anchor of Object.keys(G.frames)) {
   const s={...legacy().slots[0],anchor,offset:G.local(anchor,[.15,.23,1.2]),enabled:false};
   const fixed=G.repairBodyPlacement(s);
-  if(anchor.includes('arm'))assert.equal(fixed,s);else near(G.world(fixed),[.15,-.23,1.2]);
+  if(anchor.includes('arm') || anchor==='head')assert.equal(fixed,s);else near(G.world(fixed),[.15,-.23,1.2]);
   const front={...s,offset:G.local(anchor,[.15,-.23,1.2])};assert.equal(G.repairBodyPlacement(front),front);
  }
  const auto={...legacy().slots[0],anchor:'auto'};assert.equal(G.repairBodyPlacement(auto),auto);

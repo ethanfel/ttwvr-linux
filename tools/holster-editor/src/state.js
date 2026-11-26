@@ -3,7 +3,7 @@
 (function (root) {
   'use strict';
   const ANCHORS = Object.freeze([
-    ['auto', 'Automatic'], ['pelvis', 'Pelvis'], ['chest', 'Chest'],
+    ['auto', 'Automatic'], ['head', 'Head-following (1.1.8)'], ['pelvis', 'Pelvis'], ['chest', 'Chest'],
     ['left_upper_arm', 'Left upper arm'], ['right_upper_arm', 'Right upper arm'],
     ['left_forearm', 'Left forearm'], ['right_forearm', 'Right forearm'],
     ['left_thigh', 'Left thigh'], ['right_thigh', 'Right thigh'],
@@ -68,6 +68,41 @@
     if (section?.records.length && !pouch.body) throw new Error('No saved ammo pouch position.');
     return {pouch: pouch.body ? pouch : null, refs};
   }
+  const spotIds = ['pouch', 'stim'];
+  function readPlacements(section, named, refs) {
+    const rows = {};
+    for (const r of section?.records || []) {
+      const tokens = r.value.split(/\s+/);
+      const type = tokens[0], binding = type === 'head' || type === 'bone';
+      if (!binding && !(named ? type === 'spot' : /^[+-]?\d/.test(type))) continue;
+      const key = binding || named ? tokens[1] : type;
+      if (named && !spotIds.includes(key)) continue; // Preserve future spot types.
+      if (!named && !/^[1-8]$/.test(key)) throw new Error(`Invalid holster number on line ${r.line + 1}.`);
+      const id = named ? key : Number(key);
+      const row = rows[id] ??= {id, anchor:'auto', offset:[0,0,0], position:null, radius:null};
+      if (binding) {
+        const head = type === 'head', anchor = head ? 'head' : tokens[2];
+        if (tokens.length !== (head ? 5 : 6)) throw new Error(`Invalid ${type} record on line ${r.line + 1}.`);
+        if (!head && (!names.has(anchor) || ['auto','head'].includes(anchor))) throw new Error(`Unsupported anchor "${anchor}" on line ${r.line + 1}.`);
+        const records = head ? refs.heads : refs.bones;
+        if (records[id]) throw new Error(`Duplicate ${type} record for ${id}.`);
+        records[id] = r;
+        const offset = tokens.slice(head ? 2 : 3).map(v => number(v, 'Anchor offset'));
+        // A 1.6.6 export can contain both. TTWVR uses the valid bone first.
+        if (!head || !refs.bones[id]) Object.assign(row, {anchor, offset});
+      } else {
+        if (tokens.length !== (named ? 6 : 5)) throw new Error(`Invalid position record on line ${r.line + 1}.`);
+        if (refs.positions[id]) throw new Error(`Placement ${id} has more than one position record.`);
+        refs.positions[id] = r;
+        const values = tokens.slice(named ? 2 : 1).map(v => number(v, 'Placement'));
+        row.position = values.slice(0,3); row.radius = values[3];
+      }
+    }
+    for (const row of Object.values(rows)) {
+      if (!row.position) throw new Error(`Missing position for ${row.id}.`);
+    }
+    return rows;
+  }
   function parse(input) {
     const bytes = typeof input === 'string' ? new TextEncoder().encode(input) : new Uint8Array(input);
     const {text, encoding, bom} = decode(bytes);
@@ -82,7 +117,7 @@
         if (section) section.end = i;
         const name = header[1].trim().toLowerCase();
         section = {name, start: i, end: lines.length, records: []};
-        if (name === 'savedslots' || name === 'savedslotson' || name === 'savedpouch') {
+        if (name === 'savedslots' || name === 'savedslotson' || name === 'savedpouch' || name === 'savedspots') {
           if (name === 'savedpouch' && sections[name]) { pouchIssue = 'Duplicate ammo pouch section.'; return; }
           if (sections[name]) throw new Error(`Duplicate [${header[1]}] section. Resolve the duplicate before editing.`);
           sections[name] = section;
@@ -112,10 +147,12 @@
         ({pouch, refs: pouchRefs} = readPouch(sections.savedpouch));
       } catch (e) { pouchIssue = e.message; }
     }
-    const pouchOnly = !!pouch && !sections.savedslots && !sections.savedslotson;
+    const placementRefs = () => ({positions:{}, bones:{}, heads:{}});
+    const refs = {...placementRefs(), spots:placementRefs(), on:null, show:null, pouch:pouchRefs};
+    assertKeys(sections.savedspots);
+    const spots = sections.savedspots ? readPlacements(sections.savedspots, true, refs.spots) : null;
+    const pouchOnly = (!!pouch || !!spots) && !sections.savedslots && !sections.savedslotson;
     if (!pouchOnly && !sections.savedslots) throw new Error('No [SavedSlots] section found. Open TTWVR.state after placing a holster in VR and quitting the game.');
-    const slots = Array.from({length: pouchOnly ? 0 : 8}, (_, i) => ({id: i + 1, position: null, radius: null, anchor: 'auto', offset: [0, 0, 0], enabled: false}));
-    const refs = {positions: {}, bones: {}, on: null, show: null, pouch: pouchRefs};
     function assertKeys(s) {
       const keys = new Set();
       for (const r of s?.records || []) {
@@ -124,25 +161,11 @@
       }
     }
     assertKeys(sections.savedslots); assertKeys(sections.savedslotson);
-    for (const r of sections.savedslots?.records || []) {
-      const t = r.value.split(/\s+/);
-      if (t[0] === 'bone') {
-        if (t.length !== 6 || !/^[1-8]$/.test(t[1])) throw new Error(`Invalid bone record on line ${r.line + 1}.`);
-        const id = Number(t[1]);
-        if (!names.has(t[2]) || t[2] === 'auto') throw new Error(`Unsupported anchor "${t[2]}" for holster ${id}. This editor supports the 1.1.5/1.1.6 format.`);
-        if (refs.bones[id]) throw new Error(`Holster ${id} has more than one bone record.`);
-        refs.bones[id] = r; slots[id - 1].anchor = t[2]; slots[id - 1].offset = t.slice(3).map(v => number(v, `Holster ${id} offset`));
-      } else if (/^[+-]?\d/.test(t[0])) {
-        if (t.length !== 5 || !/^[1-8]$/.test(t[0])) throw new Error(`Invalid position record on line ${r.line + 1}.`);
-        const id = Number(t[0]);
-        if (refs.positions[id]) throw new Error(`Holster ${id} has more than one position record.`);
-        refs.positions[id] = r; slots[id - 1].position = t.slice(1, 4).map(v => number(v, `Holster ${id} position`));
-        slots[id - 1].radius = number(t[4], `Holster ${id} radius`);
-      }
-      // Unknown extension records are retained verbatim.
-    }
-    const missing = slots.filter(s => s.position === null).map(s => s.id);
+    const numbered = readPlacements(sections.savedslots, false, refs);
+    const ids = Array.from({length:pouchOnly ? 0 : 8}, (_,i) => i + 1);
+    const missing = ids.filter(id => !numbered[id]);
     if (missing.length) throw new Error(`Missing positions for holsters ${missing.join(', ')}. Let TTWVR save all eight holsters before editing this file.`);
+    const slots = ids.map(id => ({...numbered[id], enabled:false}));
     let show = null;
     for (const r of sections.savedslotson?.records || []) {
       const t = r.value.split(/\s+/);
@@ -155,11 +178,11 @@
       }
     }
     if (!pouchOnly && (!refs.on || !refs.show)) throw new Error('Missing [SavedSlotsOn] enabled/visibility flags. Toggle a holster in VR and quit so TTWVR writes the complete configuration.');
-    const model = {slots, show, pouch};
+    const model = {slots, show, pouch, spots};
     return {bytes: bytes.slice(), text, lines, newline, encoding, bom, sections, refs, pouchIssue, eyeHeight, original: clone(model), model};
   }
   function validate(model) {
-    if (!model || !Array.isArray(model.slots) || !(model.slots.length === 8 && typeof model.show === 'boolean' || model.slots.length === 0 && model.show === null && model.pouch)) throw new Error('A configuration must contain eight holsters and a visibility flag.');
+    if (!model || !Array.isArray(model.slots) || !(model.slots.length === 8 && typeof model.show === 'boolean' || model.slots.length === 0 && model.show === null && (model.pouch || model.spots))) throw new Error('A configuration must contain eight holsters and a visibility flag.');
     if (model.pouch) {
       const {body, bone, offset, rotation, radius} = model.pouch;
       if (radius !== null) number(radius, 'Pouch radius');
@@ -172,8 +195,9 @@
         rotation.forEach(v => number(v, 'Pouch orientation'));
       }
     }
-    model.slots.forEach((s, i) => {
-      if (s.id !== i + 1 || typeof s.enabled !== 'boolean' || !names.has(s.anchor)) throw new Error(`Invalid holster ${i + 1}.`);
+    [...model.slots, ...Object.values(model.spots || {})].forEach((s, i) => {
+      const numbered = i < model.slots.length;
+      if ((numbered ? s.id !== i + 1 || typeof s.enabled !== 'boolean' : !spotIds.includes(s.id) || model.spots[s.id] !== s) || !names.has(s.anchor)) throw new Error(`Invalid holster ${i + 1}.`);
       for (const field of ['position', 'offset']) {
         if (!Array.isArray(s[field]) || s[field].length !== 3) throw new Error(`Invalid ${field} for holster ${s.id}.`);
         s[field].forEach(v => number(v, `Holster ${s.id} ${field}`));
@@ -193,27 +217,42 @@
   function serialize(doc, model = doc.model) {
     validate(model);
     if (same(model, doc.original)) return doc.bytes.slice();
-    const replacements = new Map(); const additions = [];
+    const replacements = new Map(), edits = new Map();
     const payload = (r, value) => `${r.indent}${r.key}${r.equals}${value}${r.suffix}`;
-    model.slots.forEach((s, i) => {
-      const old = doc.original.slots[i], r = doc.refs.positions[s.id], bone = doc.refs.bones[s.id];
-      if (!same(s.position, old.position) || s.radius !== old.radius) {
-        if (s.radius !== old.radius && (s.radius < 0.05 || s.radius > 0.45)) throw new Error(`Holster ${s.id} radius must be between 5 and 45 cm.`);
-        // Preserve the spelling of every unchanged number in the position row.
-        const tokens = r.value.split(/\s+/);
-        s.position.forEach((v, j) => { if (v !== old.position[j]) tokens[j + 1] = format(v); });
-        if (s.radius !== old.radius) tokens[4] = format(s.radius);
-        replacements.set(r.line, payload(r, tokens.join(' ')));
+    function editPlacements(section, rows, previous, refs, named) {
+      const additions = [], removals = [];
+      for (const row of rows) {
+        const {id, position, radius, anchor, offset} = row;
+        const old = previous(id), r = refs.positions[id];
+        if (!old || !same(position, old.position) || radius !== old.radius) {
+          if (radius !== old?.radius && (radius < .05 || radius > .45)) throw new Error(`Placement ${id} radius must be between 5 and 45 cm.`);
+          const first = named ? 2 : 1;
+          const tokens = r ? r.value.split(/\s+/) : named ? ['spot', id] : [id];
+          [...position, radius].forEach((v, j) => {
+            if (!old || v !== (j === 3 ? old.radius : old.position[j])) tokens[first+j] = format(v);
+          });
+          if (r) replacements.set(r.line, payload(r, tokens.join(' ')));
+          else additions.push(tokens.join(' '));
+        }
+        const bone = refs.bones[id], head = refs.heads[id];
+        if (anchor === (old?.anchor ?? 'auto') && (anchor === 'auto' || same(offset,old?.offset))) continue;
+        if (bone && head) removals.push(head);
+        const binding = bone || head;
+        if (anchor === 'auto') {
+          if (binding) removals.push(binding);
+        } else {
+          const tokens = anchor === 'head' ? ['head',id] : ['bone',id,anchor];
+          const previousTokens = binding?.value.split(/\s+/).slice(-3);
+          offset.forEach((v,i) => tokens.push(binding && v === old?.offset[i] ? previousTokens[i] : format(v)));
+          if (binding) replacements.set(binding.line, payload(binding, tokens.join(' ')));
+          else additions.push(tokens.join(' '));
+        }
       }
-      if (s.anchor !== old.anchor || (s.anchor !== 'auto' && !same(s.offset, old.offset))) {
-        if (s.anchor === 'auto') { if (bone) replacements.set(bone.line, null); }
-        else if (bone) {
-          const tokens = bone.value.split(/\s+/); tokens[2] = s.anchor;
-          s.offset.forEach((v, j) => { if (v !== old.offset[j]) tokens[j + 3] = format(v); });
-          replacements.set(bone.line, payload(bone, tokens.join(' ')));
-        } else additions.push(`bone ${s.id} ${s.anchor} ${s.offset.map(format).join(' ')}`);
-      }
-    });
+      for (const r of removals) replacements.set(r.line, r.suffix ? r.indent + r.suffix.trimStart() : null);
+      if (removals.length || additions.length) edits.set(section, {additions});
+    }
+    editPlacements('savedslots', model.slots, id => doc.original.slots[id-1], doc.refs, false);
+    if (model.spots) editPlacements('savedspots', Object.values(model.spots), id => doc.original.spots?.[id], doc.refs.spots, true);
     if (model.slots.some((s, i) => s.enabled !== doc.original.slots[i].enabled)) {
       replacements.set(doc.refs.on.line, payload(doc.refs.on, `on ${model.slots.map(s => +s.enabled).join(' ')}`));
     }
@@ -250,31 +289,36 @@
       editRecord('anchor', 'anchor ', anchorValues(oldPouch), anchorValues(pouch));
       editRecord('radius', 'radius ', oldPouch?.radius != null ? [oldPouch.radius] : null, pouch.radius !== null ? [pouch.radius] : null);
     }
-    const section = doc.sections.savedslots;
-    const structural = additions.length > 0 || model.slots.some(s => doc.refs.bones[s.id] && s.anchor === 'auto');
-    const pouchStructural = pouchAdditions.length > 0 || pouchRemoved;
-    let out = '', nextKey = 1, pouchKey = 1;
-    for (let i = 0; i <= doc.lines.length; i++) {
-      if (additions.length && i === section.end) {
-        if (out && !/[\r\n]$/.test(out)) out += doc.newline;
-        for (const value of additions) out += `${nextKey++}=${value}${doc.newline}`;
+    if (pouchAdditions.length || pouchRemoved) edits.set('savedpouch', {additions:pouchAdditions});
+    const titles = {savedslots:'SavedSlots', savedspots:'SavedSpots', savedpouch:'SavedPouch'};
+    const insertions = new Map(), keys = new Map();
+    // An existing final section receives its new rows before any new header.
+    const ordered = [...edits].sort(([a],[b]) => Number(!!doc.sections[b]) - Number(!!doc.sections[a]));
+    for (const [name, {additions}] of ordered) {
+      const section = doc.sections[name], end = section?.end ?? doc.lines.length;
+      let key = 1;
+      for (const record of section?.records || []) {
+        if (!replacements.has(record.line) || /^\s*\d+\s*=/.test(replacements.get(record.line) || '')) keys.set(record.line,key++);
       }
-      if (pouchAdditions.length && i === (pouchSection?.end ?? doc.lines.length)) {
+      if (!additions.length) continue;
+      const lines = insertions.get(end) || [];
+      if (!section) lines.push('[' + titles[name] + ']');
+      lines.push(...additions.map(value => (key++) + '=' + value));
+      insertions.set(end, lines);
+    }
+    let out = '';
+    for (let i = 0; i <= doc.lines.length; i++) {
+      if (insertions.has(i)) {
         if (out && !/[\r\n]$/.test(out)) out += doc.newline;
-        if (!pouchSection) out += '[SavedPouch]' + doc.newline;
-        out += pouchAdditions.map(value => (pouchKey++) + '=' + value).join(doc.newline);
-        if (i < doc.lines.length || doc.lines.at(-1)?.eol) out += doc.newline;
+        out += insertions.get(i).join(doc.newline) + doc.newline;
       }
       if (i === doc.lines.length) break;
       let body = replacements.has(i) ? replacements.get(i) : doc.lines[i].body;
       if (body === null) continue;
-      if (section && structural && i > section.start && i < section.end && /^\s*\d+\s*=/.test(body)) body = body.replace(/^(\s*)\d+(\s*=)/, `$1${nextKey++}$2`);
-      if (pouchSection && pouchStructural && i > pouchSection.start && i < pouchSection.end && /^\s*\d+\s*=/.test(body))
-        body = body.replace(/^(\s*)\d+(\s*=)/, `$1${pouchKey++}$2`);
+      if (keys.has(i)) body = body.replace(/^(\s*)\d+(\s*=)/, `$1${keys.get(i)}$2`);
       out += body + doc.lines[i].eol;
     }
-    if (pouchRemoved && pouchSection.end === doc.lines.length && !doc.lines.at(-1).eol)
-      out = out.replace(/(?:\r\n|\n|\r)$/, '');
+    if (!doc.lines.at(-1)?.eol) out = out.replace(/(?:\r\n|\n|\r)$/, '');
     const bytes = encode(out, doc.encoding, doc.bom);
     // Verify that exported bytes reload as the same editable state.
     const expected = clone(model); expected.slots.forEach(s => { if (s.anchor === 'auto') s.offset = [0, 0, 0]; });
@@ -285,6 +329,12 @@
       });
       if (Math.fround(s.radius) !== Math.fround(expected.slots[i].radius) || s.anchor !== expected.slots[i].anchor || s.enabled !== expected.slots[i].enabled) throw new Error('Export verification failed for a holster.');
     });
+    for (const id of spotIds) {
+      const wanted = expected.spots?.[id];
+      if (wanted?.anchor === 'auto') wanted.offset = [0,0,0];
+      const saved = actual.spots?.[id];
+      if (!!saved !== !!wanted || (saved && ['id','anchor','position','offset','radius'].some(k => !same(saved[k],wanted[k])))) throw new Error(`Export verification failed for ${id}.`);
+    }
     if (!same(actual.pouch, expected.pouch)) throw new Error('Export verification failed for the ammo pouch.');
     if (actual.show !== expected.show) throw new Error('Export verification failed for visibility.');
     return bytes;

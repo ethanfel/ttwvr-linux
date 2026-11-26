@@ -104,6 +104,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   <main class="workspace" id="drop-zone">
     <section class="slots-panel" aria-labelledby="slots-title"><div class="panel-title"><h2 id="slots-title">HOLSTER SLOTS</h2><span id="enabled-count">— / 8</span></div><button type="button" id="open-presets" class="preset-launch">Preset layouts <span>7 MODELS · PREVIEW FIRST</span></button><div id="slot-list" class="slot-list"></div><div class="slot-footer"><span class="dot-key"><i></i> ENABLED</span><span>01–08 · GAME HOTKEYS</span></div>
       <button type="button" id="select-pouch" class="pouch-button" aria-pressed="false" disabled><span>P</span> Ammo pouch</button>
+      <button type="button" id="select-stim" class="pouch-button" aria-pressed="false" hidden><span>S</span> Stimpak circle</button>
     </section>
 
     <section class="map-panel" aria-labelledby="map-title">
@@ -151,7 +152,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
 
     <section class="editor-panel" aria-labelledby="editor-title">
       <div class="panel-title"><h2 id="editor-title">SLOT DETAILS</h2><button type="button" class="text-button" id="reset-slot" disabled>Reset slot</button></div>
-      <div class="selected-heading" id="holster-heading"><span class="large-slot" id="selected-number">01</span><div><p class="eyebrow">SELECTED HOLSTER</p><h3 id="selected-name">Awaiting file</h3></div><label class="switch" title="Enable this holster"><input type="checkbox" id="enabled" disabled><span></span><span class="sr-only">Enable selected holster</span></label></div>
+      <div class="selected-heading" id="holster-heading"><span class="large-slot" id="selected-number">01</span><div><p class="eyebrow" id="placement-type">SELECTED HOLSTER</p><h3 id="selected-name">Awaiting file</h3></div><label class="switch" title="Enable this holster"><input type="checkbox" id="enabled" disabled><span></span><span class="sr-only">Enable selected holster</span></label></div>
       <form id="editor-form" novalidate>
         <fieldset id="editor-fields" disabled>
           <label class="field-label" for="anchor">BODY ANCHOR</label><select id="anchor"></select>
@@ -169,6 +170,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       <div id="pouch-panel" hidden>
         <p id="pouch-status" class="field-help"></p>
         <button type="button" id="place-pouch" hidden>Set initial position</button>
+        <button type="button" id="use-spots" hidden>Use 1.1.8 equipment spots</button>
         <fieldset id="pouch-fields">
           <label class="field-label" for="pouch-anchor">BODY ANCHOR</label>
           <select id="pouch-anchor"><option value="body">Body-relative</option></select>
@@ -188,7 +190,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       <div class="apply-note"><span class="eyebrow">AFTER EXPORT</span><p>Close the game, back up your current file, and replace it with the exported <b>TTWVR.state</b>. Check the placement in VR.</p></div>
     </section>
   </main>
-  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">FIELD KIT 1.6.6</span></footer>
+  <footer class="status-bar"><div><span class="status-light" id="status-light"></span><span id="change-status">NO FILE LOADED</span></div><div class="history"><button type="button" id="undo" disabled>↶ Undo</button><button type="button" id="redo" disabled>↷ Redo</button><span class="separator"></span><button type="button" id="revert" disabled>Revert all</button></div><span class="footer-version">FIELD KIT 1.7.0</span></footer>
   <p class="bottom-note">Independent community utility · Fallout-inspired interface · no game assets bundled</p>
 </div>
 <dialog id="presets" aria-labelledby="presets-title">
@@ -208,13 +210,13 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   <p class="preset-caveat">Reference pose only: spacing changes as you move. These are starting layouts, not headset-tested fits. Fine-tune with your equipment and wrist Pip-Boy in VR.</p>
   <div class="preset-apply-row"><p id="preset-impact" aria-live="polite"></p><button type="button" id="apply-preset" class="primary" disabled>Apply layout</button></div>
 </dialog>
-<dialog id="instructions"><div class="dialog-heading"><p class="eyebrow">FIELD MANUAL</p><button type="button" id="close-help" class="icon-button" aria-label="Close instructions">×</button></div><h2>Configure. Export. Equip.</h2><ol><li><b>Quit Fallout and your mod manager.</b> This tool edits a copy; the game writes its state when it closes.</li><li><b>Load TTWVR.state.</b> It contains the numbered holsters and their anchors. A savegame or TTWVR.ini is a different file.</li><li><b>Choose a preview pose.</b> Select Seated · desk chair to check reach around the seat and armrests. Switching pose only changes the preview. Choose Selected placement or Enabled layout and press <b>Auto adapt</b> to fit grab spheres to the skin. After changing weight, press it again to bring loose placements in or push embedded placements out. One Undo restores the previous positions.</li><li><b>Choose a slot and an anchor.</b> Numbers match the game’s 1–8 hotkeys. Drag its numbered centre to position it; drag the square handle to resize its grab sphere. Use Front for left/right and Side for depth. Both views adjust height. Arrow keys move 1 cm (Shift: 5 cm). Numeric controls remain available.</li><li><b>Export the file.</b> Keep a backup of the original and replace it with the downloaded copy. Its filename must be <code>TTWVR.state</code>, without a browser-added “(1)”.</li><li><b>Launch the game and check the fit.</b> The preview uses an approximate reference body and pose. Fine placement depends on your avatar and calibration.</li></ol><h3>Ammo pouch</h3><p>Select <b>Ammo pouch</b> below the eight slots. In <b>3D</b>, <b>Body outline</b> shows the approximate skin surface around the skeleton. Use <b>Estimated body weight</b> to preview a slimmer or larger build at the same reference height. Drag the background to orbit and drag the R, F or U arrow to move right, forward or up. You can also drag <b>P</b> in Front and Side or enter its right, forward and floor height in centimetres. If your file has no saved pouch, choose <b>Set initial position</b> to place one. Undo or Reset pouch restores the loaded placement.</p><h3>Start from a preset</h3><p><b>Preset layouts</b> offers seven belt, vest and holster layouts, from four to eight enabled holsters. The P marks the ammo pouch. Choose its side and preview its reach before applying. One export saves the pouch and holsters together. Utility rig puts one forearm target opposite the selected Pip-Boy arm; this remains independent of pair order. One Undo restores your previous layout. Slots outside the chosen layout are disabled while their positions are retained. Visibility, calibration and other state sections stay as loaded. Export and check your reach in VR.</p><h3>Body holsters behind you?</h3><p>Field Kit 1.1–1.3 reversed front and back in the preview. If you exported body placements with those versions, this moves centres behind the reference body to the front. It affects pelvis, chest and leg anchors, including disabled slots; arms and Automatic slots stay unchanged. Intentionally rear-mounted body holsters would also move. Review the Side view, then export. One Undo restores the layout. Loading a file never repairs it automatically.</p><button type="button" id="repair-body" disabled>Repair old body placement</button><h3>Mirror a holster</h3><p>Choose a different destination slot under <b>Mirror to another slot</b>, then press the mirror button. Right upper arm becomes left upper arm, for example, with the matching local offset and grab radius. The destination is replaced in one undoable action. Subsequent edits are independent; this does not link the slots. Automatic slots show and mirror their saved position relative to the eyes. TTWVR chooses the nearest bone when the avatar loads.</p><h3>Where is the file?</h3><p><b>Windows</b> — your Documents folder, which may be redirected to OneDrive:</p><code class="path">My Games\FalloutNV\TTWVR.state</code><p><b>Linux / Proton</b> — inside the prefix used by your VR profile:</p><code class="path">drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state</code><p>TTWVR stores this configuration in New Vegas’s <code>FalloutNV</code> folder. Place a holster in VR and quit once if the holster sections have not been created yet.</p><h3>What gets edited?</h3><p>Holsters use <code>[SavedSlots]</code> and <code>[SavedSlotsOn]</code>. The ammo pouch uses <code>[SavedPouch]</code>. Select <b>Ammo pouch</b> to change its body anchor or grab radius. Other sections, encoding and line endings are preserved. This does not assign weapons to hotkeys or change a savegame.</p><p><b>Automatic</b> removes an explicit bone binding. TTWVR then chooses a nearby bone from the saved body-relative position. New explicit bindings start at a zero local offset; adjust the offset or finish placement in VR.</p><p class="field-help">Runs entirely offline. No installation, uploads, runtime libraries or network connection required. Original tool code: GPL-3.0-only.</p></dialog>
+<dialog id="instructions"><div class="dialog-heading"><p class="eyebrow">FIELD MANUAL</p><button type="button" id="close-help" class="icon-button" aria-label="Close instructions">×</button></div><h2>Configure. Export. Equip.</h2><ol><li><b>Quit Fallout and your mod manager.</b> This tool edits a copy; the game writes its state when it closes.</li><li><b>Load TTWVR.state.</b> It contains the numbered holsters and their anchors. A savegame or TTWVR.ini is a different file.</li><li><b>Choose a preview pose.</b> Select Seated · desk chair to check reach around the seat and armrests. Switching pose only changes the preview. Choose Selected placement or Enabled layout and press <b>Auto adapt</b> to fit grab spheres to the skin. After changing weight, press it again to bring loose placements in or push embedded placements out. One Undo restores the previous positions.</li><li><b>Choose a slot and an anchor.</b> Numbers match the game’s 1–8 hotkeys. Drag its numbered centre to position it; drag the square handle to resize its grab sphere. Use Front for left/right and Side for depth. Both views adjust height. Arrow keys move 1 cm (Shift: 5 cm). Numeric controls remain available.</li><li><b>Export the file.</b> Keep a backup of the original and replace it with the downloaded copy. Its filename must be <code>TTWVR.state</code>, without a browser-added “(1)”.</li><li><b>Launch the game and check the fit.</b> The preview uses an approximate reference body and pose. Fine placement depends on your avatar and calibration.</li></ol><h3>Ammo pouch</h3><p>Select <b>Ammo pouch</b> below the eight slots. In <b>3D</b>, <b>Body outline</b> shows the approximate skin surface around the skeleton. Use <b>Estimated body weight</b> to preview a slimmer or larger build at the same reference height. Drag the background to orbit and drag the R, F or U arrow to move right, forward or up. You can also drag <b>P</b> in Front and Side or enter its right, forward and floor height in centimetres. If your file has no saved pouch, choose <b>Set initial position</b> to place one. Undo or Reset pouch restores the loaded placement.</p><h3>Start from a preset</h3><p><b>Preset layouts</b> offers seven belt, vest and holster layouts, from four to eight enabled holsters. The P marks the ammo pouch. Choose its side and preview its reach before applying. One export saves the pouch and holsters together. Utility rig puts one forearm target opposite the selected Pip-Boy arm; this remains independent of pair order. One Undo restores your previous layout. Slots outside the chosen layout are disabled while their positions are retained. Visibility, calibration and other state sections stay as loaded. Export and check your reach in VR.</p><h3>Body holsters behind you?</h3><p>Field Kit 1.1–1.3 reversed front and back in the preview. If you exported body placements with those versions, this moves centres behind the reference body to the front. It affects pelvis, chest and leg anchors, including disabled slots; arms and Automatic slots stay unchanged. Intentionally rear-mounted body holsters would also move. Review the Side view, then export. One Undo restores the layout. Loading a file never repairs it automatically.</p><button type="button" id="repair-body" disabled>Repair old body placement</button><h3>Mirror a holster</h3><p>Choose a different destination slot under <b>Mirror to another slot</b>, then press the mirror button. Right upper arm becomes left upper arm, for example, with the matching local offset and grab radius. The destination is replaced in one undoable action. Subsequent edits are independent; this does not link the slots. Automatic slots show and mirror their saved position relative to the eyes. TTWVR chooses the nearest bone when the avatar loads.</p><h3>Where is the file?</h3><p><b>Windows</b> — your Documents folder, which may be redirected to OneDrive:</p><code class="path">My Games\FalloutNV\TTWVR.state</code><p><b>Linux / Proton</b> — inside the prefix used by your VR profile:</p><code class="path">drive_c/users/steamuser/Documents/My Games/FalloutNV/TTWVR.state</code><p>TTWVR stores this configuration in New Vegas’s <code>FalloutNV</code> folder. Place a holster in VR and quit once if the holster sections have not been created yet.</p><h3>What gets edited?</h3><p>Holsters use <code>[SavedSlots]</code> and <code>[SavedSlotsOn]</code>. TTWVR 1.1.8 stores its ammo pouch and Stimpak circle in <code>[SavedSpots]</code>. Older layouts use <code>[SavedPouch]</code>. To start using the new spots on an older layout, select the ammo pouch and choose <b>Use 1.1.8 equipment spots</b>. Select <b>Ammo pouch</b> to change its body anchor or grab radius. Other sections, encoding and line endings are preserved. This does not assign weapons to hotkeys or change a savegame.</p><p><b>Automatic</b> removes an explicit bone binding. TTWVR then chooses a nearby bone from the saved body-relative position. New explicit bindings start at a zero local offset; adjust the offset or finish placement in VR.</p><p class="field-help">Runs entirely offline. No installation, uploads, runtime libraries or network connection required. Original tool code: GPL-3.0-only.</p></dialog>
 <script>/* SPDX-License-Identifier: GPL-3.0-only */
 /* Lossless TTWVR state editor. No filesystem or network access. */
 (function (root) {
   'use strict';
   const ANCHORS = Object.freeze([
-    ['auto', 'Automatic'], ['pelvis', 'Pelvis'], ['chest', 'Chest'],
+    ['auto', 'Automatic'], ['head', 'Head-following (1.1.8)'], ['pelvis', 'Pelvis'], ['chest', 'Chest'],
     ['left_upper_arm', 'Left upper arm'], ['right_upper_arm', 'Right upper arm'],
     ['left_forearm', 'Left forearm'], ['right_forearm', 'Right forearm'],
     ['left_thigh', 'Left thigh'], ['right_thigh', 'Right thigh'],
@@ -279,6 +281,41 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     if (section?.records.length && !pouch.body) throw new Error('No saved ammo pouch position.');
     return {pouch: pouch.body ? pouch : null, refs};
   }
+  const spotIds = ['pouch', 'stim'];
+  function readPlacements(section, named, refs) {
+    const rows = {};
+    for (const r of section?.records || []) {
+      const tokens = r.value.split(/\s+/);
+      const type = tokens[0], binding = type === 'head' || type === 'bone';
+      if (!binding && !(named ? type === 'spot' : /^[+-]?\d/.test(type))) continue;
+      const key = binding || named ? tokens[1] : type;
+      if (named && !spotIds.includes(key)) continue; // Preserve future spot types.
+      if (!named && !/^[1-8]$/.test(key)) throw new Error(`Invalid holster number on line ${r.line + 1}.`);
+      const id = named ? key : Number(key);
+      const row = rows[id] ??= {id, anchor:'auto', offset:[0,0,0], position:null, radius:null};
+      if (binding) {
+        const head = type === 'head', anchor = head ? 'head' : tokens[2];
+        if (tokens.length !== (head ? 5 : 6)) throw new Error(`Invalid ${type} record on line ${r.line + 1}.`);
+        if (!head && (!names.has(anchor) || ['auto','head'].includes(anchor))) throw new Error(`Unsupported anchor "${anchor}" on line ${r.line + 1}.`);
+        const records = head ? refs.heads : refs.bones;
+        if (records[id]) throw new Error(`Duplicate ${type} record for ${id}.`);
+        records[id] = r;
+        const offset = tokens.slice(head ? 2 : 3).map(v => number(v, 'Anchor offset'));
+        // A 1.6.6 export can contain both. TTWVR uses the valid bone first.
+        if (!head || !refs.bones[id]) Object.assign(row, {anchor, offset});
+      } else {
+        if (tokens.length !== (named ? 6 : 5)) throw new Error(`Invalid position record on line ${r.line + 1}.`);
+        if (refs.positions[id]) throw new Error(`Placement ${id} has more than one position record.`);
+        refs.positions[id] = r;
+        const values = tokens.slice(named ? 2 : 1).map(v => number(v, 'Placement'));
+        row.position = values.slice(0,3); row.radius = values[3];
+      }
+    }
+    for (const row of Object.values(rows)) {
+      if (!row.position) throw new Error(`Missing position for ${row.id}.`);
+    }
+    return rows;
+  }
   function parse(input) {
     const bytes = typeof input === 'string' ? new TextEncoder().encode(input) : new Uint8Array(input);
     const {text, encoding, bom} = decode(bytes);
@@ -293,7 +330,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
         if (section) section.end = i;
         const name = header[1].trim().toLowerCase();
         section = {name, start: i, end: lines.length, records: []};
-        if (name === 'savedslots' || name === 'savedslotson' || name === 'savedpouch') {
+        if (name === 'savedslots' || name === 'savedslotson' || name === 'savedpouch' || name === 'savedspots') {
           if (name === 'savedpouch' && sections[name]) { pouchIssue = 'Duplicate ammo pouch section.'; return; }
           if (sections[name]) throw new Error(`Duplicate [${header[1]}] section. Resolve the duplicate before editing.`);
           sections[name] = section;
@@ -323,10 +360,12 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
         ({pouch, refs: pouchRefs} = readPouch(sections.savedpouch));
       } catch (e) { pouchIssue = e.message; }
     }
-    const pouchOnly = !!pouch && !sections.savedslots && !sections.savedslotson;
+    const placementRefs = () => ({positions:{}, bones:{}, heads:{}});
+    const refs = {...placementRefs(), spots:placementRefs(), on:null, show:null, pouch:pouchRefs};
+    assertKeys(sections.savedspots);
+    const spots = sections.savedspots ? readPlacements(sections.savedspots, true, refs.spots) : null;
+    const pouchOnly = (!!pouch || !!spots) && !sections.savedslots && !sections.savedslotson;
     if (!pouchOnly && !sections.savedslots) throw new Error('No [SavedSlots] section found. Open TTWVR.state after placing a holster in VR and quitting the game.');
-    const slots = Array.from({length: pouchOnly ? 0 : 8}, (_, i) => ({id: i + 1, position: null, radius: null, anchor: 'auto', offset: [0, 0, 0], enabled: false}));
-    const refs = {positions: {}, bones: {}, on: null, show: null, pouch: pouchRefs};
     function assertKeys(s) {
       const keys = new Set();
       for (const r of s?.records || []) {
@@ -335,25 +374,11 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       }
     }
     assertKeys(sections.savedslots); assertKeys(sections.savedslotson);
-    for (const r of sections.savedslots?.records || []) {
-      const t = r.value.split(/\s+/);
-      if (t[0] === 'bone') {
-        if (t.length !== 6 || !/^[1-8]$/.test(t[1])) throw new Error(`Invalid bone record on line ${r.line + 1}.`);
-        const id = Number(t[1]);
-        if (!names.has(t[2]) || t[2] === 'auto') throw new Error(`Unsupported anchor "${t[2]}" for holster ${id}. This editor supports the 1.1.5/1.1.6 format.`);
-        if (refs.bones[id]) throw new Error(`Holster ${id} has more than one bone record.`);
-        refs.bones[id] = r; slots[id - 1].anchor = t[2]; slots[id - 1].offset = t.slice(3).map(v => number(v, `Holster ${id} offset`));
-      } else if (/^[+-]?\d/.test(t[0])) {
-        if (t.length !== 5 || !/^[1-8]$/.test(t[0])) throw new Error(`Invalid position record on line ${r.line + 1}.`);
-        const id = Number(t[0]);
-        if (refs.positions[id]) throw new Error(`Holster ${id} has more than one position record.`);
-        refs.positions[id] = r; slots[id - 1].position = t.slice(1, 4).map(v => number(v, `Holster ${id} position`));
-        slots[id - 1].radius = number(t[4], `Holster ${id} radius`);
-      }
-      // Unknown extension records are retained verbatim.
-    }
-    const missing = slots.filter(s => s.position === null).map(s => s.id);
+    const numbered = readPlacements(sections.savedslots, false, refs);
+    const ids = Array.from({length:pouchOnly ? 0 : 8}, (_,i) => i + 1);
+    const missing = ids.filter(id => !numbered[id]);
     if (missing.length) throw new Error(`Missing positions for holsters ${missing.join(', ')}. Let TTWVR save all eight holsters before editing this file.`);
+    const slots = ids.map(id => ({...numbered[id], enabled:false}));
     let show = null;
     for (const r of sections.savedslotson?.records || []) {
       const t = r.value.split(/\s+/);
@@ -366,11 +391,11 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       }
     }
     if (!pouchOnly && (!refs.on || !refs.show)) throw new Error('Missing [SavedSlotsOn] enabled/visibility flags. Toggle a holster in VR and quit so TTWVR writes the complete configuration.');
-    const model = {slots, show, pouch};
+    const model = {slots, show, pouch, spots};
     return {bytes: bytes.slice(), text, lines, newline, encoding, bom, sections, refs, pouchIssue, eyeHeight, original: clone(model), model};
   }
   function validate(model) {
-    if (!model || !Array.isArray(model.slots) || !(model.slots.length === 8 && typeof model.show === 'boolean' || model.slots.length === 0 && model.show === null && model.pouch)) throw new Error('A configuration must contain eight holsters and a visibility flag.');
+    if (!model || !Array.isArray(model.slots) || !(model.slots.length === 8 && typeof model.show === 'boolean' || model.slots.length === 0 && model.show === null && (model.pouch || model.spots))) throw new Error('A configuration must contain eight holsters and a visibility flag.');
     if (model.pouch) {
       const {body, bone, offset, rotation, radius} = model.pouch;
       if (radius !== null) number(radius, 'Pouch radius');
@@ -383,8 +408,9 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
         rotation.forEach(v => number(v, 'Pouch orientation'));
       }
     }
-    model.slots.forEach((s, i) => {
-      if (s.id !== i + 1 || typeof s.enabled !== 'boolean' || !names.has(s.anchor)) throw new Error(`Invalid holster ${i + 1}.`);
+    [...model.slots, ...Object.values(model.spots || {})].forEach((s, i) => {
+      const numbered = i < model.slots.length;
+      if ((numbered ? s.id !== i + 1 || typeof s.enabled !== 'boolean' : !spotIds.includes(s.id) || model.spots[s.id] !== s) || !names.has(s.anchor)) throw new Error(`Invalid holster ${i + 1}.`);
       for (const field of ['position', 'offset']) {
         if (!Array.isArray(s[field]) || s[field].length !== 3) throw new Error(`Invalid ${field} for holster ${s.id}.`);
         s[field].forEach(v => number(v, `Holster ${s.id} ${field}`));
@@ -404,27 +430,42 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   function serialize(doc, model = doc.model) {
     validate(model);
     if (same(model, doc.original)) return doc.bytes.slice();
-    const replacements = new Map(); const additions = [];
+    const replacements = new Map(), edits = new Map();
     const payload = (r, value) => `${r.indent}${r.key}${r.equals}${value}${r.suffix}`;
-    model.slots.forEach((s, i) => {
-      const old = doc.original.slots[i], r = doc.refs.positions[s.id], bone = doc.refs.bones[s.id];
-      if (!same(s.position, old.position) || s.radius !== old.radius) {
-        if (s.radius !== old.radius && (s.radius < 0.05 || s.radius > 0.45)) throw new Error(`Holster ${s.id} radius must be between 5 and 45 cm.`);
-        // Preserve the spelling of every unchanged number in the position row.
-        const tokens = r.value.split(/\s+/);
-        s.position.forEach((v, j) => { if (v !== old.position[j]) tokens[j + 1] = format(v); });
-        if (s.radius !== old.radius) tokens[4] = format(s.radius);
-        replacements.set(r.line, payload(r, tokens.join(' ')));
+    function editPlacements(section, rows, previous, refs, named) {
+      const additions = [], removals = [];
+      for (const row of rows) {
+        const {id, position, radius, anchor, offset} = row;
+        const old = previous(id), r = refs.positions[id];
+        if (!old || !same(position, old.position) || radius !== old.radius) {
+          if (radius !== old?.radius && (radius < .05 || radius > .45)) throw new Error(`Placement ${id} radius must be between 5 and 45 cm.`);
+          const first = named ? 2 : 1;
+          const tokens = r ? r.value.split(/\s+/) : named ? ['spot', id] : [id];
+          [...position, radius].forEach((v, j) => {
+            if (!old || v !== (j === 3 ? old.radius : old.position[j])) tokens[first+j] = format(v);
+          });
+          if (r) replacements.set(r.line, payload(r, tokens.join(' ')));
+          else additions.push(tokens.join(' '));
+        }
+        const bone = refs.bones[id], head = refs.heads[id];
+        if (anchor === (old?.anchor ?? 'auto') && (anchor === 'auto' || same(offset,old?.offset))) continue;
+        if (bone && head) removals.push(head);
+        const binding = bone || head;
+        if (anchor === 'auto') {
+          if (binding) removals.push(binding);
+        } else {
+          const tokens = anchor === 'head' ? ['head',id] : ['bone',id,anchor];
+          const previousTokens = binding?.value.split(/\s+/).slice(-3);
+          offset.forEach((v,i) => tokens.push(binding && v === old?.offset[i] ? previousTokens[i] : format(v)));
+          if (binding) replacements.set(binding.line, payload(binding, tokens.join(' ')));
+          else additions.push(tokens.join(' '));
+        }
       }
-      if (s.anchor !== old.anchor || (s.anchor !== 'auto' && !same(s.offset, old.offset))) {
-        if (s.anchor === 'auto') { if (bone) replacements.set(bone.line, null); }
-        else if (bone) {
-          const tokens = bone.value.split(/\s+/); tokens[2] = s.anchor;
-          s.offset.forEach((v, j) => { if (v !== old.offset[j]) tokens[j + 3] = format(v); });
-          replacements.set(bone.line, payload(bone, tokens.join(' ')));
-        } else additions.push(`bone ${s.id} ${s.anchor} ${s.offset.map(format).join(' ')}`);
-      }
-    });
+      for (const r of removals) replacements.set(r.line, r.suffix ? r.indent + r.suffix.trimStart() : null);
+      if (removals.length || additions.length) edits.set(section, {additions});
+    }
+    editPlacements('savedslots', model.slots, id => doc.original.slots[id-1], doc.refs, false);
+    if (model.spots) editPlacements('savedspots', Object.values(model.spots), id => doc.original.spots?.[id], doc.refs.spots, true);
     if (model.slots.some((s, i) => s.enabled !== doc.original.slots[i].enabled)) {
       replacements.set(doc.refs.on.line, payload(doc.refs.on, `on ${model.slots.map(s => +s.enabled).join(' ')}`));
     }
@@ -461,31 +502,36 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       editRecord('anchor', 'anchor ', anchorValues(oldPouch), anchorValues(pouch));
       editRecord('radius', 'radius ', oldPouch?.radius != null ? [oldPouch.radius] : null, pouch.radius !== null ? [pouch.radius] : null);
     }
-    const section = doc.sections.savedslots;
-    const structural = additions.length > 0 || model.slots.some(s => doc.refs.bones[s.id] && s.anchor === 'auto');
-    const pouchStructural = pouchAdditions.length > 0 || pouchRemoved;
-    let out = '', nextKey = 1, pouchKey = 1;
-    for (let i = 0; i <= doc.lines.length; i++) {
-      if (additions.length && i === section.end) {
-        if (out && !/[\r\n]$/.test(out)) out += doc.newline;
-        for (const value of additions) out += `${nextKey++}=${value}${doc.newline}`;
+    if (pouchAdditions.length || pouchRemoved) edits.set('savedpouch', {additions:pouchAdditions});
+    const titles = {savedslots:'SavedSlots', savedspots:'SavedSpots', savedpouch:'SavedPouch'};
+    const insertions = new Map(), keys = new Map();
+    // An existing final section receives its new rows before any new header.
+    const ordered = [...edits].sort(([a],[b]) => Number(!!doc.sections[b]) - Number(!!doc.sections[a]));
+    for (const [name, {additions}] of ordered) {
+      const section = doc.sections[name], end = section?.end ?? doc.lines.length;
+      let key = 1;
+      for (const record of section?.records || []) {
+        if (!replacements.has(record.line) || /^\s*\d+\s*=/.test(replacements.get(record.line) || '')) keys.set(record.line,key++);
       }
-      if (pouchAdditions.length && i === (pouchSection?.end ?? doc.lines.length)) {
+      if (!additions.length) continue;
+      const lines = insertions.get(end) || [];
+      if (!section) lines.push('[' + titles[name] + ']');
+      lines.push(...additions.map(value => (key++) + '=' + value));
+      insertions.set(end, lines);
+    }
+    let out = '';
+    for (let i = 0; i <= doc.lines.length; i++) {
+      if (insertions.has(i)) {
         if (out && !/[\r\n]$/.test(out)) out += doc.newline;
-        if (!pouchSection) out += '[SavedPouch]' + doc.newline;
-        out += pouchAdditions.map(value => (pouchKey++) + '=' + value).join(doc.newline);
-        if (i < doc.lines.length || doc.lines.at(-1)?.eol) out += doc.newline;
+        out += insertions.get(i).join(doc.newline) + doc.newline;
       }
       if (i === doc.lines.length) break;
       let body = replacements.has(i) ? replacements.get(i) : doc.lines[i].body;
       if (body === null) continue;
-      if (section && structural && i > section.start && i < section.end && /^\s*\d+\s*=/.test(body)) body = body.replace(/^(\s*)\d+(\s*=)/, `$1${nextKey++}$2`);
-      if (pouchSection && pouchStructural && i > pouchSection.start && i < pouchSection.end && /^\s*\d+\s*=/.test(body))
-        body = body.replace(/^(\s*)\d+(\s*=)/, `$1${pouchKey++}$2`);
+      if (keys.has(i)) body = body.replace(/^(\s*)\d+(\s*=)/, `$1${keys.get(i)}$2`);
       out += body + doc.lines[i].eol;
     }
-    if (pouchRemoved && pouchSection.end === doc.lines.length && !doc.lines.at(-1).eol)
-      out = out.replace(/(?:\r\n|\n|\r)$/, '');
+    if (!doc.lines.at(-1)?.eol) out = out.replace(/(?:\r\n|\n|\r)$/, '');
     const bytes = encode(out, doc.encoding, doc.bom);
     // Verify that exported bytes reload as the same editable state.
     const expected = clone(model); expected.slots.forEach(s => { if (s.anchor === 'auto') s.offset = [0, 0, 0]; });
@@ -496,6 +542,12 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       });
       if (Math.fround(s.radius) !== Math.fround(expected.slots[i].radius) || s.anchor !== expected.slots[i].anchor || s.enabled !== expected.slots[i].enabled) throw new Error('Export verification failed for a holster.');
     });
+    for (const id of spotIds) {
+      const wanted = expected.spots?.[id];
+      if (wanted?.anchor === 'auto') wanted.offset = [0,0,0];
+      const saved = actual.spots?.[id];
+      if (!!saved !== !!wanted || (saved && ['id','anchor','position','offset','radius'].some(k => !same(saved[k],wanted[k])))) throw new Error(`Export verification failed for ${id}.`);
+    }
     if (!same(actual.pouch, expected.pouch)) throw new Error('Export verification failed for the ammo pouch.');
     if (actual.show !== expected.show) throw new Error('Export verification failed for visibility.');
     return bytes;
@@ -692,6 +744,9 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     joints[key] = f.origin;
   }
   for (const key of ['right_hand', 'right_foot', 'right_toe']) joints[opposite(key)] = reflect(joints[key]);
+  // 1.1.8 stores head-following offsets as forward, right, up from the neck.
+  // Set the neutral preview frame after converting the skeleton to right/back/up.
+  frames.head = {origin:[0,joints.neck[1],joints.neck[2]], rotation:[0,1,0,-1,0,0,0,0,1]};
   const referenceEyeHeight = 1.67;
   function world(slot, eyeHeight = referenceEyeHeight) {
     if (slot.anchor === 'auto') {
@@ -712,6 +767,13 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     if (pouch.bone === null) return [pouch.body[1], -pouch.body[0], pouch.body[3]];
     const frame = pouchFrames[pouch.bone];
     return multiply(frame.rotation, pouch.offset).map((v, i) => frame.origin[i] + v / unitsPerMetre);
+  }
+  // Preserve the preview centre when moving a legacy pouch to the new slot format.
+  function pouchSpot(pouch, eyeHeight) {
+    const anchor = pouch.bone === null ? 'auto' : pouch.bone === 0 ? 'pelvis' : 'chest';
+    const point = pouchWorld(pouch);
+    return {id:'pouch', anchor, offset:anchor === 'auto' ? [0,0,0] : local(anchor,point),
+      position:[pouch.body[0],pouch.body[1],anchor === 'auto' ? point[2] - (eyeHeight ?? referenceEyeHeight) : -pouch.body[2]], radius:pouch.radius ?? .15};
   }
   function pouchLocal(bone, point) {
     const frame = pouchFrames[bone];
@@ -766,7 +828,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   function mirror(slot, targetId) {
     if (!Number.isInteger(targetId) || targetId < 1 || targetId > 8 || targetId === slot.id) throw new Error('Choose a different destination slot.');
     // Bilateral bone frames mirror local Z, NOT local X. Central anchors also use Z laterally.
-    return {...slot, id: targetId, anchor: opposite(slot.anchor), offset: slot.anchor === 'auto' ? [0,0,0] : [slot.offset[0],slot.offset[1],-slot.offset[2]], position: [slot.position[0],-slot.position[1],slot.position[2]]};
+    return {...slot, id: targetId, anchor: opposite(slot.anchor), offset: slot.anchor === 'auto' ? [0,0,0] : slot.offset.map((v,i) => i === (slot.anchor === 'head' ? 1 : 2) ? -v : v), position: [slot.position[0],-slot.position[1],slot.position[2]]};
   }
   function repairBodyPlacement(slot) {
     // Explicit recovery for pre-1.4 editor exports. Leave arms and Automatic
@@ -779,7 +841,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   }
   const SCALE = 230;
   const project = (p, view = 'front') => [220 - p[view === 'side' ? 1 : 0] * SCALE, 490 - p[2] * SCALE];
-  return {frames, joints, pouchWorld, pouchLocal, shiftPouch, reanchorPouch, pouchFrames, pouchLabels, referenceEyeHeight, world, moveSlot, local, move, mirror, opposite, reflect, repairBodyPlacement, project, SCALE};
+  return {frames, joints, pouchWorld, pouchSpot, pouchLocal, shiftPouch, reanchorPouch, pouchFrames, pouchLabels, referenceEyeHeight, world, moveSlot, local, move, mirror, opposite, reflect, repairBodyPlacement, project, SCALE};
 });
 </script>
 <script>/* SPDX-License-Identifier: GPL-3.0-only */
@@ -865,7 +927,11 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       const target=next.slots[placement.id-1],position=target.position;
       Object.assign(target,placement,{position});
     }
-    if (options.includePouch !== false) next.pouch = ammoPouch(id,forwardCm,options.pouchSide,model.pouch,options.eyeHeight);
+    if (options.includePouch !== false) {
+      const pouch = ammoPouch(id, forwardCm, options.pouchSide, model.pouch, options.eyeHeight);
+      if (next.spots) next.spots.pouch = G.pouchSpot(pouch,options.eyeHeight);
+      else next.pouch = pouch;
+    }
     return next;
   }
   function metrics(placements, pouch=null) {
@@ -1459,15 +1525,24 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   G.pouchLabels.forEach((label, bone) => $('pouch-anchor').append(element('option', {value: bone}, label)));
   const pouchId = 'pouch';
   const pouchInputs = ['pouch-right', 'pouch-forward', 'pouch-height'];
-  const activeRow = (m, id) => id === pouchId ? m?.pouch : m?.slots[id - 1];
-  const rowWorld = (row, id) => O.equipmentWorld(row,id===pouchId,pose,doc?.eyeHeight ?? G.referenceEyeHeight);
+  const spotNames = {pouch:'Ammo pouch', stim:'Stimpak circle'};
+  const marker = id => id === 'pouch' ? 'P' : id === 'stim' ? 'S' : String(id).padStart(2,'0');
+  const legacyPouch = id => id === pouchId && !model?.spots;
+  const activeRow = (m,id) => typeof id === 'number' ? m?.slots[id-1] : m?.spots ? m.spots[id] : id === pouchId ? m?.pouch : null;
+  const originalRow = id => model?.spots && typeof id === 'string' ? doc.original.spots?.[id] : activeRow(doc.original,id);
+  const equipmentIds = m => m?.spots ? Object.keys(m.spots) : m?.pouch ? [pouchId] : [];
+  const rowWorld = (row, id) => O.equipmentWorld(row,legacyPouch(id),pose,doc?.eyeHeight ?? G.referenceEyeHeight);
   function assignRow(m, id, row) {
-    if (id === pouchId) m.pouch = row;
+    if (typeof id === 'string' && m.spots) {
+      if (row) m.spots[id] = row;
+      else delete m.spots[id];
+      if (!doc.original.spots && !Object.keys(m.spots).length) m.spots = null;
+    } else if (id === pouchId) m.pouch = row;
     else m.slots[id - 1] = row;
   }
   function moveRow(row, id, horizontal, vertical) {
     const shift=view==='front' ? [-horizontal,0,vertical] : [0,-horizontal,vertical];
-    return O.move(row,id===pouchId,shift,pose);
+    return O.move(row,legacyPouch(id),shift,pose);
   }
   function selectRow(id) {
     if (errors.size) { notify('Correct the highlighted value before switching equipment.', 'error'); return; }
@@ -1477,7 +1552,18 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     render();
   }
   $('select-pouch').addEventListener('click', () => selectRow(pouchId));
+  $('select-stim').addEventListener('click', () => selectRow('stim'));
+  function initialSpot(m,id) {
+    if (id === pouchId && m.pouch) return G.pouchSpot(m.pouch,doc.eyeHeight);
+    const eyes = doc.eyeHeight ?? G.referenceEyeHeight;
+    return {id, anchor:'auto', offset:[0,0,0], position:[.18,id === pouchId ? -.12 : .12,-eyes/3], radius:.15};
+  }
+  $('use-spots').addEventListener('click', () => commit(m => { m.spots = {pouch:initialSpot(m,pouchId)}; }));
   $('place-pouch').addEventListener('click', () => {
+    if (model?.spots) {
+      if (!activeRow(model,selected)) commit(m => { m.spots[selected] = initialSpot(m,selected); });
+      return;
+    }
     if (!doc || model.pouch || doc.pouchIssue) return;
     // A proposed front-waist position, created only on an explicit click.
     const eyes = doc.eyeHeight ?? G.referenceEyeHeight;
@@ -1488,7 +1574,10 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   function render() {
     const focus = document.activeElement;
     const focusSlot = focus?.dataset?.slot;
-    const s = model?.slots[selected - 1];
+    if (selected === 'stim' && !model?.spots) selected = model?.slots.length ? 1 : pouchId;
+    const named = !!model?.spots && typeof selected === 'string';
+    const isLegacy = legacyPouch(selected);
+    const s = isLegacy ? null : activeRow(model,selected);
     $('slot-list').replaceChildren();
     for (let id = 1; id <= 8; id++) {
       const row = model?.slots[id - 1];
@@ -1496,7 +1585,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       button.disabled = !row;
       button.append(element('span', {class: 'slot-num'}, String(id).padStart(2, '0')));
       const text = element('span', {class: 'slot-text'});
-      text.append(element('span', {class: 'slot-label'}, row ? labels[row.anchor] : `Holster ${id}`), element('span', {class: 'slot-detail'}, row ? `${row.enabled ? 'ON' : 'OFF'}${row.anchor === 'auto' ? ' / AUTO-ASSIGN' : ' / BONE ANCHOR'}` : 'NO CONFIGURATION'));
+      text.append(element('span', {class: 'slot-label'}, row ? labels[row.anchor] : `Holster ${id}`), element('span', {class: 'slot-detail'}, row ? `${row.enabled ? 'ON' : 'OFF'}${row.anchor === 'auto' ? ' / AUTO-ASSIGN' : row.anchor === 'head' ? ' / HEAD-FOLLOWING' : ' / BONE ANCHOR'}` : 'NO CONFIGURATION'));
       button.append(text, element('i', {class: `slot-dot${row?.enabled ? ' on' : ''}`, 'aria-hidden': 'true'}));
       button.addEventListener('click', () => selectRow(id));
       $('slot-list').append(button);
@@ -1506,16 +1595,24 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     const pouchSelected = selected === pouchId;
     $('select-pouch').disabled = !doc;
     $('select-pouch').setAttribute('aria-pressed', String(pouchSelected));
-    $('pouch-panel').hidden = !pouchSelected;
-    $('holster-heading').hidden = $('editor-form').hidden = pouchSelected;
-    $('editor-title').textContent = pouchSelected ? 'AMMO POUCH' : 'SLOT DETAILS';
-    $('reset-slot').textContent = pouchSelected ? 'Reset pouch' : 'Reset slot';
-    if (pouchSelected) {
-      const pouch = model.pouch;
-      $('place-pouch').hidden = !!pouch || !!doc.pouchIssue;
+    $('select-stim').hidden = !model?.spots;
+    $('select-stim').setAttribute('aria-pressed', String(selected === 'stim'));
+    const pouchPanel = isLegacy || (named && !s);
+    $('pouch-panel').hidden = !pouchPanel;
+    $('use-spots').hidden = !isLegacy;
+    $('mirror-slot').closest('.mirror-panel').hidden = named;
+    $('enabled').closest('label').hidden = named;
+    $('show').closest('label').hidden = named;
+    $('placement-type').textContent = named ? 'EQUIPMENT SPOT' : 'SELECTED HOLSTER';
+    $('holster-heading').hidden = $('editor-form').hidden = pouchPanel;
+    $('editor-title').textContent = spotNames[selected]?.toUpperCase() || 'SLOT DETAILS';
+    $('reset-slot').textContent = named ? 'Reset spot' : pouchSelected ? 'Reset pouch' : 'Reset slot';
+    if (pouchPanel) {
+      const pouch = isLegacy && model.pouch;
+      $('place-pouch').hidden = !!pouch || (isLegacy && !!doc.pouchIssue);
       $('pouch-fields').hidden = !pouch;
       $('pouch-status').hidden = !!pouch;
-      $('pouch-status').textContent = doc.pouchIssue || 'This file has no saved ammo pouch. Set an initial position to edit it.';
+      $('pouch-status').textContent = (isLegacy && doc.pouchIssue) || 'No saved position for this placement.';
       if (pouch) displayPouch(pouch);
     }
     $('map-empty').hidden = !!doc;
@@ -1531,10 +1628,11 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     $('mirror-slot').disabled = !doc || !!errors.size;
     $('mirror-slot').textContent = `Mirror ${String(selected).padStart(2,'0')} → ${String(mirrorTarget).padStart(2,'0')}`;
     $('mirror-description').textContent = s ? `${labels[s.anchor]} → ${labels[G.opposite(s.anchor)]}. Replaces slot ${mirrorTarget} (position, radius, enabled). Undo restores it; later edits stay independent.` : 'Copy to the opposite side in a different slot.';
-    $('selected-number').textContent = String(selected).padStart(2, '0');
-    $('selected-name').textContent = s ? labels[s.anchor] : 'Awaiting file';
+    $('selected-number').textContent = marker(selected);
+    $('selected-name').textContent = named ? spotNames[selected] : s ? labels[s.anchor] : 'Awaiting file';
     $('enabled').disabled = !s; $('enabled').checked = !!s?.enabled;
     $('editor-fields').disabled = !s;
+    $('anchor').options[0].text = named ? 'Body-relative' : 'Automatic';
     $('anchor').value = s?.anchor || 'auto';
     $('radius').value = s ? numberDisplay(s.radius) : '6.5'; $('radius-slider').value = $('radius').value;
     for (const [i, id] of ['offset-x', 'offset-y', 'offset-z'].entries()) {
@@ -1546,8 +1644,13 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     $('offset-help').textContent = s?.anchor === 'auto' ? 'Move the saved position on the map or enter its body-relative coordinates below.' : 'Drag the preview to position this holster. X/Y/Z follow the chosen bone.';
     $('map-caption').textContent = s ? s.anchor === 'auto' ? `HOLSTER ${selected} / AUTOMATIC · SAVED POSITION` : `HOLSTER ${selected} / ${labels[s.anchor].toUpperCase()}${s.enabled ? '' : ' · DISABLED'}` : 'Choose a slot, then click its body anchor.';
     $('show').checked = model ? model.show : true;
-    if (pouchSelected) $('map-caption').textContent = 'AMMO POUCH';
-    $('reset-slot').disabled = !doc || H.same(activeRow(model, selected), activeRow(doc.original, selected));
+    if (spotNames[selected]) $('map-caption').textContent = spotNames[selected].toUpperCase();
+    if (s?.anchor === 'head') $('offset-help').textContent = 'From the neck, facing forward: X is forward, Y is right and Z is up.';
+    if (named && s?.anchor === 'auto') {
+      $('anchor-help').textContent = 'This spot uses the body-relative position.';
+      $('offset-help').textContent = 'Drag its marker or edit the body-relative position below.';
+    }
+    $('reset-slot').disabled = !doc || H.same(activeRow(model, selected), originalRow(selected));
     for (const [id, value] of drafts) { $(id).value = value; if (errors.has(id)) $(id).setAttribute('aria-invalid', 'true'); }
     updateStatus();
   }
@@ -1563,6 +1666,9 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     $('revert').disabled = !changed && !errors.size;
     const changes = [];
     if (count) changes.push(`${count} HOLSTER${count === 1 ? '' : 'S'}`);
+    for (const [id,name] of Object.entries(spotNames)) {
+      if (!H.same(model?.spots?.[id], doc?.original.spots?.[id])) changes.push(name.toUpperCase());
+    }
     if (model && !H.same(model.pouch, doc.original.pouch)) changes.push('AMMO POUCH');
     if (model && model.show !== doc.original.show) changes.push('VISIBILITY');
     $('change-status').textContent = !doc ? 'NO FILE LOADED' : errors.size ? 'CORRECT THE HIGHLIGHTED VALUE' : changed ? `${changes.join(' + ')} MODIFIED${dirty() ? '' : ' · COPY EXPORTED'}` : 'CONFIGURATION LOADED · NO CHANGES';
@@ -1593,7 +1699,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   function install(bytes, name, isDemo = false) {
     const parsed = H.parse(bytes);
     drag = null; $('body-map').setAttribute('viewBox', defaultBox());
-    doc = parsed; demoMode = isDemo; model = H.clone(doc.model); filename = name; selected = model.slots.length ? 1 : pouchId; history = [H.clone(model)]; historyIndex = 0; exported = null;
+    doc = parsed; demoMode = isDemo; model = H.clone(doc.model); filename = name; selected = model.slots.length ? 1 : (equipmentIds(model)[0] || pouchId); history = [H.clone(model)]; historyIndex = 0; exported = null;
     clearErrors(); $('filename').textContent = name; $('file-kind').textContent = isDemo ? 'DEMONSTRATION FILE' : 'CONFIGURATION FILE';
     $('fallback-details').open = activeRow(model, selected)?.anchor === 'auto'; render();
     notify(isDemo ? 'Sample mode: try the controls, then load your own state file to export changes.' : `Loaded ${name}. Select a holster or the ammo pouch.`, 'success');
@@ -1630,7 +1736,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
   }
   function rowWithDrafts(row) {
     if (!row || errors.size || !drafts.size) return row;
-    if (selected === pouchId) {
+    if (legacyPouch(selected)) {
       const point = G.pouchWorld(row);
       const delta = pouchInputs.map((id, i) => drafts.has(id) ? Number(drafts.get(id)) / 100 * (i === 1 ? -1 : 1) - point[i] : 0);
       const updated = G.shiftPouch(row, delta);
@@ -1750,11 +1856,11 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     $('direction-left').textContent = orbit ? '' : view === 'front' ? 'YOUR RIGHT' : 'BEHIND';
     $('direction-right').textContent = orbit ? '' : view === 'front' ? 'YOUR LEFT' : 'IN FRONT';
     $('anchor-points').replaceChildren();
-    const editingPouch = selected === pouchId;
+    const editingPouch = legacyPouch(selected);
     const activeAnchor = editingPouch ? current?.bone : current?.anchor;
     const anchors = editingPouch
       ? (current ? G.pouchFrames.map((frame, bone) => [bone, frame]) : [])
-      : Object.entries(G.frames);
+      : doc && !current ? [] : Object.entries(G.frames);
     anchors.sort(([a],[b]) => Number(a === activeAnchor) - Number(b === activeAnchor));
     for (const [anchor, frame] of anchors) {
       const [x,y] = project(pose==='seated' ? O.seatPoint(frame.origin,anchor) : frame.origin);
@@ -1765,7 +1871,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
       const assign = () => {
         if (doc && !errors.size) commit(m => {
           if (editingPouch) m.pouch = G.reanchorPouch(m.pouch, anchor);
-          else m.slots[selected-1].anchor = anchor;
+          else changeAnchor(m,anchor);
         });
       };
       g.addEventListener('click',assign);
@@ -1774,18 +1880,18 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     }
     $('slot-markers').replaceChildren(); $('preview-handles').replaceChildren();
     const ids = model?.slots.map(s => s.id) || [];
-    if (model?.pouch) ids.push(pouchId);
+    ids.push(...equipmentIds(model));
     ids.sort((a,b)=>{
       const selectionOrder=Number(a===selected)-Number(b===selected);
       if (selectionOrder || !orbit) return selectionOrder;
       return O.dot(rowWorld(activeRow(model,a),a),camera.depth)-O.dot(rowWorld(activeRow(model,b),b),camera.depth);
     });
     for (const id of ids) {
-      const chosen = id === selected, isPouch = id === pouchId;
+      const chosen = id === selected, isPouch = legacyPouch(id);
       const row = chosen ? current : activeRow(model, id);
       const world = rowWorld(row, id);
       if (!world || (!chosen && !$('show-other').checked)) continue;
-      const name = isPouch ? 'Ammo pouch' : 'Holster ' + id;
+      const name = spotNames[id] || 'Holster ' + id;
       const [x,y]=project(world), radius=(row.radius ?? 0)*G.SCALE;
       // Non-finite SVG geometry is never emitted, even for extreme but valid float32 state values.
       if (![x,y,radius].every(Number.isFinite)) continue;
@@ -1806,7 +1912,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
         g.append(svg('path',{d:overlap,class:'body-overlap','pointer-events':'none','aria-hidden':'true'}));
         hasOverlap=true;
       }
-      const text=svg('text',{x,y});text.textContent=isPouch ? 'P' : String(id).padStart(2,'0');centre.append(text);
+      const text=svg('text',{x,y});text.textContent=marker(id);centre.append(text);
       centre.addEventListener('pointerdown',e=>beginDrag(e,id,'move'));
       centre.addEventListener('keydown',e=>keyboardMove(e,id));
       g.append(centre); $('slot-markers').append(g);
@@ -1822,7 +1928,8 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     $('preview-measure').textContent = current?.radius != null ? `R ${numberDisplay(current.radius)} CM · Ø ${numberDisplay(current.radius*2)} CM` : 'RADIUS —';
     $('fit-preview').disabled = !current;
     $('preview-hint').textContent = current?.anchor === 'auto' ? 'Automatic · drag the saved position. TTWVR chooses the nearest bone in VR.' : 'Drag centre to move · square handle to resize. Use Side for depth. Arrow keys: 1 cm; Shift: 5 cm.';
-    if (selected === pouchId) $('preview-hint').textContent = current ? 'Drag P to move the pouch. Set the grab radius in cm or drag its square handle. Use Side for depth.' : '';
+    if (model?.spots && typeof selected === 'string' && current?.anchor === 'auto') $('preview-hint').textContent = 'Drag the marker to move the saved spot.';
+    if (legacyPouch(selected)) $('preview-hint').textContent = current ? 'Drag P to move the pouch. Set the grab radius in cm or drag its square handle. Use Side for depth.' : '';
     if (orbit) $('preview-hint').textContent = 'Drag the background to orbit. Drag R (right), F (forward) or U (up) to move. Scroll to zoom.';
     const p=current && rowWorld(current, selected);
     if (p) {
@@ -1874,7 +1981,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     $('apply-preset').disabled=!doc || !!errors.size;
     $('apply-preset').textContent=`Apply ${profile.name}`;
     const impact=!model?.slots.length ? 'Places the ammo pouch in this pouch-only file.' :
-      `Updates slots 1–${profile.count}${doc?.pouchIssue?' and preserves the unreadable pouch section':' and places the ammo pouch'}.${profile.count<8 ? ` Disables ${profile.count+1}–8, retaining their positions.` : ''}`;
+      `Updates slots 1–${profile.count}${doc?.pouchIssue && !model?.spots?' and preserves the unreadable pouch section':' and places the ammo pouch'}.${profile.count<8 ? ` Disables ${profile.count+1}–8, retaining their positions.` : ''}`;
     $('preset-impact').textContent=!doc ? 'Load your TTWVR.state file before applying a layout.' : errors.size ? 'Close this preview and correct the highlighted value before applying.' : impact+' One Undo restores your previous layout.';
   }
   for(const profile of P.list()) {
@@ -1892,10 +1999,10 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     if(!doc || errors.size)return;
     const profile=P.list().find(p=>p.id===presetId);
     commit(m=>Object.assign(m,P.apply(m,presetId,$('preset-side').value,Number($('preset-forward').value),$('preset-pipboy').value,
-      {pouchSide:$('preset-pouch-side').value,eyeHeight:doc.eyeHeight,includePouch:!doc.pouchIssue})));
+      {pouchSide:$('preset-pouch-side').value,eyeHeight:doc.eyeHeight,includePouch:!!model.spots || !doc.pouchIssue})));
     $('presets').close();$('body-map').setAttribute('viewBox',defaultBox());
     selected=model.slots.length?1:pouchId;$('show-other').checked=true;render();
-    notify(`${profile.name} applied. ${doc.pouchIssue?'Original pouch section preserved. ':''}Undo restores your previous layout.`, 'success');
+    notify(`${profile.name} applied. ${doc.pouchIssue && !model.spots?'Original pouch section preserved. ':''}Undo restores your previous layout.`, 'success');
   });
   function mousePoint(e) {
     const p=new DOMPoint(e.clientX,e.clientY).matrixTransform($('body-map').getScreenCTM().inverse());
@@ -1919,7 +2026,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     commit(m=>{const row=activeRow(m, id); if(kind==='radius')row.radius=Math.max(.05,Math.min(.45,row.radius+(delta[0]+delta[1])*step));
       else if (view==='orbit') {
         const shift=kind==='axis' ? O.times(O.axes[axis].vector,(delta[0]+delta[1])*step) : O.planeDelta(delta[0]*step*G.SCALE,-delta[1]*step*G.SCALE,camera);
-        assignRow(m,id,O.move(row,id===pouchId,shift,pose));
+        assignRow(m,id,O.move(row,legacyPouch(id),shift,pose));
       } else assignRow(m, id, moveRow(row, id, delta[0]*step, delta[1]*step));});
     const selector=kind==='axis' ? `[data-axis="${O.axes[axis].name}"]` : kind==='radius' ? '.radius-handle' : `[data-preview-slot="${id}"] .holster-centre`;
     document.querySelector(selector)?.focus({preventScroll:true});
@@ -1941,11 +2048,11 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     if (view==='orbit') {
       const dx=p[0]-drag.point[0],dy=p[1]-drag.point[1];
       const shift=drag.kind==='axis' ? O.axisDelta(O.axes[drag.axis].vector,dx,dy,camera) : O.planeDelta(dx,dy,camera);
-      drag.slot=O.move(drag.start,selected===pouchId,shift,pose);
+      drag.slot=O.move(drag.start,legacyPouch(selected),shift,pose);
     } else if (drag.kind==='move') drag.slot=moveRow(drag.start,selected,(p[0]-drag.point[0])/G.SCALE,(drag.point[1]-p[1])/G.SCALE);
     else { const centre=project(rowWorld(drag.slot, selected)); drag.slot.radius=Math.max(.05,Math.min(.45,Math.hypot(p[0]-centre[0],p[1]-centre[1])/G.SCALE)); }
     const row = drag.slot;
-    if (selected === pouchId) displayPouch(row);
+    if (legacyPouch(selected)) displayPouch(row);
     else {
       for (const [i,id] of ['position-f','position-r','position-u'].entries()) $(id).value = numberDisplay(row.position[i]);
       for(const [i,id] of ['offset-x','offset-y','offset-z'].entries())$(id).value=numberDisplay(row.offset[i]);
@@ -2016,7 +2123,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     if(!doc || errors.size || drag || orbitDrag) return;
     const layout=$('adapt-scope').value==='layout';
     const ids=layout ? model.slots.filter(s=>s.enabled).map(s=>s.id) : [selected];
-    if(layout && model.pouch) ids.push(pouchId);
+    if(layout) ids.push(...equipmentIds(model));
     let moved=0, checked=0, unknownRadius=false, stillInside=0;
     const applied=commit(m=>{
       for(const id of ids) {
@@ -2024,7 +2131,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
         if(!row) continue;
         if(!(row.radius>0)) { unknownRadius=true; continue; }
         checked++;
-        const adapted=O.adaptPlacement(row,id===pouchId,weightControl.valueAsNumber,pose,doc.eyeHeight ?? G.referenceEyeHeight);
+        const adapted=O.adaptPlacement(row,legacyPouch(id),weightControl.valueAsNumber,pose,doc.eyeHeight ?? G.referenceEyeHeight);
         if(adapted!==row) { assignRow(m,id,adapted); moved++; }
         else if(grabOverlap(id,rowWorld(row,id),row.radius)) stillInside++;
       }
@@ -2062,7 +2169,22 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     notify(`Mirrored holster ${selected} to ${mirrorTarget} (${labels[model.slots[mirrorTarget-1].anchor]}). Undo restores the previous destination.`, 'success');
   });
   $('enabled').addEventListener('change', e => commit(m => { m.slots[selected - 1].enabled = e.target.checked; }));
-  $('anchor').addEventListener('change', e => commit(m => { m.slots[selected - 1].anchor = e.target.value; }));
+  function changeAnchor(m,anchor) {
+    const row = activeRow(m, selected);
+    if (!row || row.anchor === anchor) return;
+    // Head offsets are forward/right/up from the neck. Convert across that
+    // frame (and for named spots) so the placement stays where it was.
+    if (row.anchor === 'head' || anchor === 'head' || typeof selected === 'string') {
+      const eyes = doc.eyeHeight ?? G.referenceEyeHeight;
+      const point = G.world(row,eyes);
+      if (anchor === 'auto') {
+        row.position = [-point[1],point[0],point[2]-eyes];
+        row.offset = [0,0,0];
+      } else row.offset = G.local(anchor,point);
+    }
+    row.anchor = anchor;
+  }
+  $('anchor').addEventListener('change', e => commit(m => changeAnchor(m,e.target.value)));
   $('show').addEventListener('change', e => commit(m => { m.show = e.target.checked; }));
   function numeric(id, mutate, min = -Infinity, max = Infinity) {
     const el = $(id);
@@ -2110,7 +2232,7 @@ select{font-size:14px}.slot-label{font-size:12px}.coordinate-row input{font-size
     });
     $(id + '-slider').addEventListener('change', e => commit(m => { activeRow(m, selected).radius = Number(e.target.value) / 100; }));
   }
-  $('reset-slot').addEventListener('click', () => commit(m => assignRow(m, selected, H.clone(activeRow(doc.original, selected))), true));
+  $('reset-slot').addEventListener('click', () => commit(m => assignRow(m, selected, H.clone(originalRow(selected) ?? null)), true));
   function travel(delta) {
     const next = historyIndex + delta;
     if (next < 0 || next >= history.length) return;

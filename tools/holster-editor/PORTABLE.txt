@@ -1,4 +1,4 @@
-TTWVR HOLSTER EDITOR — FIELD KIT 1.6.6
+TTWVR HOLSTER EDITOR — FIELD KIT 1.7.0
 
 1. Extract this ZIP to a folder.
 2. Open TTWVR-Holster-Editor.html in a current browser (Edge, Chrome or Firefox).
@@ -20,7 +20,11 @@ TTWVR HOLSTER EDITOR — FIELD KIT 1.6.6
    Arrow keys move 1 cm; Shift + arrows moves 5 cm. Escape cancels a drag.
    Mirror to another slot copies this placement to the opposite body side.
    The destination is replaced; Undo restores it. Later edits remain independent.
-   For the ammo pouch, select Ammo pouch and drag P in Front and Side.
+   On TTWVR 1.1.8, select Ammo pouch (P) or Stimpak circle (S). Drag the marker,
+   set its radius and choose a body, bone or head-following anchor. In an older
+   layout choose Ammo pouch → Use 1.1.8 equipment spots to enable these controls.
+   Select Set initial position for a spot that has never been placed.
+   For a legacy ammo pouch, select Ammo pouch and drag P in Front and Side.
    Choose a torso anchor or Body-relative. Set Grab radius to 5–45 cm,
    or select Use game radius to inherit the VR setting.
    If you have never placed it, choose Set initial position first.
@@ -41,7 +45,8 @@ The editor runs offline on Windows and Linux. No Python, Node, installation,
 account or server is needed. It does not upload anything or overwrite game files.
 Try a sample demonstrates the controls; load your own file before exporting.
 
-Holsters: TTWVR 1.1.5–1.1.7. Ammo pouch: TTWVR 1.1.7. Eight game hotkey slots, ten explicit bone
+Holsters support TTWVR 1.1.5–1.1.8. TTWVR 1.1.7 added the ammo pouch.
+TTWVR 1.1.8 adds head-following anchors and the two named equipment spots. Eight game hotkey slots, ten explicit bone
 anchors, automatic anchoring, local offsets, enabled flags, visibility and grab
 radius. The preview shows offsets and radius on an approximate reference body,
 not your live avatar. Final fit depends on calibration and pose. Automatic

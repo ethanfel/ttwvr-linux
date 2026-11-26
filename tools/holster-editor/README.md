@@ -1,6 +1,6 @@
 # TTWVR Holster Editor — Field Kit
 
-An offline editor for TTWVR holsters and the ammo pouch.
+An offline editor for TTWVR holsters, the ammo pouch and the Stimpak circle.
 Open one HTML file in a current browser on **Windows or Linux**. No install,
 server, Python, Node, account or network connection is needed to use it.
 
@@ -8,8 +8,8 @@ server, Python, Node, account or network connection is needed to use it.
 
 ## Open the tool
 
-Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.6/TTWVR-Holster-Editor.html)
-and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.6.6/TTWVR-Holster-Editor.zip)
+Download the [standalone HTML](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.7.0/TTWVR-Holster-Editor.html)
+and open it in Edge, Chrome or Firefox. The [portable ZIP](https://github.com/ethanfel/ttwvr-linux/releases/download/holster-editor-v1.7.0/TTWVR-Holster-Editor.zip)
 also includes the offline instructions.
 
 1. **Load state file**: select your `TTWVR.state` file, or drop it onto the window.
@@ -36,7 +36,15 @@ Choose **Selected placement** or **Enabled layout**, then click **Auto adapt** t
 
 Set **Pose** to **Seated · desk chair**. Use **Side** to check the front of the seat and your knees, then orbit in **3D** to check clearance around the armrests. The chair has fixed reference dimensions. Arm and leg holsters follow their bones as the pose changes. Automatic holsters and body-relative pouches use the seated reference eye height. Switching pose only changes the preview. Dragging a marker edits the placement shared by both poses.
 
-## Edit the ammo pouch
+## Edit TTWVR 1.1.8 placements
+
+Choose **Ammo pouch** (P) or **Stimpak circle** (S) below the eight holsters. Drag the marker or a 3D arrow to move it. Set the grab radius between 5 and 45 cm. For a placement the game has never saved, choose **Set initial position**.
+
+If your layout predates the update, choose **Ammo pouch → Use 1.1.8 equipment spots** once. The editor uses the existing pouch position when available. Files with a saved 1.1.8 equipment section show both controls automatically.
+
+A numbered holster or either equipment spot can use **Head-following**. Its offsets run forward, right and up from the neck. Preset layouts include the ammo pouch and keep your Stimpak placement.
+
+## Edit the ammo pouch in older layouts
 
 Choose **Ammo pouch** below the eight slots. In **3D**, drag the background to orbit the skeleton. Drag the **R**, **F** or **U** arrow to move the pouch right, forward or up. In **Front**, drag **P** for left/right and
 height, then in Side for depth. You can also enter centimetres directly.
@@ -139,13 +147,13 @@ TTWVR stores its configuration in New Vegas's `FalloutNV` Documents folder.
 
 This is separate from `TTWVR.ini` and your savegame. Editing holsters requires the eight
 position records and enabled/visibility flags written by the mod. If the holster
-sections are missing, place/toggle a holster in VR and quit once to create them. A file containing only a saved ammo pouch can also be edited.
+sections are missing, place/toggle a holster in VR and quit once to create them. You can also edit a file containing only a saved ammo pouch or Stimpak circle.
 
 ## Controls
 
 - Eight slots matching the game's **1–8 hotkeys**; multiple holsters can use the
   same bone. Disabled slots retain their anchor and position.
-- Ten explicit anchors: pelvis, chest, left/right upper arm, forearm, thigh and shin.
+- Ten bone anchors cover the pelvis, chest and both upper arms, forearms, thighs and shins. TTWVR 1.1.8 also supports **Head-following**.
 - **Automatic** removes an explicit bone binding. TTWVR chooses a nearby bone
   using the saved body-relative position when the avatar is ready.
 - **3D** shows an orbitable reference skeleton. **Body outline** shows a translucent estimate of the skin surface to help judge pouch depth. Adjust **Estimated body weight** (45–180 kg) to bring the outline closer or farther from the bones. The original outline is the 75 kg reference. The estimate is for previewing reach at a fixed height of about 1.8 m. Drag the background to look around or scroll to zoom. Select **P** or a numbered holster and drag **R** (right), **F** (forward) or **U** (up). Focus an arrow and use the arrow keys for 1 cm steps or Shift for 5 cm. **Reset view** restores the starting angle.
@@ -181,8 +189,7 @@ This utility does not assign inventory items to hotkeys or fix holster drift.
 
 ## File preservation
 
-Holster edits use `[SavedSlots]` and `[SavedSlotsOn]`. Ammo pouch edits use
-`[SavedPouch]` and preserve settings you haven’t edited. An unedited export is byte-identical to its input.
+Holster edits use `[SavedSlots]` and `[SavedSlotsOn]`. TTWVR 1.1.8 equipment edits use `[SavedSpots]`. In older layouts, ammo pouch edits use `[SavedPouch]`. An unedited export is byte-identical to its input.
 UTF-8 and BOM-marked UTF-16 LE/BE, original line endings, comments and unknown
 extension records are retained. Numbered list keys are made contiguous when
 adding/removing a bone record; these keys are separate from the holster numbers.
@@ -217,9 +224,7 @@ Optionally set `SCREENSHOT_DIR` to keep interface screenshots. No npm install or
 access to your existing browser profile is needed. On Windows, set `CHROME_BIN`
 in your shell to a Chromium-based browser executable.
 
-Tested in Chromium on Linux, plus the actual TTWVR 1.1.6 loader through Proton
-with a simulated headset. Windows OS/browser execution and physical placement
-have not been tested in this session.
+Tested in Chromium on Linux. The stock TTWVR 1.1.8 DLL read editor exports and wrote placements back in an isolated Wine test. Earlier holster exports were tested with TTWVR 1.1.6 through Proton with a simulated headset. Check physical reach in your headset.
 
 ## License
 

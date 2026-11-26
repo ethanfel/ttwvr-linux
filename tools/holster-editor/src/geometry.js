@@ -179,6 +179,9 @@
     joints[key] = f.origin;
   }
   for (const key of ['right_hand', 'right_foot', 'right_toe']) joints[opposite(key)] = reflect(joints[key]);
+  // 1.1.8 stores head-following offsets as forward, right, up from the neck.
+  // Set the neutral preview frame after converting the skeleton to right/back/up.
+  frames.head = {origin:[0,joints.neck[1],joints.neck[2]], rotation:[0,1,0,-1,0,0,0,0,1]};
   const referenceEyeHeight = 1.67;
   function world(slot, eyeHeight = referenceEyeHeight) {
     if (slot.anchor === 'auto') {
@@ -199,6 +202,13 @@
     if (pouch.bone === null) return [pouch.body[1], -pouch.body[0], pouch.body[3]];
     const frame = pouchFrames[pouch.bone];
     return multiply(frame.rotation, pouch.offset).map((v, i) => frame.origin[i] + v / unitsPerMetre);
+  }
+  // Preserve the preview centre when moving a legacy pouch to the new slot format.
+  function pouchSpot(pouch, eyeHeight) {
+    const anchor = pouch.bone === null ? 'auto' : pouch.bone === 0 ? 'pelvis' : 'chest';
+    const point = pouchWorld(pouch);
+    return {id:'pouch', anchor, offset:anchor === 'auto' ? [0,0,0] : local(anchor,point),
+      position:[pouch.body[0],pouch.body[1],anchor === 'auto' ? point[2] - (eyeHeight ?? referenceEyeHeight) : -pouch.body[2]], radius:pouch.radius ?? .15};
   }
   function pouchLocal(bone, point) {
     const frame = pouchFrames[bone];
@@ -253,7 +263,7 @@
   function mirror(slot, targetId) {
     if (!Number.isInteger(targetId) || targetId < 1 || targetId > 8 || targetId === slot.id) throw new Error('Choose a different destination slot.');
     // Bilateral bone frames mirror local Z, NOT local X. Central anchors also use Z laterally.
-    return {...slot, id: targetId, anchor: opposite(slot.anchor), offset: slot.anchor === 'auto' ? [0,0,0] : [slot.offset[0],slot.offset[1],-slot.offset[2]], position: [slot.position[0],-slot.position[1],slot.position[2]]};
+    return {...slot, id: targetId, anchor: opposite(slot.anchor), offset: slot.anchor === 'auto' ? [0,0,0] : slot.offset.map((v,i) => i === (slot.anchor === 'head' ? 1 : 2) ? -v : v), position: [slot.position[0],-slot.position[1],slot.position[2]]};
   }
   function repairBodyPlacement(slot) {
     // Explicit recovery for pre-1.4 editor exports. Leave arms and Automatic
@@ -266,5 +276,5 @@
   }
   const SCALE = 230;
   const project = (p, view = 'front') => [220 - p[view === 'side' ? 1 : 0] * SCALE, 490 - p[2] * SCALE];
-  return {frames, joints, pouchWorld, pouchLocal, shiftPouch, reanchorPouch, pouchFrames, pouchLabels, referenceEyeHeight, world, moveSlot, local, move, mirror, opposite, reflect, repairBodyPlacement, project, SCALE};
+  return {frames, joints, pouchWorld, pouchSpot, pouchLocal, shiftPouch, reanchorPouch, pouchFrames, pouchLabels, referenceEyeHeight, world, moveSlot, local, move, mirror, opposite, reflect, repairBodyPlacement, project, SCALE};
 });
