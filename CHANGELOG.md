@@ -1,5 +1,12 @@
 # Changes
 
+## TTWVR 1.1.8 compatibility — 2026-11-26
+
+- Add exact-hash DLSS/FSR patches and installer checks for the changed helper and bundled renderer. Retain identical outputs for 1.1.3 through 1.1.7.
+- Map status fields individually: 1.1.8 no longer has a uniform global offset shift.
+- Validate copied saves with NMC/LOD, consecutive stereo frames, head translation and four successful alternating-eye NGX calls. [Audit and evidence](docs/ttwvr-1.1.8.md).
+- Preserve existing settings with the new Ray Tracing option Off. Ray tracing and physical-headset behavior remain unvalidated. Version-specific addons require separate updates.
+
 ## TTWVR 1.1.7 compatibility — 2026-11-16
 
 - Add exact-build renderer, DLSS and native Vulkan FSR repairs for 1.1.7, with verified instruction/global locations and a pinned helper hash. Preserve all earlier outputs.

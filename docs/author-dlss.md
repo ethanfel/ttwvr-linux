@@ -68,8 +68,8 @@ rewinds.
 
 ## Build a candidate without installing
 
-Use the exact original `TTWVR.dll` from your own 1.1.3, 1.1.4, 1.1.5, 1.1.6 or 1.1.7 archive.
-The offsets and measurements below describe 1.1.3; see the [1.1.4 audit](ttwvr-1.1.4.md), [1.1.5 audit](ttwvr-1.1.5.md), [1.1.6 audit](ttwvr-1.1.6.md) and [1.1.7 audit](ttwvr-1.1.7.md).
+Use the exact original `TTWVR.dll` from your own 1.1.3, 1.1.4, 1.1.5, 1.1.6, 1.1.7 or 1.1.8 archive.
+The offsets and measurements below describe 1.1.3; see the [1.1.4 audit](ttwvr-1.1.4.md), [1.1.5 audit](ttwvr-1.1.5.md), [1.1.6 audit](ttwvr-1.1.6.md), [1.1.7 audit](ttwvr-1.1.7.md) and [1.1.8 audit](ttwvr-1.1.8.md).
 
 ```sh
 python3 tools/experimental_author_dlss.py original/TTWVR.dll test/TTWVR.dll
@@ -187,3 +187,5 @@ The minimal candidate changes 22 bytes including the earlier renderer/loader
 fixes; the combined candidate changes 356. The helper and NVIDIA runtime remain
 original. The combined plugin reports multiplayer build `0EB366D1`, versus
 `3CDD4003` for the original. Compatibility with unpatched players is not established.
+
+The [1.1.8 port](ttwvr-1.1.8.md) validates the changed author helper and renderer with saved-game stereo/movement checks and successful per-eye NGX evaluations. Its new Ray Tracing option remains Off and is not validated by this port.

@@ -29,12 +29,12 @@ You supply the games and mod downloads. No game, TTWVR or NVIDIA DLLs are redist
 | Component | Supported / tested |
 |---|---|
 | Mod manager | Native Fluorine **0.4.1**, FUSE backend |
-| TTWVR | Exact supplied **1.1.7**, **1.1.6**, **1.1.5**, **1.1.4** and **1.1.3** archives |
+| TTWVR | Exact supplied **1.1.8**, **1.1.7**, **1.1.6**, **1.1.5**, **1.1.4** and **1.1.3** archives |
 | Proton | Supplied CachyOS WineOpenXR-fix build or exact Experimental; [downloads and versions](docs/requirements.md#proton) |
 | Upscaling | Author's DLSS helper and native Vulkan FSR |
 | Headset connection | WiVRn; validation used Quest 3 and RTX 5090 |
 
-The author renderer has user-confirmed WiVRn/Quest 3 playback with NMC and generated LOD on 1.1.6. The [1.1.7 update](docs/ttwvr-1.1.7.md) passed isolated DLSS/FSR saved-game checks with consecutive stereo captures and simulated head movement. Physical 1.1.7 confirmation is pending; every control, long sessions and other GPUs have not all been validated.
+The author renderer has user-confirmed WiVRn/Quest 3 playback with NMC and generated LOD on 1.1.6. The [1.1.8 update](docs/ttwvr-1.1.8.md) passed isolated DLSS/FSR saved-game checks with consecutive stereo captures and simulated head movement. Physical 1.1.8 confirmation is pending; every control, long sessions and other GPUs have not all been validated.
 
 [Compatibility and limits](docs/compatibility.md) ·
 [DLSS evidence](docs/author-dlss.md) · [FSR evidence](docs/native-vulkan-fsr.md)

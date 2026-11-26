@@ -21,7 +21,7 @@ import tempfile
 import urllib.request
 
 from experimental_author_dlss import build, BUILDS
-from experimental_native_fsr import SOURCE_SHA256_114, SOURCE_SHA256_115, SOURCE_SHA256_116, SOURCE_SHA256_117
+from experimental_native_fsr import SOURCE_SHA256_114, SOURCE_SHA256_115, SOURCE_SHA256_116, SOURCE_SHA256_117, SOURCE_SHA256_118
 from patch_openxr_bridge import patch_bytes
 from proton_builds import identify_proton
 
@@ -232,13 +232,14 @@ def check(c):
     def check_mod():
         h = digest(plugin)
         if h not in BUILDS:
-            raise ValueError('install the original, unpatched TTWVR 1.1.3, 1.1.4, 1.1.5, 1.1.6 or 1.1.7 archive first')
-        c['version'] = '1.1.7' if h == SOURCE_SHA256_117 else '1.1.6' if h == SOURCE_SHA256_116 else '1.1.5' if h == SOURCE_SHA256_115 else '1.1.4' if h == SOURCE_SHA256_114 else '1.1.3'
+            raise ValueError('install the original, unpatched TTWVR 1.1.3, 1.1.4, 1.1.5, 1.1.6, 1.1.7 or 1.1.8 archive first')
+        c['version'] = '1.1.8' if h == SOURCE_SHA256_118 else '1.1.7' if h == SOURCE_SHA256_117 else '1.1.6' if h == SOURCE_SHA256_116 else '1.1.5' if h == SOURCE_SHA256_115 else '1.1.4' if h == SOURCE_SHA256_114 else '1.1.3'
         c['new_mod'] = c['instance']/'mods'/('TTWVR Linux ' + c['version'])
         if c['new_mod'].exists():
             raise ValueError(f'new mod destination already exists: {c["new_mod"]}')
         hashes = {
-            'ttwvr_dxvk_d3d9.dll': 'c7f64a18da8fd5f455e9453ade4abcfaef9dec63cc1cb80a89215a12b6131cf2',
+            'ttwvr_dxvk_d3d9.dll': ('adeb6a2279b6a2a36f31a6595c187b1ca061c584b7be4ca201f2396c7efe1133'
+                if c['version'] == '1.1.8' else 'c7f64a18da8fd5f455e9453ade4abcfaef9dec63cc1cb80a89215a12b6131cf2'),
             'nvngx_dlss.dll': '3975567b8943c53acce397f2b72380092f84f162d00b0d2c7d08a1025c563983',
             'ttwvr_dlss_host.exe': {
                 '1.1.3': 'c9122a1b6464f04ecdcd9760f1c7a8593ae69ea9e6814ad6e82a3f9af2b73b10',
@@ -246,6 +247,7 @@ def check(c):
                 '1.1.5': 'd8d0aaf106b17a3a29193a5e23ed0dccfc59b0772ee06bf1c64df80d2d769bc8',
                 '1.1.6': '81804ecd485d1fa618763ac0fed30b75dfee7c5dd967c800fac4b1d1f69d2490',
                 '1.1.7': 'e81ef1aa870cc15a4855265bca7928b14dda9c7b1d18577c5799498d32ad7f18',
+                '1.1.8': 'ded3f8225fd62c0db8dbb356b79c454d5baeffcf46ae4907bfa89bc43b24b47b',
             }[c['version']],
         }
         for name, expected in hashes.items():

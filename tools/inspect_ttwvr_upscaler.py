@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-FileCopyrightText: 2026 Ethanfel and contributors
 # SPDX-License-Identifier: GPL-3.0-only
-"""Read TTWVR 1.1.3/1.1.4/1.1.5/1.1.6/1.1.7 upscaler counters from a specified Linux/Wine process.
+"""Read TTWVR 1.1.3/1.1.4/1.1.5/1.1.6/1.1.7/1.1.8 upscaler counters from a specified Linux/Wine process.
 
 Read-only diagnostic. These are the original status-panel counters, not proof
 of valid or fresh pixels. Capture both eyes and test motion separately.
@@ -28,7 +28,32 @@ BUILD_115 = {'19a09590e5a76ca8d93394180ff320561a7390a292d36b9021dd2184ea12d5d1',
 BUILD_116 = {'67fbe92416420840763c0264d697e42826661f6e77685f28856c633a71766ff9', '63712922499b2155a3d2c6f54abbdfc1eaf95d08712b937c6276d6a8ae0d774d', '676edd310b3f7f24be0da3b1ff139b98b89ab2a1d3c4b8cb53381f83825d9a6c', '503266c4f4c2350b357c8c15021d8bde28973254745d9302b8e3cfde66489a27'}
 # 1.1.7 status/resource globals verified independently from instruction references.
 BUILD_117 = {'ae7dc0d7ba94651af0ccd729122f623d3dbdf0b85c6c787838c04bbc721135d6', '007ac7d466281a032e6b2ceb475dca361f0a7451539aba782a95540592a289bd', '119a085a5b0101f0618b8e076a421b4b89e30d72d9b6eae874f4e5af7bd3fb27', 'ae2159a0ab9158c90c1016e2c0580c625f28f0c93927ff9a8b7609ec7904164c'}
-SUPPORTED |= BUILD_114 | BUILD_115 | BUILD_116 | BUILD_117
+# 1.1.8 globals are mapped individually; there is no uniform shift.
+BUILD_118 = {'ec59aa4b8eb143dad7b0950415aa6b94020d66034749141aafc65cd56d370b39', 'ec33def19bafa1ef753a2a33c2509af9948dfa58952cd79ab81c9cb209c8a40c', '5262d92f1e64a5374a702dffd8b779285c49e49091d9582a8fbd5cade3d99805', '34a4e692927e331e317be993e5a73c17695634a5442e7f85bd9b3ce547c7ff0d'}
+RVA_118 = {26838960: 30795608,
+ 26838961: 30795609,
+ 26838964: 30795612,
+ 26838968: 30795616,
+ 26838972: 30795620,
+ 26838976: 30795624,
+ 26839080: 30795728,
+ 26839088: 30795736,
+ 26839089: 30795737,
+ 26840658: 30797522,
+ 27043008: 30999888,
+ 27043012: 30999892,
+ 27043016: 30999896,
+ 27043020: 30999900,
+ 27043024: 30999904,
+ 27043080: 30999960,
+ 27043844: 31001496,
+ 27044360: 31001500,
+ 27044364: 31001520,
+ 27044384: 31001524,
+ 27185900: 31145644,
+ 27186756: 31146500,
+ 28445720: 32405464}
+SUPPORTED |= BUILD_114 | BUILD_115 | BUILD_116 | BUILD_117 | BUILD_118
 # Independently checked against the supplied 1.1.3 status formatter.
 COUNTERS = {
     "render_width": 0x19987B4, "render_height": 0x19987B8,
@@ -65,7 +90,7 @@ def inspect(pid):
     fd = os.open(proc / "mem", os.O_RDONLY)
     try:
         def read(rva, size):
-            data = os.pread(fd, size, base + rva + shift)
+            data = os.pread(fd, size, base + (RVA_118[rva] if digest in BUILD_118 else rva + shift))
             if len(data) != size:
                 raise ValueError("short process-memory read")
             return data
